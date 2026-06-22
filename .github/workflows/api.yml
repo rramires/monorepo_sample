@@ -1,0 +1,85 @@
+name: api
+
+# Monorepo CI: only run when the backend, the shared contract, or the workspace
+# manifests change. Workflows must live at the repo root to be picked up.
+on:
+  push:
+    paths:
+      - 'api/**'
+      - 'packages/contracts/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/api.yml'
+  pull_request:
+    paths:
+      - 'api/**'
+      - 'packages/contracts/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/api.yml'
+
+jobs:
+  unit:
+    name: lint + compile + unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      # One install at the root — installs the whole workspace.
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -C packages/contracts typecheck
+      # tsc/ESLint gates: vitest transpiles without type-checking.
+      - run: pnpm -C api compile
+      - run: pnpm -C api lint
+      # Unit tests don't touch the DB, but importing env validates these on load.
+      - run: pnpm -C api test
+        env:
+          NODE_ENV: test
+          JWT_SECRET: unit-tests-jwt-secret-min-20-chars
+          ADMIN_USERNAME: admin
+          ADMIN_EMAIL: admin@example.com
+          ADMIN_PASSWORD: Admin@12345
+          # @/app's prisma adapter parses DATABASE_URL at load; unit never connects.
+          DATABASE_URL: 'mysql://root:test@127.0.0.1:3306/test'
+
+  e2e:
+    name: e2e (coverage)
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: docker123
+          MYSQL_DATABASE: gympass-db
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -C api compile
+      - run: pnpm -C api lint
+      # Runs every project (unit + e2e) under coverage; MySQL exists in this job.
+      - run: pnpm -C api test:coverage
+        env:
+          NODE_ENV: test
+          PORT: 3333
+          # Tests don't need a real secret; a literal keeps CI self-contained.
+          JWT_SECRET: e2e-tests-jwt-secret-min-20-chars
+          DATABASE_URL: 'mysql://root:docker123@127.0.0.1:3306/gympass-db'
+          ADMIN_USERNAME: admin
+          ADMIN_EMAIL: admin@example.com
+          ADMIN_PASSWORD: Admin@12345
