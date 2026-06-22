@@ -26,6 +26,25 @@ export const users: PublicUser[] = [
 		created_at: '2026-02-01T12:00:00.000Z',
 		password_changed_at: null,
 	},
+	// Access-control demo users: sign in as these to see the menu/guard change.
+	{
+		id: 'mock-manager-id',
+		username: 'manager',
+		email: 'manager@example.com',
+		role: 'USER',
+		is_verified: true,
+		created_at: '2026-02-02T12:00:00.000Z',
+		password_changed_at: null,
+	},
+	{
+		id: 'mock-support-id',
+		username: 'support',
+		email: 'support@example.com',
+		role: 'USER',
+		is_verified: true,
+		created_at: '2026-02-03T12:00:00.000Z',
+		password_changed_at: null,
+	},
 	...Array.from({ length: 21 }, (_, index) => {
 		const n = index + 3
 		return {

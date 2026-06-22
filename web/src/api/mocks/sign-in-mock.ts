@@ -2,6 +2,8 @@ import { loginBodySchema } from '@root/contracts'
 import { http, HttpResponse } from 'msw'
 
 import type { SignInBody } from '../sign-in'
+import { tokenFor } from './mock-auth'
+import { users } from './users-data'
 
 export const signInMock = http.post<never, SignInBody>(
 	'/auth/login',
@@ -16,14 +18,17 @@ export const signInMock = http.post<never, SignInBody>(
 		}
 		const { identifier, password } = parsed.data
 
-		// Mock rule: the demo password authenticates any identifier. Signing in
-		// as "admin" yields an admin token so you can reach role-gated screens.
+		// Mock rule: the demo password authenticates any identifier. The identifier
+		// resolves to a seeded user (by username or email) so signing in as
+		// "admin", "manager" or "support" yields that user's token — and thus their
+		// menu/guard. Unknown identifiers fall back to the default member.
 		if (password === 'Password1!') {
-			const token =
-				identifier === 'admin'
-					? 'mock-admin-jwt-token'
-					: 'mock-jwt-token'
-			return HttpResponse.json({ token })
+			const user =
+				users.find(
+					(u) =>
+						u.username === identifier || u.email === identifier,
+				) ?? users.find((u) => u.id === 'mock-user-id')
+			return HttpResponse.json({ token: tokenFor(user!.id) })
 		}
 
 		return HttpResponse.json(
