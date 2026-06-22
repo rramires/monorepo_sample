@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 
 import { getNearbyGyms } from '@/api/get-nearby-gyms'
 import { searchGyms } from '@/api/search-gyms'
+import { usePermissions } from '@/hooks/use-permissions'
 import { type Coordinates, getCurrentPosition } from '@/lib/geolocation'
 
 const MIN_QUERY = 3
@@ -16,6 +17,7 @@ export type GymsStatus =
 	| 'list'
 
 export function useGymsPM() {
+	const { can } = usePermissions()
 	const [coords, setCoords] = useState<Coordinates | null>(null)
 	const [geoError, setGeoError] = useState(false)
 	const [query, setQuery] = useState('')
@@ -71,6 +73,8 @@ export function useGymsPM() {
 		gyms,
 		status,
 		searching,
+		// Creating a gym needs the gym.gyms `create` grant (managers + admins).
+		canCreate: can('gym.gyms', 'create'),
 		hasPrevPage: searching && page > 1,
 		hasNextPage: searching && gyms.length === PAGE_SIZE,
 		handleQueryChange,

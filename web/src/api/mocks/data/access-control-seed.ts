@@ -86,7 +86,7 @@ export const screens: Screen[] = [
 		module_id: 'mod-gym',
 		key: 'gym.check-in',
 		name: 'Check-in',
-		path: '/check-in',
+		path: '/check-ins',
 		order: 2,
 	},
 	{

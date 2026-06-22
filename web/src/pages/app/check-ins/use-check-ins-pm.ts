@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 
 import { getCheckInsHistory } from '@/api/get-check-ins-history'
 import { validateCheckIn } from '@/api/validate-check-in'
-import { useAuth } from '@/components/auth/auth-hooks'
+import { usePermissions } from '@/hooks/use-permissions'
 
 const PAGE_SIZE = 20
 
@@ -25,7 +25,7 @@ export interface CheckInItem {
 }
 
 export function useCheckInsPM() {
-	const { user } = useAuth()
+	const { can } = usePermissions()
 	const queryClient = useQueryClient()
 	const [page, setPage] = useState(1)
 
@@ -71,8 +71,9 @@ export function useCheckInsPM() {
 		hasNextPage: checkIns.length === PAGE_SIZE,
 		nextPage: () => setPage((current) => current + 1),
 		prevPage: () => setPage((current) => Math.max(1, current - 1)),
-		// Validating is an ADMIN-only action; members never see the button.
-		isAdmin: user?.role === 'ADMIN',
+		// Validating needs the gym.validations `create` grant; members never
+		// see the button (managers and admins do).
+		canValidate: can('gym.validations', 'create'),
 		validateCheckIn: (id: string) => validate.mutate(id),
 		validatingId: validate.isPending ? validate.variables : null,
 	}

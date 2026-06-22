@@ -36,6 +36,10 @@ test('member browses nearby gyms and searches by name', async ({ page }) => {
 test('member does not see the New gym link', async ({ page }) => {
 	await signIn(page, 'johndoe')
 
+	// The New gym action lives on the Gyms page now (gated by the gym.gyms
+	// `create` grant); a member never sees it there.
+	await page.getByRole('link', { name: 'Gyms' }).click()
+	await expect(page).toHaveURL('/gyms')
 	await expect(page.getByRole('link', { name: 'New gym' })).toHaveCount(0)
 
 	await waitForUIInspection(page)
@@ -44,6 +48,7 @@ test('member does not see the New gym link', async ({ page }) => {
 test('admin creates a gym from the New gym page', async ({ page }) => {
 	await signIn(page, 'admin')
 
+	await page.getByRole('link', { name: 'Gyms' }).click()
 	await page.getByRole('link', { name: 'New gym' }).click()
 	await expect(page).toHaveURL('/gyms/new')
 

@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router'
 
 import { ProtectedRoute } from './components/auth/protected-route'
-import { RoleRoute } from './components/auth/role-route'
+import { RequireScreen } from './components/auth/require-screen'
 import { AppLayout } from './pages/_layouts/app-layout/app-layout'
 import { AuthLayout } from './pages/_layouts/auth-layout'
 import { RegisterLayout } from './pages/_layouts/register-layout'
@@ -33,14 +33,41 @@ export const router = createBrowserRouter([
 					{
 						element: <AppLayout />,
 						children: [
-							{ index: true, element: <Home /> },
-							{ path: 'gyms', element: <Gyms /> },
-							{ path: 'check-ins', element: <CheckIns /> },
+							// Each screen route is guarded by the same `can()`
+							// the menu uses; the backend mirrors it later
+							// (defense in depth).
+							{
+								element: <RequireScreen screen='gym.dashboard' />,
+								children: [{ index: true, element: <Home /> }],
+							},
+							{
+								element: <RequireScreen screen='gym.gyms' />,
+								children: [{ path: 'gyms', element: <Gyms /> }],
+							},
+							{
+								element: <RequireScreen screen='gym.check-in' />,
+								children: [
+									{ path: 'check-ins', element: <CheckIns /> },
+								],
+							},
+							// Account is self-service — every authed user.
 							{ path: 'account', element: <Account /> },
 							{
-								element: <RoleRoute allow={['ADMIN']} />,
+								element: (
+									<RequireScreen
+										screen='gym.gyms'
+										action='create'
+									/>
+								),
 								children: [
 									{ path: 'gyms/new', element: <NewGym /> },
+								],
+							},
+							{
+								element: (
+									<RequireScreen screen='access-control.users' />
+								),
+								children: [
 									{
 										path: 'admin/users',
 										element: <AdminUsers />,

@@ -1,7 +1,6 @@
 import { CircleCheck, LoaderCircle, MapPin, Phone } from 'lucide-react'
 
 import type { Gym } from '@/api/search-gyms'
-import { useAuth } from '@/components/auth/auth-hooks'
 import { Button } from '@/components/ui/button'
 import {
 	Card,
@@ -12,13 +11,14 @@ import {
 	CardTitle,
 } from '@/components/ui/card'
 import { useCheckIn } from '@/hooks/use-check-in'
+import { usePermissions } from '@/hooks/use-permissions'
 
 import { EditGymDialog } from './edit-gym-dialog'
 
 export function GymCard({ gym }: { gym: Gym }) {
 	const { handleCheckIn, isCheckingIn } = useCheckIn()
-	const { user } = useAuth()
-	const isAdmin = user?.role === 'ADMIN'
+	const { can } = usePermissions()
+	const canEdit = can('gym.gyms', 'edit')
 
 	return (
 		<Card className='flex flex-col'>
@@ -57,9 +57,9 @@ export function GymCard({ gym }: { gym: Gym }) {
 					Check in
 				</Button>
 
-				{/* Editing a gym is an ADMIN-only action (the route-level guard
-				    still protects the API; hiding the button is just UX). */}
-				{isAdmin && <EditGymDialog gym={gym} />}
+				{/* Editing a gym needs the gym.gyms `edit` grant (the route-level
+				    guard still protects it; hiding the button is just UX). */}
+				{canEdit && <EditGymDialog gym={gym} />}
 			</CardFooter>
 		</Card>
 	)
