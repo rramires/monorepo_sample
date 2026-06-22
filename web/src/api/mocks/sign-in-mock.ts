@@ -1,3 +1,4 @@
+import { loginBodySchema } from '@root/contracts'
 import { http, HttpResponse } from 'msw'
 
 import type { SignInBody } from '../sign-in'
@@ -5,7 +6,15 @@ import type { SignInBody } from '../sign-in'
 export const signInMock = http.post<never, SignInBody>(
 	'/auth/login',
 	async ({ request }) => {
-		const { identifier, password } = await request.json()
+		// Validate the request body against the shared contract, like the backend.
+		const parsed = loginBodySchema.safeParse(await request.json())
+		if (!parsed.success) {
+			return HttpResponse.json(
+				{ message: 'Validation error.' },
+				{ status: 400 },
+			)
+		}
+		const { identifier, password } = parsed.data
 
 		// Mock rule: the demo password authenticates any identifier. Signing in
 		// as "admin" yields an admin token so you can reach role-gated screens.

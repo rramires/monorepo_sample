@@ -1,0 +1,6 @@
+# Monorepo root — workspace-level ignores. Each app keeps its own .gitignore.
+node_modules/
+
+# Logs / OS cruft
+*.log
+.DS_Store

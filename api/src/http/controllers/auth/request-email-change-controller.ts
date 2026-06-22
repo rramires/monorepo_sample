@@ -1,5 +1,5 @@
+import { requestEmailChangeBodySchema } from '@root/contracts'
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { z } from 'zod'
 
 import { ResendCooldownError } from '@/use-cases/errors/resend-cooldown-error'
 import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
@@ -12,10 +12,7 @@ export async function requestEmailChangeController(
 ) {
 	// Self-service: acts on request.user.sub. Confirmation goes to the new
 	// address; the current email stays valid until it's confirmed (pattern A).
-	const bodySchema = z.object({
-		email: z.email(),
-	})
-	const { email } = bodySchema.parse(request.body)
+	const { email } = requestEmailChangeBodySchema.parse(request.body)
 
 	try {
 		const useCase = makeRequestEmailChangeUseCase()

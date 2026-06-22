@@ -1,3 +1,4 @@
+import { otpCodeBodySchema } from '@root/contracts'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 
@@ -40,10 +41,7 @@ export async function verifyEmailByOtpController(
 	request: FastifyRequest,
 	reply: FastifyReply,
 ) {
-	const bodySchema = z.object({
-		code: z.string().length(6),
-	})
-	const { code } = bodySchema.parse(request.body)
+	const { code } = otpCodeBodySchema.parse(request.body)
 
 	try {
 		const useCase = makeVerifyEmailUseCase()

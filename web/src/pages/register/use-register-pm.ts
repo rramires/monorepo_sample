@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { makePasswordSchema } from '@root/contracts'
 import { useMutation } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { useForm } from 'react-hook-form'
@@ -10,8 +11,16 @@ import { registerAccount } from '@/api/register'
 import { env } from '@/env'
 
 const passwordMin = env.VITE_PASSWORD_MIN_LENGTH
-const passwordPattern = new RegExp(env.VITE_PASSWORD_PATTERN)
-const passwordMessage = env.VITE_PASSWORD_MESSAGE
+
+// Shared password shape (@root/contracts) with this app's env policy + UX
+// messages injected; the regex pattern/message come from VITE_PASSWORD_*.
+const password = makePasswordSchema({
+	min: passwordMin,
+	pattern: new RegExp(env.VITE_PASSWORD_PATTERN),
+	message: env.VITE_PASSWORD_MESSAGE,
+	minMessage: `Minimum of ${passwordMin} characters.`,
+	maxMessage: 'Maximum of 72 characters.',
+})
 
 const registerForm = z
 	.object({
@@ -22,11 +31,7 @@ const registerForm = z
 			.regex(/^[a-zA-Z0-9_]+$/, 'Letters, numbers and underscore only.')
 			.transform((s) => s.toLowerCase()),
 		email: z.email('Enter a valid email.'),
-		password: z
-			.string()
-			.min(passwordMin, `Minimum of ${passwordMin} characters.`)
-			.max(72, 'Maximum of 72 characters.')
-			.regex(passwordPattern, passwordMessage),
+		password,
 		confirmPassword: z.string(),
 	})
 	.refine((data) => data.password === data.confirmPassword, {
