@@ -15,7 +15,10 @@ export const verifyEmailByLinkMock = http.get(
 		}
 
 		return HttpResponse.json(
-			{ message: 'Verification token is invalid or has already been used.' },
+			{
+				message:
+					'Verification token is invalid or has already been used.',
+			},
 			{ status: 400 },
 		)
 	},
@@ -33,7 +36,10 @@ export const verifyEmailByOtpMock = http.post<never, { code: string }>(
 		}
 
 		return HttpResponse.json(
-			{ message: 'Verification token is invalid or has already been used.' },
+			{
+				message:
+					'Verification token is invalid or has already been used.',
+			},
 			{ status: 400 },
 		)
 	},

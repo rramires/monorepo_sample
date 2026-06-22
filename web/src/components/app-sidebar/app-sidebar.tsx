@@ -106,7 +106,11 @@ export function AppSidebar() {
 							size='icon'
 							className='size-7'
 						>
-							<Link to='/account' aria-label='Account' title='Account'>
+							<Link
+								to='/account'
+								aria-label='Account'
+								title='Account'
+							>
 								<UserRoundPen />
 							</Link>
 						</Button>
