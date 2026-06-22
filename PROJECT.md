@@ -22,8 +22,7 @@ monorepo_sample/
 ```
 
 - `api/` — the HTTP API and source of truth for the contract. Self-contained
-  docs: `api/README*`, `api/PROJECT*`, `api/CLAUDE.md`, `api/HANDOFF.md`,
-  `api/TODO.md`.
+  docs: `api/README*`, `api/PROJECT*`, `api/CLAUDE.md`, `api/HANDOFF.md`.
 - `web/` — the client of `api/`, built **mock-first** (MSW) so the UI is
   developed and tested without the backend running. Docs: `web/README*`,
   `web/PROJECT*`, `web/CLAUDE.md`, `web/HANDOFF.md`, and the `web/TUTORIAL_*`
