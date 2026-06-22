@@ -1,0 +1,5 @@
+{
+    "git.ignoreLimitWarning": true,
+    "js/ts.tsdk.path": "web/node_modules/typescript/lib",
+    "js/ts.tsdk.promptToUseWorkspaceVersion": true
+}
