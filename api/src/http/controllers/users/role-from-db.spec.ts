@@ -7,7 +7,7 @@ import { Role } from '@/prisma-client/enums'
 import createAndAuthUser from '@/utils/tests/create-and-auth-user'
 
 // Regression: authorization must read the role from the DB, not the JWT claim.
-// An admin demoted to MEMBER must lose access on the very next request even
+// An admin demoted to USER must lose access on the very next request even
 // though their existing token still carries `role: ADMIN`.
 describe('Role authorized from the DB, not the JWT claim (e2e)', () => {
 	let adminToken: string
@@ -34,7 +34,7 @@ describe('Role authorized from the DB, not the JWT claim (e2e)', () => {
 		// Demote in the DB only; the token is untouched and still claims ADMIN.
 		await prisma.user.update({
 			where: { id: userId },
-			data: { role: Role.MEMBER },
+			data: { role: Role.USER },
 		})
 
 		// Authorization re-checks the DB → now forbidden, despite the stale claim.

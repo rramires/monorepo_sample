@@ -31,7 +31,7 @@ export async function updateController(
 				.transform((s) => s.toLowerCase())
 				.optional(),
 			email: z.email().optional(),
-			role: z.enum(['ADMIN', 'MEMBER']).optional(),
+			role: z.enum(['ADMIN', 'USER']).optional(),
 			is_verified: z.boolean().optional(),
 		})
 		.strict()

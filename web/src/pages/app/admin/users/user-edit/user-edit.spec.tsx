@@ -17,7 +17,7 @@ vi.mock('@/api/get-user', () => ({
 		id,
 		username: 'memberx',
 		email: 'memberx@example.com',
-		role: 'MEMBER',
+		role: 'USER',
 		is_verified: true,
 		created_at: '2026-03-01T12:00:00.000Z',
 		password_changed_at: null,

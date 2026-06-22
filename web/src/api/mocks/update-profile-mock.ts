@@ -45,7 +45,7 @@ export const updateProfileMock = http.patch<never, UpdateProfileBody>(
 				id,
 				username,
 				is_verified: isAdmin ? true : isVerified(),
-				role: isAdmin ? 'ADMIN' : 'MEMBER',
+				role: isAdmin ? 'ADMIN' : 'USER',
 			},
 		})
 	},

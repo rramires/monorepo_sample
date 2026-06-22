@@ -15,8 +15,8 @@ export function makeRegisterBodySchema(policy: PasswordPolicy) {
 export type RegisterBody = z.infer<ReturnType<typeof makeRegisterBodySchema>>
 
 // PATCH /auth/me — self update (username only).
-export const updateProfileBodySchema = z.object({ username: usernameSchema })
-export type UpdateProfileBody = z.infer<typeof updateProfileBodySchema>
+export const updateMeBodySchema = z.object({ username: usernameSchema })
+export type UpdateMeBody = z.infer<typeof updateMeBodySchema>
 
 // PATCH /users/:userId — admin update. The "at least one field" rule is a
 // backend-local refinement (it owns the specific 400), so it is not baked here.

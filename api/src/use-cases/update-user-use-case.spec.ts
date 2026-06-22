@@ -42,7 +42,7 @@ async function makeUser(
 		username: overrides.username ?? 'someone',
 		email: overrides.email ?? 'someone@example.com',
 		password_hash: 'hash',
-		role: overrides.role ?? Role.MEMBER,
+		role: overrides.role ?? Role.USER,
 		is_verified: true,
 	})
 }
@@ -139,7 +139,7 @@ describe('Update User Use Case', () => {
 		const target = await makeUser({
 			username: 'target',
 			email: 'target@example.com',
-			role: Role.MEMBER,
+			role: Role.USER,
 		})
 
 		const { user } = await sut.execute({
@@ -158,7 +158,7 @@ describe('Update User Use Case', () => {
 			sut.execute({
 				actorId: admin.id,
 				userId: admin.id,
-				role: Role.MEMBER,
+				role: Role.USER,
 			}),
 		).rejects.toBeInstanceOf(CannotChangeOwnRoleError)
 	})
@@ -174,10 +174,10 @@ describe('Update User Use Case', () => {
 		const { user } = await sut.execute({
 			actorId: admin.id,
 			userId: otherAdmin.id,
-			role: Role.MEMBER,
+			role: Role.USER,
 		})
 
-		expect(user.role).toEqual(Role.MEMBER)
+		expect(user.role).toEqual(Role.USER)
 	})
 
 	it('should set is_verified directly and flag the cache stale', async () => {

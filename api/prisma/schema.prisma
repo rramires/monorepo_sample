@@ -14,8 +14,8 @@ datasource db {
 }
 
 enum Role {
-  MEMBER
   ADMIN
+  USER
 }
 
 model User {
@@ -23,7 +23,7 @@ model User {
   username      String   @unique @db.VarChar(30)
   email         String   @unique @db.VarChar(254)
   password_hash String   @db.VarChar(60)
-  role          Role     @default(MEMBER)
+  role          Role     @default(USER)
   is_verified   Boolean  @default(false)
   created_at    DateTime @default(now())
   // Set on every password change. Tokens issued before this instant are

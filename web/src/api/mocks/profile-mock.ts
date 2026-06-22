@@ -32,7 +32,7 @@ export const profileMock = http.get('/auth/me', ({ request }) => {
 					id: 'mock-user-id',
 					username: findUser('mock-user-id')?.username ?? 'johndoe',
 					is_verified: isVerified(),
-					role: 'MEMBER',
+					role: 'USER',
 				},
 			}),
 		)

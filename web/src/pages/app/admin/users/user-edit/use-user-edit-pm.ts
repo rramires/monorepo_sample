@@ -20,7 +20,7 @@ const editForm = z.object({
 		.max(30, 'Maximum of 30 characters.')
 		.regex(usernamePattern, 'Letters, numbers and underscore only.'),
 	email: z.email('Enter a valid email.'),
-	role: z.enum(['MEMBER', 'ADMIN']),
+	role: z.enum(['USER', 'ADMIN']),
 	is_verified: z.boolean(),
 })
 type EditForm = z.infer<typeof editForm>
@@ -54,7 +54,7 @@ export function useUserEditPM() {
 		defaultValues: {
 			username: '',
 			email: '',
-			role: 'MEMBER',
+			role: 'USER',
 			is_verified: false,
 		},
 		// `values` (not a post-mount reset) re-seeds the form when the async user

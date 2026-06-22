@@ -16,7 +16,7 @@ export const registerMock = http.post<never, RegisterAccountBody>(
 		}
 
 		return HttpResponse.json(
-			{ user: { id: 'mock-user-id', username, email, role: 'MEMBER' } },
+			{ user: { id: 'mock-user-id', username, email, role: 'USER' } },
 			{ status: 201 },
 		)
 	},

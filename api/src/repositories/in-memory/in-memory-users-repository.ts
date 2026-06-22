@@ -18,7 +18,7 @@ export class InMemoryUsersRepository implements IUsersRepository {
 			username: data.username,
 			email: data.email,
 			password_hash: data.password_hash,
-			role: data.role ?? 'MEMBER',
+			role: data.role ?? 'USER',
 			is_verified: data.is_verified ?? false,
 			created_at: new Date(),
 			password_changed_at: null,

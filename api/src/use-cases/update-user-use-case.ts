@@ -68,7 +68,7 @@ export class UpdateUserUseCase {
 		// only admins reach this route, blocking self-demotion alone guarantees at
 		// least one admin always remains.
 		if (role !== undefined) {
-			if (userId === actorId && role === Role.MEMBER) {
+			if (userId === actorId && role === Role.USER) {
 				throw new CannotChangeOwnRoleError()
 			}
 			data.role = role

@@ -21,7 +21,7 @@ export const identifierSchema = z.string().min(1)
 
 export const emailSchema = z.email()
 
-export const roleSchema = z.enum(['MEMBER', 'ADMIN'])
+export const roleSchema = z.enum(['ADMIN', 'USER'])
 
 // Query-string pagination: params arrive as strings, so coerce to a positive int.
 export const pageQuerySchema = z.coerce.number().int().min(1).default(1)

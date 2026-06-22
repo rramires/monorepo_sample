@@ -17,7 +17,7 @@ export interface UserRow {
 	id: string
 	username: string
 	email: string
-	role: 'MEMBER' | 'ADMIN'
+	role: 'USER' | 'ADMIN'
 	verified: boolean
 	created: string
 }

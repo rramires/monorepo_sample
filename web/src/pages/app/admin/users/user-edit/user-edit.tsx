@@ -142,7 +142,7 @@ export function UserEdit() {
 																<SelectValue />
 															</SelectTrigger>
 															<SelectContent>
-																<SelectItem value='MEMBER'>
+																<SelectItem value='USER'>
 																	Member
 																</SelectItem>
 																<SelectItem value='ADMIN'>

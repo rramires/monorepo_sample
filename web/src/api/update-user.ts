@@ -7,7 +7,7 @@ import type { PublicUser } from './get-users'
 export interface UpdateUserBody {
 	username?: string
 	email?: string
-	role?: 'MEMBER' | 'ADMIN'
+	role?: 'USER' | 'ADMIN'
 	is_verified?: boolean
 }
 
