@@ -254,6 +254,15 @@ de gym (opcional; `^\+?[\d\s().-]{7,20}$`), `query` de busca
 (≥ `MIN_TEXT_LENGTH`). Os `max` do Zod espelham os tamanhos de coluna
 `@db.VarChar(n)` (ver §6.3).
 
+**Compartilhado com o frontend (`@root/contracts`).** Onde a forma do fio é
+idêntica, o controller importa o schema de `@root/contracts` em vez de declarar
+inline — hoje `loginBodySchema`, `requestEmailChangeBodySchema`, o `otpCodeBodySchema`
+do OTP de e-mail, e a regra de senha (`makePasswordSchema`, com env injetado em
+`src/http/schemas/password-schema.ts`). Formas que legitimamente diferem (coerção
+de query, refinamento de coordenadas, o `transform` do username no register) ficam
+locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do monorepo e
+`../packages/contracts/README-pt-BR.md`.
+
 ---
 
 ## 5. Modelo de Segurança

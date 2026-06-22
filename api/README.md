@@ -60,6 +60,11 @@ layer, CI/CD and operational concerns) see:
 
 ## Setup
 
+> Part of the **`monorepo_sample` pnpm workspace**. `pnpm install` here installs
+> the whole workspace (single root `pnpm-lock.yaml`); you can also run it once at
+> the repo root. This app depends on [`@root/contracts`](../packages/contracts/README.md)
+> for shared request/response Zod schemas.
+
 ```sh
 cp .env.example .env  # then fill in the values (see Environment variables)
 pnpm install

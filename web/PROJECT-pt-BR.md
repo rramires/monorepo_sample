@@ -145,6 +145,19 @@ modelos da app (camelCase).
 
 ---
 
+### 2.7 Contrato compartilhado (`@root/contracts`)
+
+As **formas do fio** (`snake_case`) de request/response vivem uma vez no pacote
+`@root/contracts` do workspace e são importadas pelos dois apps. A regra de senha
+dos forms de auth é montada a partir da fábrica `makePasswordSchema` (este app
+injeta `VITE_PASSWORD_*` + mensagens de UX, e soma `confirmPassword`); os mocks
+MSW validam requests contra o schema compartilhado e fazem `parse` das respostas
+pelo DTO (`userResponseSchema`), então não divergem do backend. Refinamentos
+só-de-UI ficam locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do
+monorepo e o [README](../packages/contracts/README-pt-BR.md) do pacote.
+
+---
+
 ## 3. Estrutura de pastas
 
 ```

@@ -73,6 +73,12 @@ Vitest · Playwright
 
 ## Setup
 
+> Faz parte do **workspace pnpm `monorepo_sample`**. `pnpm install` aqui instala
+> o workspace inteiro (um `pnpm-lock.yaml` na raiz); pode rodar também uma vez na
+> raiz do repo. Este app depende de
+> [`@root/contracts`](../packages/contracts/README-pt-BR.md) pros schemas Zod
+> compartilhados (regra de senha dos forms + validação MSW contra o contrato).
+
 ```sh
 pnpm install
 

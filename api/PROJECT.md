@@ -253,6 +253,15 @@ complexity), gym `title` (≥ `MIN_TEXT_LENGTH`), gym `phone` (optional;
 `^\+?[\d\s().-]{7,20}$`), search `query` (≥ `MIN_TEXT_LENGTH`). Zod `max` values
 mirror the `@db.VarChar(n)` column lengths (see §6.3).
 
+**Shared with the frontend (`@root/contracts`).** Where the wire shape is
+identical, the controller imports the schema from `@root/contracts` instead of
+declaring it inline — currently `loginBodySchema`, `requestEmailChangeBodySchema`,
+the email-OTP `otpCodeBodySchema`, and the password rule (`makePasswordSchema`,
+with env injected in `src/http/schemas/password-schema.ts`). Shapes that
+legitimately differ (query coercion, coordinate refinements, the register
+username `transform`) stay local. See the monorepo
+[`PROJECT.md`](../PROJECT.md) and `../packages/contracts/README.md`.
+
 ---
 
 ## 5. Security Model

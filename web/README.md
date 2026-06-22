@@ -73,6 +73,11 @@ Vitest · Playwright
 
 ## Setup
 
+> Part of the **`monorepo_sample` pnpm workspace**. `pnpm install` here installs
+> the whole workspace (single root `pnpm-lock.yaml`); you can also run it once at
+> the repo root. This app depends on [`@root/contracts`](../packages/contracts/README.md)
+> for shared Zod schemas (the auth-form password rule + MSW contract validation).
+
 ```sh
 pnpm install
 

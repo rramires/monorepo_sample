@@ -128,6 +128,17 @@ A route-/form-touching change is only "done" after a manual smoke in both modes
 (at least mock), watching loading/empty/error states and controlled-field cold
 loads.
 
+## Shared contract (`@root/contracts`)
+
+Some request/response shapes are shared with `api/` via `@root/contracts` (a
+workspace package). Build form schemas **from** the shared shape and keep UI
+refinements local: the auth forms call `makePasswordSchema({ min, pattern,
+message, minMessage, maxMessage })` with `VITE_PASSWORD_*` + their UX messages,
+then add `confirmPassword`. MSW mocks validate requests against the request schema
+and `parse` responses through the response DTO (e.g. `userResponseSchema`) so they
+can't drift. Read `../packages/contracts/README.md` before changing a shared
+shape, and keep the same Zod major as `api/`.
+
 ## Architecture (quick reminder)
 
 Views never call Axios; PMs never build JSX; wire shapes (snake_case) never leak

@@ -60,6 +60,12 @@ de segurança, camada de dados, CI/CD e observabilidade) consulte:
 
 ## Configuração
 
+> Faz parte do **workspace pnpm `monorepo_sample`**. `pnpm install` aqui instala
+> o workspace inteiro (um `pnpm-lock.yaml` na raiz); pode rodar também uma vez na
+> raiz do repo. Este app depende de
+> [`@root/contracts`](../packages/contracts/README-pt-BR.md) pros schemas Zod de
+> request/response compartilhados.
+
 ```sh
 cp .env.example .env  # preencha os valores (veja Variáveis de ambiente)
 pnpm install

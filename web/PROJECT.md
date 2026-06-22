@@ -142,6 +142,20 @@ only place that knows wire shapes (snake_case) and maps them to app models
 
 ---
 
+### 2.7 Shared contract (`@root/contracts`)
+
+Request/response **wire shapes** (`snake_case`) live once in the
+`@root/contracts` workspace package and are imported by both apps. The auth-form
+password rule is built from its `makePasswordSchema` factory (this app injects
+`VITE_PASSWORD_*` + UX messages, then adds `confirmPassword`); the MSW mocks
+validate requests against the shared request schema and `parse` responses through
+the response DTO (`userResponseSchema`) so they can't drift from the backend.
+UI-only refinements stay local. See the monorepo
+[`PROJECT.md`](../PROJECT.md) and the package
+[README](../packages/contracts/README.md).
+
+---
+
 ## 3. Folder Structure
 
 ```

@@ -125,6 +125,16 @@ Mind the rate limits while walking through routes:
 - Sleep 60s to reset a window when a budget is exhausted; run any `/hello`
   flood (global-limit test) **last**, since it drains the global window.
 
+## Shared contract (`@root/contracts`)
+
+Request/response shapes shared with `web/` live in `@root/contracts` (a workspace
+package). The backend is the **source of truth**, so it adopts a shared schema
+**only where the wire shape is identical**; env-driven rules inject env into a
+factory (see `src/http/schemas/password-schema.ts` → `makePasswordSchema`).
+Schemas that legitimately differ (query coercion, range refinements, the register
+username `transform`) stay local. Read `../packages/contracts/README.md` before
+changing a shared shape, and keep the same Zod major as `web/`.
+
 ## Architecture (quick reminder)
 
 Controllers never talk to Prisma; use-cases never talk to HTTP; dependencies
