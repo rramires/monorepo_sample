@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { makePasswordSchema } from '@root/contracts'
 import { useMutation } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { useState } from 'react'
@@ -12,8 +13,15 @@ import { resetPassword } from '@/api/reset-password'
 import { env } from '@/env'
 
 const passwordMin = env.VITE_PASSWORD_MIN_LENGTH
-const passwordPattern = new RegExp(env.VITE_PASSWORD_PATTERN)
-const passwordMessage = env.VITE_PASSWORD_MESSAGE
+
+// Shared password shape (@root/contracts) + this app's env policy + UX messages.
+const password = makePasswordSchema({
+	min: passwordMin,
+	pattern: new RegExp(env.VITE_PASSWORD_PATTERN),
+	message: env.VITE_PASSWORD_MESSAGE,
+	minMessage: `Minimum of ${passwordMin} characters.`,
+	maxMessage: 'Maximum of 72 characters.',
+})
 
 const requestForm = z.object({
 	email: z.email('Enter a valid email.'),
@@ -23,11 +31,7 @@ type RequestForm = z.infer<typeof requestForm>
 const resetForm = z
 	.object({
 		code: z.string().length(6, 'Enter the 6-digit code.'),
-		password: z
-			.string()
-			.min(passwordMin, `Minimum of ${passwordMin} characters.`)
-			.max(72, 'Maximum of 72 characters.')
-			.regex(passwordPattern, passwordMessage),
+		password,
 		confirmPassword: z.string(),
 	})
 	.refine((data) => data.password === data.confirmPassword, {

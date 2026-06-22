@@ -6,15 +6,25 @@ import { z } from 'zod'
 export interface PasswordPolicy {
 	min: number
 	pattern: RegExp
+	/** Message for the complexity (regex) rule. */
 	message?: string
+	/** Optional per-rule messages so each side can localize its UX. */
+	minMessage?: string
+	maxMessage?: string
 }
 
-export function makePasswordSchema({ min, pattern, message }: PasswordPolicy) {
+export function makePasswordSchema({
+	min,
+	pattern,
+	message,
+	minMessage,
+	maxMessage,
+}: PasswordPolicy) {
 	return (
 		z
 			.string()
-			.min(min)
-			.max(72) // bcrypt input ceiling, in characters
+			.min(min, minMessage)
+			.max(72, maxMessage) // bcrypt input ceiling, in characters
 			.regex(pattern, message ?? 'Password does not meet the complexity policy')
 			// bcrypt truncates past 72 *bytes*; TextEncoder works in Node and the
 			// browser, so the same check runs on both sides.
