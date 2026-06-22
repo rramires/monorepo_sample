@@ -8,7 +8,7 @@ this file is about **process**.
 > (`monorepo_sample/`). The git root is the **monorepo root**, not this folder — branch,
 > commit, and merge against the monorepo's history; `web/` (frontend) is a sibling. The
 > monorepo-root session owns root-level tooling (workspace, root `package.json`, CI). See
-> `HANDOFF.md` for the snapshot + working notes.
+> the root `../HANDOFF.md` for the resume snapshot + working notes.
 
 ## Before you start — approval & planning
 

@@ -17,3 +17,9 @@ content lives in the files it points to.
   (`pnpm -C <app> <script>`).
 - **Never `git push`** — that is the maintainer's. Confirm before anything
   irreversible.
+
+<!-- checkpoint:state -->
+- **Resume state:** read [HANDOFF.md](./HANDOFF.md) for where the last session
+  left off (branch, commit, in-flight work, next step).
+<!-- /checkpoint:state -->
+
