@@ -1,0 +1,27 @@
+# Build / Compile Folders
+build
+dist
+
+# Dependencies
+node_modules
+
+# Environment Variables (keep .env.example)
+.env
+.env.*.local
+
+# TypeScript Incremental Compilation
+*.tsbuildinfo
+
+# Test Coverage
+coverage
+.nyc_output
+
+# Logs
+*.log
+.pnpm-debug.log*
+
+# OS
+.DS_Store
+
+# Local planning docs (working documents, never committed)
+PLAN.md
