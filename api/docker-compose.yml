@@ -1,4 +1,4 @@
-name: solid_api_sample
+name: monorepo_sample
 
 services:
     solid_api_mysql:
