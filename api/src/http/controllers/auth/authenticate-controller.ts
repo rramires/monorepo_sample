@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
+import { loginBodySchema } from '@root/contracts'
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { z } from 'zod'
 
 import { env } from '@/env'
 import { InvalidCredentialsError } from '@/use-cases/errors/invalid-credentials-error'
@@ -12,12 +12,8 @@ export async function authenticateController(
 	request: FastifyRequest,
 	reply: FastifyReply,
 ) {
-	const bodySchema = z.object({
-		// Accepts an email or a username.
-		identifier: z.string().min(1),
-		password: z.string().min(1).max(72),
-	})
-	const { identifier, password } = bodySchema.parse(request.body)
+	// Shape shared with the frontend (identifier = email or username).
+	const { identifier, password } = loginBodySchema.parse(request.body)
 
 	try {
 		const authenticateUseCase = makeAuthenticateUseCase()
