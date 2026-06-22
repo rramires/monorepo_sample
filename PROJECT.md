@@ -25,7 +25,7 @@ monorepo_sample/
   docs: `api/README*`, `api/PROJECT*`, `api/CLAUDE.md`, `api/HANDOFF.md`.
 - `web/` — the client of `api/`, built **mock-first** (MSW) so the UI is
   developed and tested without the backend running. Docs: `web/README*`,
-  `web/PROJECT*`, `web/CLAUDE.md`, `web/HANDOFF.md`, and the `web/TUTORIAL_*`
+  `web/PROJECT*`, `web/CLAUDE.md`, `web/HANDOFF.md`, and the `web/docs/TUTORIAL_*`
   build history.
 - `packages/contracts/` — see its [README](./packages/contracts/README.md).
 

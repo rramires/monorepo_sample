@@ -4,7 +4,7 @@
 Resume / collaboration state lives in **[HANDOFF.md](./HANDOFF.md)** — read it first
 (resume prompt + working agreement + current state). It is the portable source of truth.
 
-This is a multi-part frontend setup tutorial: `TUTORIAL_01_setup.md` (Tailwind-only) → `TUTORIAL_02_shadcn.md`
+This is a multi-part frontend setup tutorial (guides live in `docs/`): `TUTORIAL_01_setup.md` (Tailwind-only) → `TUTORIAL_02_shadcn.md`
 (shadcn/ui) → `TUTORIAL_03_msw.md` (mock-first API with MSW) → `TUTORIAL_04_vitest.md` (unit tests with
 Vitest) → `TUTORIAL_05_playwright.md` (e2e tests with Playwright, against MSW) → `TUTORIAL_06_backend.md`
 (real backend auth) → `TUTORIAL_07_email_password.md` (email verification + password reset, two doors

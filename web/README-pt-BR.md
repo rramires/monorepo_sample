@@ -24,8 +24,9 @@ docs) veja [CLAUDE.md](CLAUDE.md).
 (Radix) · React Router 7 · TanStack Query 5 · React Hook Form + Zod 4 · MSW ·
 Vitest · Playwright
 
-> **Construído como tutorial.** Esta app foi montada passo a passo em dez guias —
-> `TUTORIAL_01_setup.md` … `TUTORIAL_10_edit_permissions.md`. Eles são o "porquê"
+> **Construído como tutorial.** Esta app foi montada passo a passo em dez guias
+> em [`docs/`](./docs) — `TUTORIAL_01_setup.md` … `TUTORIAL_10_edit_permissions.md`.
+> Eles são o "porquê"
 > narrativo por trás de cada padrão documentado aqui; leia-os para o raciocínio,
 > leia o `PROJECT.md` para a fotografia do estado atual.
 

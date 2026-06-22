@@ -25,7 +25,8 @@ For **how to work on this repo** (branching, commits, gates, doc rules) see
 Vitest · Playwright
 
 > **Built as a tutorial.** This app was assembled step by step across ten
-> guides — `TUTORIAL_01_setup.md` … `TUTORIAL_10_edit_permissions.md`. They are
+> guides in [`docs/`](./docs) — `TUTORIAL_01_setup.md` …
+> `TUTORIAL_10_edit_permissions.md`. They are
 > the narrative "why" behind every pattern documented here; read them for the
 > reasoning, read `PROJECT.md` for the snapshot.
 

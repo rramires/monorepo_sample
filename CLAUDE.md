@@ -73,7 +73,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## Docs strategy (hybrid)
 
 Each app keeps its **own** full doc set (`README*`, `PROJECT*`, `CLAUDE.md`,
-`AGENTS.md`, `HANDOFF.md`, plus `web/TUTORIAL_*`). The root only **orients and
+`AGENTS.md`, `HANDOFF.md`, plus `web/docs/TUTORIAL_*`). The root only **orients and
 points** — it does not duplicate app internals. Project docs are **EN + PT**
 (`README.md` + `README-pt-BR.md`, `PROJECT.md` + `PROJECT-pt-BR.md`). Finish a
 change with a docs review: confirm the touched app's docs still match the code.
