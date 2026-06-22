@@ -10,13 +10,13 @@ export const registerMock = http.post<never, RegisterAccountBody>(
 		// Mock rule: this username is already taken.
 		if (username === 'admin') {
 			return HttpResponse.json(
-				{ message: 'User already exists.' },
+				{ message: 'E-mail already exists.' },
 				{ status: 409 },
 			)
 		}
 
 		return HttpResponse.json(
-			{ user: { id: 'mock-user-id', username, email, role: 'member' } },
+			{ user: { id: 'mock-user-id', username, email, role: 'MEMBER' } },
 			{ status: 201 },
 		)
 	},

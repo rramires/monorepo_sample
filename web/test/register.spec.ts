@@ -28,7 +28,7 @@ test('shows error when the username is taken', async ({ page }) => {
 	await page.getByLabel('Confirm password').fill('Password1!')
 	await page.getByRole('button', { name: 'Sign up' }).click()
 
-	await expect(page.getByText('User already exists.')).toBeVisible()
+	await expect(page.getByText('E-mail already exists.')).toBeVisible()
 	await expect(page).toHaveURL('/register')
 
 	await waitForUIInspection(page)
