@@ -1,0 +1,72 @@
+name: web
+
+# Monorepo CI: only run when the frontend, the shared contract, or the workspace
+# manifests change. Workflows must live at the repo root to be picked up.
+on:
+  push:
+    paths:
+      - 'web/**'
+      - 'packages/contracts/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/web.yml'
+  pull_request:
+    paths:
+      - 'web/**'
+      - 'packages/contracts/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/web.yml'
+
+jobs:
+  test:
+    name: lint + build + unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # web/.env is gitignored; VITE_* are PUBLIC config (no secrets), so we write
+      # the build/test values here. .env.test still overrides VITE_API_URL in test.
+      - name: Write web/.env (public VITE_* config)
+        run: |
+          cat > web/.env <<'EOF'
+          VITE_API_URL=http://localhost:3333
+          VITE_ENABLE_API_DELAY=false
+          VITE_PASSWORD_MIN_LENGTH=8
+          VITE_PASSWORD_PATTERN=^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$
+          VITE_PASSWORD_MESSAGE=Must include upper- and lowercase, a number and a special character.
+          EOF
+      - run: pnpm -C packages/contracts typecheck
+      - run: pnpm -C web lint
+      - run: pnpm -C web build
+      - run: pnpm -C web test:run
+
+  e2e:
+    name: e2e (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Write web/.env (public VITE_* config)
+        run: |
+          cat > web/.env <<'EOF'
+          VITE_API_URL=http://localhost:3333
+          VITE_ENABLE_API_DELAY=false
+          VITE_PASSWORD_MIN_LENGTH=8
+          VITE_PASSWORD_PATTERN=^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$
+          VITE_PASSWORD_MESSAGE=Must include upper- and lowercase, a number and a special character.
+          EOF
+      # Playwright drives Chromium against the MSW mock (dev:test, :5001) — no
+      # backend or DB needed; the playwright config boots the dev server itself.
+      - run: pnpm -C web exec playwright install --with-deps chromium
+      - run: pnpm -C web e2e
