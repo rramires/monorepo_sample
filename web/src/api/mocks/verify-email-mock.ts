@@ -14,7 +14,10 @@ export const verifyEmailByLinkMock = http.get(
 			return new HttpResponse(null, { status: 204 })
 		}
 
-		return HttpResponse.json({ message: 'Invalid token.' }, { status: 400 })
+		return HttpResponse.json(
+			{ message: 'Verification token is invalid or has already been used.' },
+			{ status: 400 },
+		)
 	},
 )
 
@@ -29,6 +32,9 @@ export const verifyEmailByOtpMock = http.post<never, { code: string }>(
 			return new HttpResponse(null, { status: 204 })
 		}
 
-		return HttpResponse.json({ message: 'Invalid code.' }, { status: 400 })
+		return HttpResponse.json(
+			{ message: 'Verification token is invalid or has already been used.' },
+			{ status: 400 },
+		)
 	},
 )
