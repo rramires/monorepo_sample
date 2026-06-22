@@ -1,11 +1,12 @@
 import { http, HttpResponse } from 'msw'
 
-import { findUser, requireAdmin } from './users-data'
+import { requireAuth } from './mock-auth'
+import { findUser } from './users-data'
 
 export const getUserMock = http.get<{ userId: string }>(
 	'/users/:userId',
 	({ request, params }) => {
-		const denied = requireAdmin(request.headers.get('Authorization'))
+		const denied = requireAuth(request.headers.get('Authorization'))
 		if (denied) {
 			return denied
 		}

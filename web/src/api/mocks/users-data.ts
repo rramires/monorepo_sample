@@ -1,8 +1,4 @@
-import { HttpResponse } from 'msw'
-
 import type { PublicUser } from '../get-users'
-
-const ADMIN_TOKEN = 'Bearer mock-admin-jwt-token'
 
 // Mutable mock state: the user directory the admin area reads and edits. Seeded
 // with the two demo accounts (admin + johndoe, matching the profile mock) plus
@@ -58,19 +54,6 @@ export const users: PublicUser[] = [
 		}
 	}),
 ]
-
-// Mirror the backend role guard: admin routes answer 401 without a token and
-// 403 for a non-admin token. Returns a response to short-circuit with, or null
-// when the caller is an admin.
-export function requireAdmin(authHeader: string | null) {
-	if (!authHeader) {
-		return HttpResponse.json({ message: 'Unauthorized.' }, { status: 401 })
-	}
-	if (authHeader !== ADMIN_TOKEN) {
-		return HttpResponse.json({ message: 'Forbidden.' }, { status: 403 })
-	}
-	return null
-}
 
 export function findUser(id: string) {
 	return users.find((user) => user.id === id)

@@ -1,11 +1,15 @@
 import { http, HttpResponse } from 'msw'
 
-import { requireAdmin, users } from './users-data'
+import { requireAuth } from './mock-auth'
+import { users } from './users-data'
 
 const PAGE_SIZE = 20
 
 export const getUsersMock = http.get('/users', ({ request }) => {
-	const denied = requireAdmin(request.headers.get('Authorization'))
+	// Any authenticated user may reach the directory; the access-control.users
+	// grant is enforced on the frontend (and on the backend later). The mock
+	// keeps it open so manager/support can load the list.
+	const denied = requireAuth(request.headers.get('Authorization'))
 	if (denied) {
 		return denied
 	}

@@ -1,12 +1,13 @@
 import { http, HttpResponse } from 'msw'
 
 import type { UpdateUserBody } from '../update-user'
-import { findUser, requireAdmin, users } from './users-data'
+import { requireAuth } from './mock-auth'
+import { findUser, users } from './users-data'
 
 export const updateUserMock = http.patch<{ userId: string }, UpdateUserBody>(
 	'/users/:userId',
 	async ({ request, params }) => {
-		const denied = requireAdmin(request.headers.get('Authorization'))
+		const denied = requireAuth(request.headers.get('Authorization'))
 		if (denied) {
 			return denied
 		}
