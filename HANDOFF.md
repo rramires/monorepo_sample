@@ -4,53 +4,58 @@ Break-glass resume file (portable across models/tools). **State** lives here;
 **doctrine** lives in [`CLAUDE.md`](./CLAUDE.md) (single source — this file points,
 never copies). Architecture: [`PROJECT.md`](./PROJECT.md).
 
-## Resume prompt (copy-paste into a new session)
+## Resume prompt (cole numa sessão nova)
 
-> Read `HANDOFF.md` + `CLAUDE.md` at the repo root, then continue from **Current
-> state** below. This is the `monorepo_sample` model repo: `api/` (Fastify+Prisma+
-> MySQL) + `web/` (React+Vite+MSW) + `packages/contracts/` (`@root/contracts`,
-> shared Zod). One pnpm workspace — `pnpm install` at the root; run scripts per app
-> (`pnpm -C api …` / `pnpm -C web …`). Gate the touched app green before each
-> commit; work on a local branch off `master` (docs-only may go straight to
-> `master`); **never `git push`** (the user pushes); confirm before anything
-> irreversible. The core delivery (workspace + shared contract + docs + CI) is
-> DONE — see Current state for the only loose end.
+> Leia `PLAN.md` + `CLAUDE.md` na raiz do repo e **comece pela Fase 0** do PLAN.md.
+> Repo-modelo `monorepo_sample`: `api/` (Fastify+Prisma+MySQL) + `web/`
+> (React+Vite+MSW) + `packages/contracts/` (`@root/contracts`, Zod compartilhado),
+> um workspace pnpm — `pnpm install` na raiz; rode scripts por app (`pnpm -C api …`
+> / `pnpm -C web …`).
+>
+> **Trabalho em andamento:** feature **access-control** (RBAC estilo "AppBase":
+> `Role {ADMIN,USER}` com ADMIN bypass; acesso via Perfis→Telas com ações
+> view/create/edit/delete; component `TransferTable` reutilizável). Desenho completo
+> + dataset de seed + superfície de API + fases estão no **`PLAN.md`** (gitignored,
+> só nesta máquina). Build **frontend-first** (web + MSW primeiro, backend por
+> último). Fases: **0** contracts + rename `Role MEMBER→USER` (atômico
+> contracts+api+web) · **1** mocks MSW + store semeado · **2** context `can()` +
+> menu + guard de rota (🚦 visual) · **3** `TransferTable` com DnD (🚦) · **4** 4
+> telas admin (🚦 visual) · **5** backend (Prisma+migration+seed+`requireScreen`) ·
+> **6** liga web na API real + docs EN+PT (🚦 final).
+>
+> Doutrina: gate verde no app tocado antes de cada commit; branch local a partir de
+> `master`; **NUNCA `git push`** (o usuário pusha); confirme antes de qualquer coisa
+> irreversível; **responda sempre em pt-BR**. `PLAN.md` é apagado quando tudo verde.
 
 ## Current state
 
-- **Branch:** `master` · **commit:** `eac0274` (2026-06-22) · in sync with `origin/master`.
-- **Working tree:** clean.
-- **Delivered (all merged + pushed):**
-  - Single **pnpm workspace** (one root lockfile + consolidated `allowBuilds`).
-  - **`@root/contracts`** — shared Zod schemas + `z.infer` types; adopted
-    backend → frontend forms → MSW (wire shape shared, UI refinements local,
-    env-driven rules are factories). Zero-build (source exports).
-  - **Hybrid docs (EN+PT):** root README/PROJECT/CLAUDE/AGENTS orient + point;
-    apps keep their own; `packages/contracts/README` is the pattern guide.
-  - **Monorepo CI** at root `.github/workflows/` (`api.yml` + `web.yml`,
-    path-filtered, Node-24 action majors). Green on GitHub.
-  - Cleanups: `api/TODO.md` removed; web tutorials → `web/docs/`; `.vscode/`
-    tracked; jest-dom typing fixed for Vitest 4 (`web/test/vitest.d.ts`).
-- **In-flight:** none.
-- **Loose end (user's — never push myself):** delete the leftover remote branch
+- **Branch:** `master` · **commit:** `d89df84` (2026-06-22).
+- **Working tree:** `.gitignore` modificado (entrada `PLAN.md`) — **mudança local
+  intencional, não commitar**; some junto com o PLAN.md no fim. `PLAN.md` presente
+  (gitignored).
+- **In-flight:** feature **access-control** — design 100% fechado e aprovado pelo
+  usuário, registrado em `PLAN.md`. Checkpoint feito **antes** de executar. Próximo
+  passo: **Fase 0** (criar branch local, fazer o rename + schemas, gate verde).
+- **Core delivery anterior (merged + pushed):** workspace pnpm único, `@root/contracts`
+  adotado backend→frontend→MSW, docs híbridas EN+PT, CI no root. Veja `PROJECT.md`.
+- **Loose end (do usuário — nunca push eu):** apagar a branch remota
   `origin/ci/monorepo-workflows` → `git push origin --delete ci/monorepo-workflows`.
-- **Possible future work:** deeper contract adoption (gym/check-in/search schemas
-  were intentionally left local where the apps legitimately differ).
 
 ## Working rules
 
-Full doctrine in [`CLAUDE.md`](./CLAUDE.md) (+ per-app `api/CLAUDE.md`,
-`web/CLAUDE.md`). Irreversible guardrails (safety belt):
+Doutrina completa em [`CLAUDE.md`](./CLAUDE.md) (+ `api/CLAUDE.md`, `web/CLAUDE.md`).
+Guardrails irreversíveis (cinto de segurança):
 
-- **Never `git push`** — the user pushes.
-- **Never commit without approval**; work on a branch off `master` (docs-only may
-  go straight to `master`).
-- **Gate green before every commit** (lint + compile/build + test on the touched
-  app; `packages/contracts` typecheck).
-- **Confirm before anything irreversible** (delete/move/overwrite) — list first.
+- **Nunca `git push`** — o usuário pusha.
+- **Nunca commitar sem aprovação**; branch a partir de `master` (docs-only pode ir
+  direto em `master`).
+- **Gate verde antes de todo commit** (lint + compile/build + test no app tocado;
+  `packages/contracts` typecheck).
+- **Confirmar antes de qualquer coisa irreversível** (delete/move/overwrite) — listar primeiro.
+- **Responder sempre em pt-BR.**
 
 ## Deeper memory
 
-Harness memory (Claude / same machine only):
-`~/.claude/projects/-home-user--Dev-samples-monorepo-sample/memory/` — see
-`MEMORY.md` (e.g. autonomous phase-execution preference).
+Harness memory (Claude / mesma máquina):
+`~/.claude/projects/-home-user--Dev-samples-monorepo-sample/memory/` — veja
+`MEMORY.md` (preferência de execução por fases, pt-BR, project-state).
