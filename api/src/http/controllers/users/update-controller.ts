@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { env } from '@/env'
 import { verifiedCache } from '@/lib/verified-cache'
 import { CannotChangeOwnRoleError } from '@/use-cases/errors/cannot-change-own-role-error'
+import { CannotDeactivateSelfError } from '@/use-cases/errors/cannot-deactivate-self-error'
 import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
 import { UserAlreadyExistsError } from '@/use-cases/errors/user-already-exists-error'
 import { makeUpdateUserUseCase } from '@/use-cases/factories/make-update-user-use-case'
@@ -33,6 +34,7 @@ export async function updateController(
 			email: z.email().optional(),
 			role: z.enum(['ADMIN', 'USER']).optional(),
 			is_verified: z.boolean().optional(),
+			is_active: z.boolean().optional(),
 		})
 		.strict()
 		.refine(
@@ -40,7 +42,8 @@ export async function updateController(
 				data.username !== undefined ||
 				data.email !== undefined ||
 				data.role !== undefined ||
-				data.is_verified !== undefined,
+				data.is_verified !== undefined ||
+				data.is_active !== undefined,
 			{ message: 'Provide at least one field to update.' },
 		)
 		.refine(
@@ -50,7 +53,7 @@ export async function updateController(
 					'Cannot verify a newly-changed email in the same request.',
 			},
 		)
-	const { username, email, role, is_verified } = bodySchema.parse(
+	const { username, email, role, is_verified, is_active } = bodySchema.parse(
 		request.body,
 	)
 
@@ -63,6 +66,7 @@ export async function updateController(
 			email,
 			role,
 			is_verified,
+			is_active,
 		})
 
 		// Drop the cached verification status so the middleware re-reads the DB.
@@ -79,6 +83,9 @@ export async function updateController(
 			return reply.status(409).send({ message: err.message })
 		}
 		if (err instanceof CannotChangeOwnRoleError) {
+			return reply.status(400).send({ message: err.message })
+		}
+		if (err instanceof CannotDeactivateSelfError) {
 			return reply.status(400).send({ message: err.message })
 		}
 		throw err

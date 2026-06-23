@@ -25,6 +25,7 @@ export const updateUserBodySchema = z.object({
 	email: emailSchema.optional(),
 	role: roleSchema.optional(),
 	is_verified: z.boolean().optional(),
+	is_active: z.boolean().optional(),
 })
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>
 

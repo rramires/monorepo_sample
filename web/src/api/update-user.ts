@@ -9,6 +9,7 @@ export interface UpdateUserBody {
 	email?: string
 	role?: 'USER' | 'ADMIN'
 	is_verified?: boolean
+	is_active?: boolean
 }
 
 interface UpdateUserResponse {

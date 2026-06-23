@@ -22,6 +22,7 @@ const editForm = z.object({
 	email: z.email('Enter a valid email.'),
 	role: z.enum(['USER', 'ADMIN']),
 	is_verified: z.boolean(),
+	is_active: z.boolean(),
 })
 type EditForm = z.infer<typeof editForm>
 
@@ -56,6 +57,7 @@ export function useUserEditPM() {
 			email: '',
 			role: 'USER',
 			is_verified: false,
+			is_active: true,
 		},
 		// `values` (not a post-mount reset) re-seeds the form when the async user
 		// load resolves. It refreshes the Controller-bound Select/Switch too — a
@@ -67,6 +69,7 @@ export function useUserEditPM() {
 					email: user.email,
 					role: user.role,
 					is_verified: user.is_verified,
+					is_active: user.is_active,
 				}
 			: undefined,
 	})
@@ -116,6 +119,9 @@ export function useUserEditPM() {
 		}
 		if (!emailChanged && data.is_verified !== user.is_verified) {
 			body.is_verified = data.is_verified
+		}
+		if (data.is_active !== user.is_active) {
+			body.is_active = data.is_active
 		}
 
 		if (Object.keys(body).length === 0) {

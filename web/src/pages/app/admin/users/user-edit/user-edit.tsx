@@ -184,6 +184,34 @@ export function UserEdit() {
 											/>
 										</div>
 
+										<div className='flex items-center justify-between'>
+											<div>
+												<Label htmlFor='is_active'>
+													Active
+												</Label>
+												{pm.isSelf && (
+													<p className='text-muted-foreground text-sm'>
+														You can't deactivate
+														your own account.
+													</p>
+												)}
+											</div>
+											<Controller
+												control={pm.control}
+												name='is_active'
+												render={({ field }) => (
+													<Switch
+														id='is_active'
+														checked={field.value}
+														onCheckedChange={
+															field.onChange
+														}
+														disabled={pm.isSelf}
+													/>
+												)}
+											/>
+										</div>
+
 										<div className='flex gap-2'>
 											<Button
 												type='submit'

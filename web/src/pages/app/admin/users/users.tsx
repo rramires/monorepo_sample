@@ -74,7 +74,7 @@ export function AdminUsers() {
 													: 'Member'}
 											</Badge>
 										</TableCell>
-										<TableCell>
+										<TableCell className='space-x-1'>
 											<Badge
 												variant={
 													row.verified
@@ -86,6 +86,11 @@ export function AdminUsers() {
 													? 'Verified'
 													: 'Unverified'}
 											</Badge>
+											{!row.active && (
+												<Badge variant='destructive'>
+													Inactive
+												</Badge>
+											)}
 										</TableCell>
 										<TableCell className='text-muted-foreground'>
 											{row.created}

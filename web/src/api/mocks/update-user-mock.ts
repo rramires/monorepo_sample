@@ -19,7 +19,8 @@ export const updateUserMock = http.patch<{ userId: string }, UpdateUserBody>(
 			body.username === undefined &&
 			body.email === undefined &&
 			body.role === undefined &&
-			body.is_verified === undefined
+			body.is_verified === undefined &&
+			body.is_active === undefined
 		) {
 			return HttpResponse.json(
 				{ message: 'Provide at least one field to update.' },
@@ -88,6 +89,9 @@ export const updateUserMock = http.patch<{ userId: string }, UpdateUserBody>(
 		}
 		if (body.is_verified !== undefined) {
 			user.is_verified = body.is_verified
+		}
+		if (body.is_active !== undefined) {
+			user.is_active = body.is_active
 		}
 
 		return HttpResponse.json({ user })

@@ -19,6 +19,7 @@ export interface UserRow {
 	email: string
 	role: 'USER' | 'ADMIN'
 	verified: boolean
+	active: boolean
 	created: string
 }
 
@@ -36,6 +37,7 @@ export function useUsersPM() {
 		email: user.email,
 		role: user.role,
 		verified: user.is_verified,
+		active: user.is_active,
 		created: dateFormatter.format(new Date(user.created_at)),
 	}))
 

@@ -19,6 +19,7 @@ export interface IUsersRepository {
 			email?: string
 			role?: Role
 			is_verified?: boolean
+			is_active?: boolean
 			password_hash?: string
 			password_changed_at?: Date
 		},

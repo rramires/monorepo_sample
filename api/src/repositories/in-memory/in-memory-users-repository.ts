@@ -7,6 +7,20 @@ import { IUsersRepository, PublicUser } from '../i-users-repository'
 
 const PAGE_SIZE = 20
 
+function toPublic(user: User): PublicUser {
+	// Mirror the prisma repository: never expose password_hash.
+	return {
+		id: user.id,
+		username: user.username,
+		email: user.email,
+		role: user.role,
+		is_verified: user.is_verified,
+		is_active: user.is_active,
+		created_at: user.created_at,
+		password_changed_at: user.password_changed_at,
+	}
+}
+
 export class InMemoryUsersRepository implements IUsersRepository {
 	// in-memory mock database
 	public items: User[] = []
@@ -20,51 +34,27 @@ export class InMemoryUsersRepository implements IUsersRepository {
 			password_hash: data.password_hash,
 			role: data.role ?? 'USER',
 			is_verified: data.is_verified ?? false,
+			is_active: data.is_active ?? true,
 			created_at: new Date(),
 			password_changed_at: null,
 		}
 		this.items.push(user)
 
-		// Mirror the prisma repository: never expose password_hash
-		return {
-			id: user.id,
-			username: user.username,
-			email: user.email,
-			role: user.role,
-			is_verified: user.is_verified,
-			created_at: user.created_at,
-			password_changed_at: user.password_changed_at,
-		}
+		return toPublic(user)
 	}
 
 	async findById(id: string) {
-		// find by id
 		const user = this.items.find((item) => item.id === id)
-
 		return user || null
 	}
 
 	async findPublicById(id: string): Promise<PublicUser | null> {
-		// Public projection — mirrors the prisma repository: never password_hash.
 		const user = this.items.find((item) => item.id === id)
-		if (!user) {
-			return null
-		}
-		return {
-			id: user.id,
-			username: user.username,
-			email: user.email,
-			role: user.role,
-			is_verified: user.is_verified,
-			created_at: user.created_at,
-			password_changed_at: user.password_changed_at,
-		}
+		return user ? toPublic(user) : null
 	}
 
 	async findByEmail(email: string): Promise<User | null> {
-		// find by email
 		const user = this.items.find((item) => item.email === email)
-
 		return user || null
 	}
 
@@ -74,7 +64,6 @@ export class InMemoryUsersRepository implements IUsersRepository {
 		const user = this.items.find(
 			(item) => item.username.toLowerCase() === lower,
 		)
-
 		return user || null
 	}
 
@@ -84,15 +73,7 @@ export class InMemoryUsersRepository implements IUsersRepository {
 			.slice()
 			.sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
 			.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-			.map((user) => ({
-				id: user.id,
-				username: user.username,
-				email: user.email,
-				role: user.role,
-				is_verified: user.is_verified,
-				created_at: user.created_at,
-				password_changed_at: user.password_changed_at,
-			}))
+			.map(toPublic)
 	}
 
 	async update(
@@ -102,6 +83,7 @@ export class InMemoryUsersRepository implements IUsersRepository {
 			email?: string
 			role?: Role
 			is_verified?: boolean
+			is_active?: boolean
 			password_hash?: string
 			password_changed_at?: Date
 		},
@@ -123,6 +105,9 @@ export class InMemoryUsersRepository implements IUsersRepository {
 		if (data.is_verified !== undefined) {
 			user.is_verified = data.is_verified
 		}
+		if (data.is_active !== undefined) {
+			user.is_active = data.is_active
+		}
 		if (data.password_hash !== undefined) {
 			user.password_hash = data.password_hash
 		}
@@ -130,15 +115,6 @@ export class InMemoryUsersRepository implements IUsersRepository {
 			user.password_changed_at = data.password_changed_at
 		}
 
-		// Mirror the prisma repository: never expose password_hash
-		return {
-			id: user.id,
-			username: user.username,
-			email: user.email,
-			role: user.role,
-			is_verified: user.is_verified,
-			created_at: user.created_at,
-			password_changed_at: user.password_changed_at,
-		}
+		return toPublic(user)
 	}
 }

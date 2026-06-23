@@ -63,6 +63,7 @@ describe('Get user by id (e2e)', () => {
 			email: 'target@example.com',
 			role: 'USER',
 			is_verified: false,
+			is_active: true,
 			created_at: expect.any(String),
 			password_changed_at: null,
 		})

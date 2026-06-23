@@ -40,6 +40,7 @@ describe('Get User Use Case', () => {
 			email: newUser.email,
 			role: 'USER',
 			is_verified: false,
+			is_active: true,
 			created_at: expect.any(Date),
 			password_changed_at: null,
 		})

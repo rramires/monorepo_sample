@@ -19,6 +19,7 @@ vi.mock('@/api/get-user', () => ({
 		email: 'memberx@example.com',
 		role: 'USER',
 		is_verified: true,
+		is_active: true,
 		created_at: '2026-03-01T12:00:00.000Z',
 		password_changed_at: null,
 	})),
@@ -73,7 +74,9 @@ describe('UserEdit page', () => {
 		// Regression: role/verified came up blank, so the role failed validation
 		// and Save silently did nothing.
 		expect(screen.getByRole('combobox')).toHaveTextContent('Member')
-		expect(screen.getByRole('switch')).toBeChecked()
+		expect(
+			screen.getByRole('switch', { name: 'Email verified' }),
+		).toBeChecked()
 		expect(
 			screen.queryByText("You can't change your own role."),
 		).not.toBeInTheDocument()
@@ -84,7 +87,9 @@ describe('UserEdit page', () => {
 		renderEdit({ selfId: 'admin-id', targetId: 'other-id' })
 
 		const email = await screen.findByLabelText('Email')
-		expect(screen.getByRole('switch')).toBeEnabled()
+		expect(
+			screen.getByRole('switch', { name: 'Email verified' }),
+		).toBeEnabled()
 
 		await userEvent.clear(email)
 		await userEvent.type(email, 'changed@example.com')
@@ -94,6 +99,8 @@ describe('UserEdit page', () => {
 				'Changing the email will unverify this account.',
 			),
 		).toBeInTheDocument()
-		expect(screen.getByRole('switch')).toBeDisabled()
+		expect(
+			screen.getByRole('switch', { name: 'Email verified' }),
+		).toBeDisabled()
 	})
 })

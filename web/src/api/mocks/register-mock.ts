@@ -29,6 +29,7 @@ export const registerMock = http.post<never, RegisterAccountBody>(
 			email,
 			role: 'USER',
 			is_verified: false,
+			is_active: true,
 			created_at: '2026-06-22T12:00:00.000Z',
 			password_changed_at: null,
 		})

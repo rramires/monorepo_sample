@@ -25,6 +25,8 @@ model User {
   password_hash String   @db.VarChar(60)
   role          Role     @default(USER)
   is_verified   Boolean  @default(false)
+  // Deactivated accounts can't log in and are cut off on their next request.
+  is_active     Boolean  @default(true)
   created_at    DateTime @default(now())
   // Set on every password change. Tokens issued before this instant are
   // rejected (global logout) via the password-changed registry.

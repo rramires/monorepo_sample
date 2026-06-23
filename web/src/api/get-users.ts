@@ -8,6 +8,7 @@ export interface PublicUser {
 	email: string
 	role: 'USER' | 'ADMIN'
 	is_verified: boolean
+	is_active: boolean
 	created_at: string
 	password_changed_at: string | null
 }

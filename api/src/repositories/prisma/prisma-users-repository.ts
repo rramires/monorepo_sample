@@ -12,6 +12,7 @@ const PUBLIC_USER_SELECT = {
 	email: true,
 	role: true,
 	is_verified: true,
+	is_active: true,
 	created_at: true,
 	password_changed_at: true,
 } as const
@@ -80,6 +81,7 @@ export class PrismaUsersRepository implements IUsersRepository {
 			email?: string
 			role?: Role
 			is_verified?: boolean
+			is_active?: boolean
 			password_hash?: string
 			password_changed_at?: Date
 		},
