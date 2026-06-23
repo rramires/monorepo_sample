@@ -49,6 +49,11 @@ screens).
   it — so the three can't drift. UI-only refinements stay local to each app.
 - **Mock-first frontend.** `web/` is developed and tested against MSW mirrors of
   the API; the real backend is wired last.
+- **Access control (RBAC).** A hybrid role + dynamic-profile model spans both
+  apps: the backend resolves effective per-screen permissions, the frontend gates
+  nav, routes, and buttons from them. Detail in
+  [`api/PROJECT.md`](./api/PROJECT.md) and [`web/PROJECT.md`](./web/PROJECT.md)
+  (setup in the app `README*`).
 
 Per-app setup, routes, env tables, and smoke tests are in each app's
 `README*`/`PROJECT*`.

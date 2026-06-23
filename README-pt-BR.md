@@ -50,6 +50,11 @@ admin).
   contra ele — então os três não divergem. Refinamentos de UI ficam locais.
 - **Frontend mock-first.** `web/` é desenvolvido e testado contra espelhos MSW da
   API; o backend real é ligado por último.
+- **Controle de acesso (RBAC).** Um modelo híbrido de role + perfis dinâmicos
+  atravessa os dois apps: o backend resolve as permissões efetivas por tela, e o
+  frontend governa nav, rotas e botões a partir delas. Detalhe em
+  [`api/PROJECT-pt-BR.md`](./api/PROJECT-pt-BR.md) e
+  [`web/PROJECT-pt-BR.md`](./web/PROJECT-pt-BR.md) (setup nos `README*` dos apps).
 
 Setup, rotas, tabelas de env e smoke de cada app estão nos `README*`/`PROJECT*`
 deles.

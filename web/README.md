@@ -44,10 +44,20 @@ Vitest · Playwright
   (anti-XSS); durability comes from the API's **httpOnly refresh cookie**. On
   load the app silently refreshes and restores the session; a single-flight 401
   interceptor refreshes-and-replays transparently.
-- **RBAC in the UI** — `ProtectedRoute` gates the authed area; `RoleRoute`
-  gates admin-only screens and renders `Forbidden` **in place** (the layout
-  stays). The role is read fresh from `GET /auth/me`, never trusted from a stale
-  token.
+- **RBAC in the UI** — `ProtectedRoute` gates the authed area; `RequireScreen`
+  gates each screen by a `can(screenKey, action)` check and renders `Forbidden`
+  **in place** (the layout stays). Permissions are read fresh from
+  `GET /me/permissions`, never trusted from a stale token.
+- **Hybrid access control (RBAC)** — a fixed role (`ADMIN` bypasses everything,
+  `USER` follows grants) plus dynamic **Profiles** that bundle per-screen grants
+  (view/create/edit/delete). **Modules** group **Screens**; profiles carry
+  `is_default` (auto-attached on register) and `is_system` (protected). The
+  **sidebar is data-driven** — it builds its sections from
+  `GET /me/permissions`'s `menu`, so each user sees only the screens they may
+  view. Admin screens under `/admin` manage modules, screens, profiles (with a
+  drag-and-drop grants editor) and users (assign profiles, deactivate). A
+  per-profile **default landing screen** plus a per-user **override** decide
+  where each user lands after sign-in.
 - **Email-verification gate** — an unverified user sees a banner and the
   check-in action is blocked; verifying clears the banner without a re-login
   (`reloadUser` refetches `/auth/me`).
@@ -55,8 +65,9 @@ Vitest · Playwright
   confirmation flow (OTP **or** link), mirroring the backend's pattern A (the
   proven address stays until the new one is confirmed).
 - **Admin area** — paginated users table, a dedicated user-edit page
-  (username/email/role/`is_verified` with the backend's rules), and gym editing
-  from the gym card (Dialog).
+  (username/email/role/`is_verified`/`is_active` with the backend's rules, plus a
+  profiles card), the access-control CRUD screens (modules, screens, profiles), and
+  gym editing from the gym card (Dialog).
 - **Gyms & check-ins** — geolocation-based nearby gyms + search by name; check
   in from a gym card; a check-in history with ADMIN **Validate**; the home page
   is a **dashboard** with a Recharts activity chart.
@@ -91,8 +102,18 @@ pnpm dev                 # → http://localhost:3001
 ```
 
 **Demo login (mock mode):** any email/username with the password `Password1!`.
-Sign in as **`admin`** to get an admin token and reach the role-gated screens
-(New gym, Users); any other identifier is a regular member.
+Sign in as **`admin`** to get an admin token and reach every screen (admin
+bypasses all grants). The seed also ships three profiled members, each landing on
+a different sidebar:
+
+- **`johndoe`** — `gym-member` profile (Dashboard, Gyms, Check-ins).
+- **`manager`** — `gym-manager` profile (the gym screens + creating gyms + the
+  Users admin screen).
+- **`support`** — `support` profile (the access-control Profiles/Screens/Users
+  screens, no gym screens).
+
+Any other identifier is a plain member with no profile. The same RBAC behaviour
+applies in real-API mode — the menu and guards come from `GET /me/permissions`.
 
 For real-API mode, register through the UI (or log in as the seeded ADMIN — see
 `solid_api_sample`'s `ADMIN_*` env). The API's CORS must allow this origin and
@@ -151,24 +172,30 @@ Files (Vite loads them by mode; later files win):
 `src/routes.tsx` builds the tree with React Router. The authed area sits behind
 `ProtectedRoute` (redirects guests to `/sign-in`) and uses `AppLayout` (sidebar
 
-- header); admin screens add `RoleRoute allow={['ADMIN']}`.
+- header); the index `/` resolves to the user's landing screen via `LandingRoute`,
+  and each screen is gated by `RequireScreen screen='<key>' [action]` (the same
+  `can()` the menu uses).
 
-| Path                          | Guard             | Page               | Notes                                         |
-| ----------------------------- | ----------------- | ------------------ | --------------------------------------------- |
-| `/`                           | Protected         | Home               | Dashboard (metrics + Recharts activity chart) |
-| `/gyms`                       | Protected         | Gyms               | Nearby (geolocation) + search by name         |
-| `/check-ins`                  | Protected         | CheckIns           | History; ADMIN sees **Validate**              |
-| `/account`                    | Protected         | Account            | Edit username · change email (OTP/link)       |
-| `/gyms/new`                   | Protected + ADMIN | NewGym             | Create a gym                                  |
-| `/admin/users`                | Protected + ADMIN | AdminUsers         | Paginated users table                         |
-| `/admin/users/:userId`        | Protected + ADMIN | UserEdit           | Edit username/email/role/`is_verified`        |
-| `/sign-in`                    | public (auth)     | SignIn             |                                               |
-| `/register`                   | public            | Register           |                                               |
-| `/forgot-password`            | public (auth)     | ForgotPassword     |                                               |
-| `/users/reset-password`       | public (auth)     | ResetPassword      | Token via `?token=` or email + OTP            |
-| `/users/verify-email`         | public (auth)     | VerifyEmail        | Link landing (`?token=`) + OTP                |
-| `/users/confirm-email-change` | public (auth)     | ConfirmEmailChange | Email-change link landing                     |
-| `*`                           | —                 | NotFound           | 404                                           |
+| Path                          | Guard                     | Page               | Notes                                                         |
+| ----------------------------- | ------------------------- | ------------------ | ------------------------------------------------------------- |
+| `/`                           | Protected                 | LandingRoute       | Resolves to the user's landing screen (dashboard/first)       |
+| `/gyms`                       | `gym.gyms`                | Gyms               | Nearby (geolocation) + search by name                         |
+| `/check-ins`                  | `gym.check-in`            | CheckIns           | History; ADMIN sees **Validate**                              |
+| `/account`                    | Protected                 | Account            | Edit username · change email · pick landing screen            |
+| `/gyms/new`                   | `gym.gyms` (create)       | NewGym             | Create a gym                                                  |
+| `/admin/users`                | `access-control.users`    | AdminUsers         | Paginated users table                                         |
+| `/admin/users/:userId`        | `access-control.users`    | UserEdit           | Edit username/email/role/`is_verified`/`is_active` + profiles |
+| `/admin/modules`              | `access-control.modules`  | AdminModules       | Modules CRUD                                                  |
+| `/admin/screens`              | `access-control.screens`  | AdminScreens       | Screens CRUD (per module)                                     |
+| `/admin/profiles`             | `access-control.profiles` | AdminProfiles      | Profiles CRUD                                                 |
+| `/admin/profiles/:profileId`  | `access-control.profiles` | ProfileDetail      | Grants editor (TransferTable) + default screen                |
+| `/sign-in`                    | public (auth)             | SignIn             |                                                               |
+| `/register`                   | public                    | Register           |                                                               |
+| `/forgot-password`            | public (auth)             | ForgotPassword     |                                                               |
+| `/users/reset-password`       | public (auth)             | ResetPassword      | Token via `?token=` or email + OTP                            |
+| `/users/verify-email`         | public (auth)             | VerifyEmail        | Link landing (`?token=`) + OTP                                |
+| `/users/confirm-email-change` | public (auth)             | ConfirmEmailChange | Email-change link landing                                     |
+| `*`                           | —                         | NotFound           | 404                                                           |
 
 The API contract these pages consume (routes, roles, error shapes) is documented
 in [`solid_api_sample`'s README](../api/README.md). Each page's
@@ -224,11 +251,19 @@ pnpm dev:test    # http://localhost:5001
    card → toast + the dashboard metrics update.
 3. **Check-ins** → history shows the check-in; as admin, **Validate** it.
 4. **Account** → rename your username; start an email change → confirm with the
-   OTP printed by the mock (or the link landing).
+   OTP printed by the mock (or the link landing); pick a **Landing screen** (or
+   "Automatic") and confirm the next sign-in lands there.
 5. **Admin → Users** → open a member → change role/`is_verified` → Save; confirm
    the table reflects it. Editing **yourself** shows a read-only role badge.
-6. Sign in as a regular member and confirm `/admin/users` and `/gyms/new` render
-   **Forbidden** in place.
+   Toggle a member's **Active** switch off and confirm they can no longer sign in.
+   Move a profile in the user's **profiles** card and Save.
+6. **Admin → Profiles** → open a profile → in the **grants editor** drag (or use
+   `>>`/`<<`) screens between Available and Assigned, tick view/create/edit/delete,
+   pick the profile's **Default** screen → Save. **Modules** and **Screens** offer
+   the same CRUD for the catalog.
+7. Sign out and sign in as **`johndoe`**, **`manager`**, **`support`** in turn —
+   each sees a **different sidebar** built from its profile's grants; admin sees
+   every section. Visiting a screen you lack renders **Forbidden** in place.
 
 For a **real-backend** smoke, run `pnpm dev` against `solid_api_sample` and walk
 the same flow (register first; verify email via the link/OTP printed to the API

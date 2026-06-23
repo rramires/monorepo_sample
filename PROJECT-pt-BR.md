@@ -80,9 +80,11 @@ não divergirem da API real.
 
 Fastify + Prisma + MySQL, camadas SOLID/clean (controllers → use-cases →
 repositories atrás de interfaces, montados por factories). JWT access token +
-refresh cookie httpOnly, RBAC lido do DB, rate limiting + lockout de login. Roda
-em `:3333`; MySQL via `api/docker-compose.yml` (projeto compose `monorepo_sample`,
-host `3306`). `pnpm -C api db:fresh` reseta o DB e semeia o admin.
+refresh cookie httpOnly, **RBAC híbrido** (role + perfis dinâmicos que agrupam
+grants por tela) resolvido do DB e exposto como permissões efetivas, rate
+limiting + lockout de login. Roda em `:3333`; MySQL via `api/docker-compose.yml`
+(projeto compose `monorepo_sample`, host `3306`). `pnpm -C api db:fresh` reseta o
+DB e semeia o admin.
 
 ## 5. Frontend (resumo → `web/PROJECT-pt-BR.md`)
 
@@ -91,7 +93,9 @@ lógica `use-x-pm.ts`), Contexts de 3 arquivos pra estado de sessão/UI, TanStac
 Query pra estado de servidor, `src/api` mapeia `snake_case` do fio → models
 camelCase. **Mock-first**: MSW espelha o backend verbatim e é o alvo padrão de
 dev/test (`pnpm -C web dev:test`, `:5001`); a API real é ligada por último
-(`pnpm -C web dev`, `:3001`).
+(`pnpm -C web dev`, `:3001`). O controle de acesso é data-driven a partir das
+permissões efetivas do backend (`can()`/`RequireScreen` governando nav, rotas e
+botões) — veja `web/PROJECT-pt-BR.md`.
 
 ## 6. Dev & gates
 

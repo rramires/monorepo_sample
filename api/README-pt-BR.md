@@ -24,8 +24,19 @@ de segurança, camada de dados, CI/CD e observabilidade) consulte:
   repositório com implementações Prisma e in-memory.
 - **Autenticação JWT com refresh tokens** — access token de curta duração mais
   um cookie httpOnly de refresh.
-- **RBAC** — papéis `MEMBER` / `ADMIN` aplicados por rota; o papel é lido do
-  banco na checagem, nunca confiado do claim JWT.
+- **RBAC** — papéis `ADMIN` / `USER` mais uma camada dinâmica de controle de
+  acesso em nível de tela aplicada por rota; as permissões são lidas do banco na
+  checagem, nunca confiadas do claim JWT.
+- **Controle de acesso (telas & perfis RBAC)** — `Module`s agrupam `Screen`s; um
+  `Profile` reúne grants de ação por tela (view/create/edit/delete) e é atribuído
+  a usuários. O guard `requireScreen(screenKey, action)` lê as permissões efetivas
+  do chamador no banco a cada requisição; o `ADMIN` ignora toda checagem.
+  `GET /me/permissions` retorna as telas efetivas do usuário, um catálogo de
+  `menu` para a sidebar e a tela inicial padrão resolvida. Desativar um usuário
+  (`is_active=false`) o corta na próxima requisição. O CRUD admin de
+  módulos/telas/perfis/usuários mais a atribuição de perfis fica atrás das telas
+  `access-control.*`; perfis `is_system` do seed são protegidos e o perfil
+  `is_default` é anexado automaticamente no cadastro.
 - **Revogação e rotação de token** — logout revoga tanto o access quanto o
   refresh token; refresh tokens são de uso único (rotacionados a cada refresh)
   via denylist híbrida (memória + banco) por `jti`.
@@ -49,11 +60,12 @@ de segurança, camada de dados, CI/CD e observabilidade) consulte:
   SHA-256, de uso único e com limite de tentativas; um reset bem-sucedido dispara
   logout global.
 - **Gestão de conta** — admins listam e editam usuários
-  (`username`/`email`/`role`/`is_verified`) e editam academias; o usuário edita o
-  próprio `username` e troca o próprio e-mail com confirmação (**pattern A**: o
-  endereço comprovado permanece até o novo ser confirmado por link/OTP). Uma troca
-  de e-mail feita pelo admin desverifica a conta e envia um reset de senha ao novo
-  endereço; um admin nunca consegue se rebaixar (sempre ≥1 admin).
+  (`username`/`email`/`role`/`is_verified`/`is_active`) e editam academias; o
+  usuário edita o próprio `username` (e `default_screen_key`) e troca o próprio
+  e-mail com confirmação (**pattern A**: o endereço comprovado permanece até o novo
+  ser confirmado por link/OTP). Uma troca de e-mail feita pelo admin desverifica a
+  conta e envia um reset de senha ao novo endereço; um admin nunca consegue se
+  rebaixar nem se desativar (sempre ≥1 admin utilizável).
 - **Proteção do event loop** — `@fastify/under-pressure` retorna `503`
   automaticamente quando o lag do event loop ou o uso de heap ultrapassa os limites.
 - **Testado** — suite unitária (sem banco) e suite e2e com banco isolado, ambas no CI.
@@ -71,9 +83,17 @@ cp .env.example .env  # preencha os valores (veja Variáveis de ambiente)
 pnpm install
 pnpm compose:up       # inicia o MySQL no Docker
 pnpm migrate          # executa as migrations
-pnpm seeddb    # cria o usuário ADMIN com as vars ADMIN_*
+pnpm seeddb    # cria o ADMIN + catálogo de controle de acesso e usuários demo
 pnpm dev              # inicia o servidor em modo dev
 ```
+
+> O controle de acesso traz quatro migrations sobre o schema base:
+> `rename_role_member_to_user` (renomeia o valor `MEMBER` → `USER` do enum
+> `Role`), `add_access_control` (as tabelas `Module`/`Screen`/`Profile`/
+> `ProfileScreen`/`UserProfile`), `add_user_is_active` (a flag `User.is_active`) e
+> `add_default_landing_screen` (a coluna `User.default_screen_key`). O
+> `pnpm seeddb` também popula o catálogo de módulos/telas, três perfis de sistema
+> e três usuários demo (veja _Controle de acesso_ abaixo).
 
 ## Scripts
 
@@ -127,40 +147,63 @@ imediatamente** no boot se alguma variável for inválida (validação Zod em
 
 ## Rotas da API
 
-| Método  | Rota                             | Auth           | Papel   | Descrição                                               |
-| ------- | -------------------------------- | -------------- | ------- | ------------------------------------------------------- |
-| `GET`   | `/hello`                         | –              | –       | Healthcheck                                             |
-| `POST`  | `/users`                         | –              | –       | Cadastrar usuário (com rate limit)                      |
-| `POST`  | `/auth/login`                    | –              | –       | Login → access token + cookie de refresh (rate limit)   |
-| `PATCH` | `/auth/refresh`                  | refresh cookie | –       | Rotacionar o access token                               |
-| `GET`   | `/auth/me`                       | Bearer         | –       | Perfil do usuário autenticado                           |
-| `POST`  | `/auth/logout`                   | Bearer         | –       | Revogar o token atual (denylist)                        |
-| `PATCH` | `/auth/me`                       | Bearer         | –       | Editar o próprio username                               |
-| `POST`  | `/auth/me/email`                 | Bearer         | –       | Solicitar troca do próprio e-mail (confirma no novo)    |
-| `POST`  | `/auth/me/email/confirm`         | Bearer         | –       | Confirmar troca do próprio e-mail via OTP               |
-| `GET`   | `/gyms/search`                   | Bearer         | –       | Buscar academias por nome                               |
-| `GET`   | `/gyms/nearby`                   | Bearer         | –       | Academias próximas a uma coordenada                     |
-| `POST`  | `/gyms`                          | Bearer         | `ADMIN` | Cadastrar academia                                      |
-| `PATCH` | `/gyms/:gymId`                   | Bearer         | `ADMIN` | Editar academia (título/descrição/telefone)             |
-| `GET`   | `/check-ins/history`             | Bearer         | –       | Histórico de check-ins paginado                         |
-| `GET`   | `/check-ins/metrics`             | Bearer         | –       | Total de check-ins                                      |
-| `POST`  | `/gyms/:gymId/check-ins`         | Bearer         | –       | Fazer check-in (`400` longe demais · `409` já fez hoje) |
-| `PATCH` | `/check-ins/:checkInId/validate` | Bearer         | `ADMIN` | Validar check-in (`409` fora da janela de 20 min)       |
-| `POST`  | `/users/send-verification`       | Bearer         | –       | Enviar e-mail de verificação (link + OTP)               |
-| `GET`   | `/users/verify-email`            | –              | –       | Verificar e-mail via link token (`?token=`)             |
-| `POST`  | `/users/verify-email/otp`        | Bearer         | –       | Verificar e-mail via código OTP                         |
-| `GET`   | `/users/confirm-email-change`    | –              | –       | Confirmar troca de e-mail via link token (`?token=`)    |
-| `POST`  | `/users/resend-verification`     | Bearer         | –       | Reenviar e-mail de verificação                          |
-| `POST`  | `/users/forgot-password`         | –              | –       | Solicitar reset; sempre `202` (rate limit)              |
-| `POST`  | `/users/reset-password`          | –              | –       | Resetar via link token ou email + OTP (rate limit)      |
-| `GET`   | `/users`                         | Bearer         | `ADMIN` | Listar usuários (paginado, 20/página)                   |
-| `GET`   | `/users/:userId`                 | Bearer         | `ADMIN` | Buscar um usuário por id                                |
-| `PATCH` | `/users/:userId`                 | Bearer         | `ADMIN` | Editar usuário (username/email/role/is_verified)        |
+> A coluna **Guard** é a tela + ação de controle de acesso aplicada pelo
+> `requireScreen` (`ADMIN` sempre ignora). `—` significa só autenticação (ou
+> público quando Auth é `–`).
 
-> O JWT carrega um claim `role`, mas a **autorização lê o papel do banco** (por
-> id do usuário), não do token. Promover ou rebaixar passa a valer já na próxima
-> requisição — sem novo login. O `GET /auth/me` também retorna o `role` lido
-> fresh do banco.
+| Método   | Rota                             | Auth           | Guard (tela · ação)                | Descrição                                                   |
+| -------- | -------------------------------- | -------------- | ---------------------------------- | ----------------------------------------------------------- |
+| `GET`    | `/hello`                         | –              | –                                  | Healthcheck                                                 |
+| `POST`   | `/users`                         | –              | –                                  | Cadastrar usuário (com rate limit)                          |
+| `POST`   | `/auth/login`                    | –              | –                                  | Login → access token + cookie de refresh (rate limit)       |
+| `PATCH`  | `/auth/refresh`                  | refresh cookie | –                                  | Rotacionar o access token                                   |
+| `GET`    | `/auth/me`                       | Bearer         | –                                  | Perfil do usuário autenticado                               |
+| `POST`   | `/auth/logout`                   | Bearer         | –                                  | Revogar o token atual (denylist)                            |
+| `PATCH`  | `/auth/me`                       | Bearer         | –                                  | Editar o próprio username / definir `default_screen_key`    |
+| `POST`   | `/auth/me/email`                 | Bearer         | –                                  | Solicitar troca do próprio e-mail (confirma no novo)        |
+| `POST`   | `/auth/me/email/confirm`         | Bearer         | –                                  | Confirmar troca do próprio e-mail via OTP                   |
+| `GET`    | `/me/permissions`                | Bearer         | –                                  | Permissões efetivas: `role`, `screens`, `menu`, tela padrão |
+| `GET`    | `/gyms/search`                   | Bearer         | –                                  | Buscar academias por nome                                   |
+| `GET`    | `/gyms/nearby`                   | Bearer         | –                                  | Academias próximas a uma coordenada                         |
+| `POST`   | `/gyms`                          | Bearer         | `gym.gyms` · create                | Cadastrar academia                                          |
+| `PATCH`  | `/gyms/:gymId`                   | Bearer         | `gym.gyms` · edit                  | Editar academia (título/descrição/telefone)                 |
+| `GET`    | `/check-ins/history`             | Bearer         | –                                  | Histórico de check-ins paginado                             |
+| `GET`    | `/check-ins/metrics`             | Bearer         | –                                  | Total de check-ins                                          |
+| `POST`   | `/gyms/:gymId/check-ins`         | Bearer         | –                                  | Fazer check-in (`400` longe demais · `409` já fez hoje)     |
+| `PATCH`  | `/check-ins/:checkInId/validate` | Bearer         | `gym.validations` · create         | Validar check-in (`409` fora da janela de 20 min)           |
+| `POST`   | `/users/send-verification`       | Bearer         | –                                  | Enviar e-mail de verificação (link + OTP)                   |
+| `GET`    | `/users/verify-email`            | –              | –                                  | Verificar e-mail via link token (`?token=`)                 |
+| `POST`   | `/users/verify-email/otp`        | Bearer         | –                                  | Verificar e-mail via código OTP                             |
+| `GET`    | `/users/confirm-email-change`    | –              | –                                  | Confirmar troca de e-mail via link token (`?token=`)        |
+| `POST`   | `/users/resend-verification`     | Bearer         | –                                  | Reenviar e-mail de verificação                              |
+| `POST`   | `/users/forgot-password`         | –              | –                                  | Solicitar reset; sempre `202` (rate limit)                  |
+| `POST`   | `/users/reset-password`          | –              | –                                  | Resetar via link token ou email + OTP (rate limit)          |
+| `GET`    | `/users`                         | Bearer         | `access-control.users` · view      | Listar usuários (paginado, 20/página)                       |
+| `GET`    | `/users/:userId`                 | Bearer         | `access-control.users` · view      | Buscar um usuário por id                                    |
+| `PATCH`  | `/users/:userId`                 | Bearer         | `access-control.users` · edit      | Editar usuário (username/email/role/is_verified/is_active)  |
+| `GET`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · view      | Listar os perfis atribuídos a um usuário                    |
+| `PUT`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · edit      | Substituir as atribuições de perfil de um usuário           |
+| `GET`    | `/modules`                       | Bearer         | `access-control.modules` · view    | Listar módulos                                              |
+| `POST`   | `/modules`                       | Bearer         | `access-control.modules` · create  | Criar um módulo                                             |
+| `PATCH`  | `/modules/:id`                   | Bearer         | `access-control.modules` · edit    | Editar um módulo                                            |
+| `DELETE` | `/modules/:id`                   | Bearer         | `access-control.modules` · delete  | Excluir um módulo (`409` se ainda tiver telas)              |
+| `GET`    | `/screens`                       | Bearer         | `access-control.screens` · view    | Listar telas                                                |
+| `POST`   | `/screens`                       | Bearer         | `access-control.screens` · create  | Criar uma tela                                              |
+| `PATCH`  | `/screens/:id`                   | Bearer         | `access-control.screens` · edit    | Editar uma tela                                             |
+| `DELETE` | `/screens/:id`                   | Bearer         | `access-control.screens` · delete  | Excluir uma tela                                            |
+| `GET`    | `/profiles`                      | Bearer         | `access-control.profiles` · view   | Listar perfis                                               |
+| `GET`    | `/profiles/:id`                  | Bearer         | `access-control.profiles` · view   | Buscar um perfil com seus grants                            |
+| `POST`   | `/profiles`                      | Bearer         | `access-control.profiles` · create | Criar um perfil                                             |
+| `PATCH`  | `/profiles/:id`                  | Bearer         | `access-control.profiles` · edit   | Editar um perfil (`409` em perfil de sistema)               |
+| `DELETE` | `/profiles/:id`                  | Bearer         | `access-control.profiles` · delete | Excluir um perfil (`409` em perfil de sistema)              |
+| `PUT`    | `/profiles/:id/screens`          | Bearer         | `access-control.profiles` · edit   | Substituir os grants de tela de um perfil                   |
+
+> O JWT carrega um claim `role`, mas a **autorização lê o papel (e os grants de
+> tela) do banco** (por id do usuário), não do token. Uma promoção/rebaixamento,
+> uma mudança de grant ou uma desativação passa a valer já na próxima requisição
+> — sem novo login. O `GET /auth/me` também retorna o `role` lido fresh do banco,
+> e o `GET /me/permissions` retorna as permissões efetivas por tela que o helper
+> `can()` do frontend consome.
 
 ### Exemplos de resposta
 
@@ -180,13 +223,44 @@ token):
 		"id": "3fa2...c9",
 		"username": "fulano",
 		"is_verified": false,
-		"role": "MEMBER"
+		"role": "USER"
 	}
 }
 ```
 
+`GET /me/permissions` → `200` (alimenta a sidebar e o gate `can()` da UI; um
+`ADMIN` recebe todas as telas com todas as ações `true`):
+
+```json
+{
+	"role": "USER",
+	"screens": [
+		{
+			"screen_key": "gym.check-in",
+			"view": true,
+			"create": true,
+			"edit": false,
+			"delete": false
+		}
+	],
+	"menu": [
+		{
+			"screen_key": "gym.dashboard",
+			"screen_name": "Dashboard",
+			"path": "/",
+			"screen_order": 0,
+			"module_key": "gym",
+			"module_name": "Gym",
+			"module_order": 1
+		}
+	],
+	"default_screen_key": "gym.dashboard"
+}
+```
+
 Uma validação com falha retorna `400` com os problemas; um token inválido ou
-revogado retorna `401`; a ausência do papel `ADMIN` retorna `403`.
+revogado (ou uma conta desativada) retorna `401`; a falta do papel/grant de tela
+exigido retorna `403`.
 
 > As **regras de validação de entrada** (tamanhos, formatos, `username`/
 > `identifier`, `MIN_TEXT_LENGTH`) são definidas pelo schema Zod de cada rota.
@@ -262,6 +336,70 @@ Não existe endpoint para criar admins. O ADMIN único é provisionado pelo
 pnpm seeddb
 ```
 
+## Controle de acesso
+
+A autorização tem duas camadas: o `Role` grosso (`ADMIN` ignora tudo) e um modelo
+dinâmico de grants em nível de tela. Um `Module` agrupa `Screen`s; um `Profile`
+reúne grants de ação por tela (`can_view`/`can_create`/`can_edit`/`can_delete`) e
+é atribuído a usuários (`UserProfile`). O guard de rota
+`requireScreen(screenKey, action)` lê as permissões **efetivas** do chamador (o OR
+de todos os grants dos seus perfis) do banco a cada requisição, então uma mudança
+de grant ou de perfil vale na próxima requisição — sem relogar. Um usuário com
+`is_active=false` é cortado na próxima requisição (e não consegue logar).
+
+`GET /me/permissions` retorna `{ role, screens, menu, default_screen_key }`:
+`screens` são as ações efetivas por tela, `menu` são as telas navegáveis visíveis
+(para o frontend montar a sidebar sem as chamadas admin-only `/modules` +
+`/screens`), e `default_screen_key` resolve como **override do usuário**
+(`User.default_screen_key`, definido via `PATCH /auth/me`, se ainda visível) → o
+grant default do perfil (`ProfileScreen.is_default`) com a menor (ordem de módulo,
+ordem de tela) que o usuário pode ver → `null`.
+
+O `pnpm seeddb` provisiona o catálogo (módulos `access-control`, `gym`; suas
+telas) mais três perfis de **sistema** (protegidos de exclusão / renomear key) e
+um **usuário demo** por perfil. Os usuários demo têm papel `USER` e a senha é a
+mesma `ADMIN_PASSWORD`:
+
+| Username  | Perfil        | Pode acessar                                                       |
+| --------- | ------------- | ------------------------------------------------------------------ |
+| `johndoe` | `gym-member`  | dashboard, check-in (criar), academias, histórico                  |
+| `manager` | `gym-manager` | as telas de member + editar academias, validar check-ins, usuários |
+| `support` | `support`     | gerenciar perfis (total), editar usuários, ver telas               |
+
+O perfil `gym-member` é o `is_default` — é anexado automaticamente a toda conta
+nova criada via `POST /users`.
+
+Smoke test (DB limpa, `pnpm seeddb` executado):
+
+```sh
+BASE="http://127.0.0.1:3333"
+
+# Loga como um usuário demo (senha = ADMIN_PASSWORD, ex. Admin@12345)
+MANAGER_TOKEN=$(curl -s -X POST "$BASE/auth/login" -H "Content-Type: application/json" \
+  -d '{"identifier":"manager","password":"Admin@12345"}' | \
+  python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+
+# Permissões efetivas + menu da sidebar + tela inicial padrão
+curl -s "$BASE/me/permissions" -H "Authorization: Bearer $MANAGER_TOKEN" | python3 -m json.tool
+
+# Rota guarded que o manager PODE acessar (tem o grant create de gym.gyms) -> 201
+curl -s -o /dev/null -w "POST /gyms -> %{http_code}\n" -X POST "$BASE/gyms" \
+  -H "Content-Type: application/json" -H "Authorization: Bearer $MANAGER_TOKEN" \
+  -d '{"title":"Academia SOLID","description":"x","phone":"9999-8888","latitude":-25.46,"longitude":-49.30}'
+
+# Rota guarded que o manager NÃO pode acessar (sem grant access-control.modules) -> 403
+curl -s -o /dev/null -w "GET /modules -> %{http_code}\n" "$BASE/modules" \
+  -H "Authorization: Bearer $MANAGER_TOKEN"
+
+# Loga como um member: a mesma chamada /modules dá 403, e POST /gyms também
+MEMBER_TOKEN=$(curl -s -X POST "$BASE/auth/login" -H "Content-Type: application/json" \
+  -d '{"identifier":"johndoe","password":"Admin@12345"}' | \
+  python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+curl -s -o /dev/null -w "member POST /gyms -> %{http_code}\n" -X POST "$BASE/gyms" \
+  -H "Content-Type: application/json" -H "Authorization: Bearer $MEMBER_TOKEN" \
+  -d '{"title":"x","latitude":0,"longitude":0}'   # espera 403
+```
+
 ## Testes
 
 - `pnpm test` — testes unitários (use-cases, repositórios in-memory, sem banco).
@@ -296,7 +434,7 @@ BASE="http://127.0.0.1:3333"
 # 1. Healthcheck
 echo "=== 1. GET /hello ===" && curl -s "$BASE/hello" && echo
 
-# 2. Cadastrar um MEMBER normal (username 3-30 [a-z0-9_]; senha: mín 8 + maiúscula/minúscula/número/especial)
+# 2. Cadastrar um USER normal (username 3-30 [a-z0-9_]; senha: mín 8 + maiúscula/minúscula/número/especial)
 echo -e "\n=== 2. POST /users ===" && \
 MEMBER_ID=$(curl -s -X POST "$BASE/users" -H "Content-Type: application/json" \
   -d '{"username":"fulano","email":"fulano@email.com","password":"Fulano@123"}' | \
@@ -323,8 +461,8 @@ for i in 1 2 3 4 5 6; do
   echo "Tentativa $i: $STATUS"
 done
 
-# 3. Login como MEMBER por USERNAME (identifier aceita e-mail OU username)
-echo -e "\n=== 3. POST /auth/login (member, por username) ===" && \
+# 3. Login como USER por USERNAME (identifier aceita e-mail OU username)
+echo -e "\n=== 3. POST /auth/login (user, por username) ===" && \
 TOKEN=$(curl -s -c /tmp/cookies.txt -X POST "$BASE/auth/login" \
   -H "Content-Type: application/json" \
   -d '{"identifier":"fulano","password":"Fulano@123"}' | \
@@ -339,8 +477,8 @@ curl -s "$BASE/auth/me" -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
 echo -e "\n=== 5. PATCH /auth/refresh ===" && \
 curl -s -b /tmp/cookies.txt -c /tmp/cookies.txt -X PATCH "$BASE/auth/refresh" | python3 -m json.tool
 
-# 6. Criar academia como MEMBER -> esperado 403 (papel ADMIN obrigatório)
-echo -e "\n=== 6. POST /gyms (esperado 403 - MEMBER) ===" && \
+# 6. Criar academia como USER recém-criado -> esperado 403 (sem o grant create de gym.gyms)
+echo -e "\n=== 6. POST /gyms (esperado 403 - USER sem grant) ===" && \
 curl -s -X POST "$BASE/gyms" -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"title":"Academia Teste","description":"Teste","phone":"9999-8888","latitude":-25.4677004,"longitude":-49.304584}' | \
@@ -450,8 +588,8 @@ curl -s -X PATCH "$BASE/auth/me" -H "Content-Type: application/json" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -d '{"username":"admin_renomeado"}' | python3 -m json.tool
 
-# 15. Admin promove o member a ADMIN (PATCH /users/:userId) -> esperado 200
-echo -e "\n=== 15. PATCH /users/:userId (ADMIN promove member - esperado 200) ===" && \
+# 15. Admin promove o usuário a ADMIN (PATCH /users/:userId) -> esperado 200
+echo -e "\n=== 15. PATCH /users/:userId (ADMIN promove usuário - esperado 200) ===" && \
 curl -s -X PATCH "$BASE/users/$MEMBER_ID" -H "Content-Type: application/json" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -d '{"role":"ADMIN"}' | python3 -m json.tool

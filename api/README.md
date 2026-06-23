@@ -24,8 +24,19 @@ layer, CI/CD and operational concerns) see:
   interfaces with both Prisma and in-memory implementations.
 - **JWT auth with refresh tokens** — short-lived access token plus an
   httpOnly refresh cookie.
-- **RBAC** — `MEMBER` / `ADMIN` roles enforced per route; the role is read from
-  the database at check time, never trusted from the JWT claim.
+- **RBAC** — `ADMIN` / `USER` roles plus a dynamic, screen-level access-control
+  layer enforced per route; permissions are read from the database at check time,
+  never trusted from the JWT claim.
+- **Access control (RBAC screens & profiles)** — `Module`s group `Screen`s; a
+  `Profile` bundles per-screen action grants (view/create/edit/delete) and is
+  assigned to users. The `requireScreen(screenKey, action)` guard reads the
+  caller's effective permissions from the DB on every request; `ADMIN` bypasses
+  every check. `GET /me/permissions` returns the user's effective screens, a
+  sidebar `menu` catalog and the resolved default landing screen. Deactivating a
+  user (`is_active=false`) cuts them off on their next request. Admin CRUD for
+  modules/screens/profiles/users plus profile assignment lives behind the
+  `access-control.*` screens; seeded `is_system` profiles are protected and the
+  `is_default` profile auto-attaches on registration.
 - **Token revocation & rotation** — logout revokes both the access and the
   refresh token; refresh tokens are single-use (rotated on every refresh) via a
   hybrid (in-memory + database) `jti` denylist.
@@ -49,11 +60,12 @@ layer, CI/CD and operational concerns) see:
   hashes, single-use and attempt-capped, and a successful reset triggers a
   global logout.
 - **Account management** — admins list and edit users
-  (`username`/`email`/`role`/`is_verified`) and edit gyms; a user edits their own
-  `username` and changes their own email with confirmation (**pattern A**: the
-  proven address stays until the new one is confirmed by link/OTP). An admin
-  email change unverifies the account and sends a password reset to the new
-  address; an admin can never demote themselves (always ≥1 admin).
+  (`username`/`email`/`role`/`is_verified`/`is_active`) and edit gyms; a user
+  edits their own `username` (and `default_screen_key`) and changes their own
+  email with confirmation (**pattern A**: the proven address stays until the new
+  one is confirmed by link/OTP). An admin email change unverifies the account and
+  sends a password reset to the new address; an admin can never demote nor
+  deactivate themselves (always ≥1 usable admin).
 - **Event-loop protection** — `@fastify/under-pressure` returns `503`
   automatically when event-loop lag or heap usage exceeds configured thresholds.
 - **Tested** — unit suite (no DB) and isolated-database e2e suite, both in CI.
@@ -70,9 +82,17 @@ cp .env.example .env  # then fill in the values (see Environment variables)
 pnpm install
 pnpm compose:up       # start MySQL in Docker
 pnpm migrate          # run migrations
-pnpm seeddb    # create the ADMIN user from ADMIN_* env vars
+pnpm seeddb    # create the ADMIN user + access-control catalog & demo users
 pnpm dev              # start dev server
 ```
+
+> The access-control feature ships four migrations on top of the base schema:
+> `rename_role_member_to_user` (renames the `Role` enum value `MEMBER` → `USER`),
+> `add_access_control` (the `Module`/`Screen`/`Profile`/`ProfileScreen`/
+> `UserProfile` tables), `add_user_is_active` (the `User.is_active` flag) and
+> `add_default_landing_screen` (the `User.default_screen_key` column). `pnpm seeddb`
+> also seeds the module/screen catalog, three system profiles and three demo
+> users (see _Access control_ below).
 
 ## Scripts
 
@@ -125,40 +145,63 @@ boot if any variable is invalid (Zod validation in `src/env`).
 
 ## API routes
 
-| Method  | Route                            | Auth           | Role    | Description                                                        |
-| ------- | -------------------------------- | -------------- | ------- | ------------------------------------------------------------------ |
-| `GET`   | `/hello`                         | –              | –       | Healthcheck                                                        |
-| `POST`  | `/users`                         | –              | –       | Register a user (rate-limited)                                     |
-| `POST`  | `/auth/login`                    | –              | –       | Login → access token + refresh cookie (rate-limited)               |
-| `PATCH` | `/auth/refresh`                  | refresh cookie | –       | Rotate the access token                                            |
-| `GET`   | `/auth/me`                       | Bearer         | –       | Authenticated user profile                                         |
-| `POST`  | `/auth/logout`                   | Bearer         | –       | Revoke the current token (denylist)                                |
-| `PATCH` | `/auth/me`                       | Bearer         | –       | Edit own username                                                  |
-| `POST`  | `/auth/me/email`                 | Bearer         | –       | Request own email change (confirmation to new email)               |
-| `POST`  | `/auth/me/email/confirm`         | Bearer         | –       | Confirm own email change via OTP                                   |
-| `GET`   | `/gyms/search`                   | Bearer         | –       | Search gyms by title                                               |
-| `GET`   | `/gyms/nearby`                   | Bearer         | –       | Gyms near a coordinate                                             |
-| `POST`  | `/gyms`                          | Bearer         | `ADMIN` | Create a gym                                                       |
-| `PATCH` | `/gyms/:gymId`                   | Bearer         | `ADMIN` | Edit a gym (title/description/phone)                               |
-| `GET`   | `/check-ins/history`             | Bearer         | –       | Paginated check-in history                                         |
-| `GET`   | `/check-ins/metrics`             | Bearer         | –       | Total check-ins count                                              |
-| `POST`  | `/gyms/:gymId/check-ins`         | Bearer         | –       | Create a check-in (`400` too far · `409` already checked in today) |
-| `PATCH` | `/check-ins/:checkInId/validate` | Bearer         | `ADMIN` | Validate a check-in (`409` past the 20-min window)                 |
-| `POST`  | `/users/send-verification`       | Bearer         | –       | Send verification email (link + OTP)                               |
-| `GET`   | `/users/verify-email`            | –              | –       | Verify email via link token (`?token=`)                            |
-| `POST`  | `/users/verify-email/otp`        | Bearer         | –       | Verify email via OTP code                                          |
-| `GET`   | `/users/confirm-email-change`    | –              | –       | Confirm an email change via link token (`?token=`)                 |
-| `POST`  | `/users/resend-verification`     | Bearer         | –       | Resend verification email                                          |
-| `POST`  | `/users/forgot-password`         | –              | –       | Request a reset; always `202` (rate-limited)                       |
-| `POST`  | `/users/reset-password`          | –              | –       | Reset via link token or email + OTP (rate-limited)                 |
-| `GET`   | `/users`                         | Bearer         | `ADMIN` | List users (paginated, 20/page)                                    |
-| `GET`   | `/users/:userId`                 | Bearer         | `ADMIN` | Fetch a single user by id                                          |
-| `PATCH` | `/users/:userId`                 | Bearer         | `ADMIN` | Edit a user (username/email/role/is_verified)                      |
+> The **Guard** column is the access-control screen + action enforced by
+> `requireScreen` (`ADMIN` always bypasses). `—` means authentication only (or
+> public when Auth is `–`).
 
-> The JWT carries a `role` claim, but **authorization reads the role from the
-> database** (by user id), not from the token. A promotion or demotion takes
-> effect on the very next request — no re-login needed. `GET /auth/me` likewise
-> returns the `role` read fresh from the DB.
+| Method   | Route                            | Auth           | Guard (screen · action)            | Description                                                        |
+| -------- | -------------------------------- | -------------- | ---------------------------------- | ------------------------------------------------------------------ |
+| `GET`    | `/hello`                         | –              | –                                  | Healthcheck                                                        |
+| `POST`   | `/users`                         | –              | –                                  | Register a user (rate-limited)                                     |
+| `POST`   | `/auth/login`                    | –              | –                                  | Login → access token + refresh cookie (rate-limited)               |
+| `PATCH`  | `/auth/refresh`                  | refresh cookie | –                                  | Rotate the access token                                            |
+| `GET`    | `/auth/me`                       | Bearer         | –                                  | Authenticated user profile                                         |
+| `POST`   | `/auth/logout`                   | Bearer         | –                                  | Revoke the current token (denylist)                                |
+| `PATCH`  | `/auth/me`                       | Bearer         | –                                  | Edit own username / set `default_screen_key`                       |
+| `POST`   | `/auth/me/email`                 | Bearer         | –                                  | Request own email change (confirmation to new email)               |
+| `POST`   | `/auth/me/email/confirm`         | Bearer         | –                                  | Confirm own email change via OTP                                   |
+| `GET`    | `/me/permissions`                | Bearer         | –                                  | Effective permissions: `role`, `screens`, `menu`, default screen   |
+| `GET`    | `/gyms/search`                   | Bearer         | –                                  | Search gyms by title                                               |
+| `GET`    | `/gyms/nearby`                   | Bearer         | –                                  | Gyms near a coordinate                                             |
+| `POST`   | `/gyms`                          | Bearer         | `gym.gyms` · create                | Create a gym                                                       |
+| `PATCH`  | `/gyms/:gymId`                   | Bearer         | `gym.gyms` · edit                  | Edit a gym (title/description/phone)                               |
+| `GET`    | `/check-ins/history`             | Bearer         | –                                  | Paginated check-in history                                         |
+| `GET`    | `/check-ins/metrics`             | Bearer         | –                                  | Total check-ins count                                              |
+| `POST`   | `/gyms/:gymId/check-ins`         | Bearer         | –                                  | Create a check-in (`400` too far · `409` already checked in today) |
+| `PATCH`  | `/check-ins/:checkInId/validate` | Bearer         | `gym.validations` · create         | Validate a check-in (`409` past the 20-min window)                 |
+| `POST`   | `/users/send-verification`       | Bearer         | –                                  | Send verification email (link + OTP)                               |
+| `GET`    | `/users/verify-email`            | –              | –                                  | Verify email via link token (`?token=`)                            |
+| `POST`   | `/users/verify-email/otp`        | Bearer         | –                                  | Verify email via OTP code                                          |
+| `GET`    | `/users/confirm-email-change`    | –              | –                                  | Confirm an email change via link token (`?token=`)                 |
+| `POST`   | `/users/resend-verification`     | Bearer         | –                                  | Resend verification email                                          |
+| `POST`   | `/users/forgot-password`         | –              | –                                  | Request a reset; always `202` (rate-limited)                       |
+| `POST`   | `/users/reset-password`          | –              | –                                  | Reset via link token or email + OTP (rate-limited)                 |
+| `GET`    | `/users`                         | Bearer         | `access-control.users` · view      | List users (paginated, 20/page)                                    |
+| `GET`    | `/users/:userId`                 | Bearer         | `access-control.users` · view      | Fetch a single user by id                                          |
+| `PATCH`  | `/users/:userId`                 | Bearer         | `access-control.users` · edit      | Edit a user (username/email/role/is_verified/is_active)            |
+| `GET`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · view      | List the profiles assigned to a user                               |
+| `PUT`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · edit      | Replace a user's profile assignments                               |
+| `GET`    | `/modules`                       | Bearer         | `access-control.modules` · view    | List modules                                                       |
+| `POST`   | `/modules`                       | Bearer         | `access-control.modules` · create  | Create a module                                                    |
+| `PATCH`  | `/modules/:id`                   | Bearer         | `access-control.modules` · edit    | Edit a module                                                      |
+| `DELETE` | `/modules/:id`                   | Bearer         | `access-control.modules` · delete  | Delete a module (`409` if it still has screens)                    |
+| `GET`    | `/screens`                       | Bearer         | `access-control.screens` · view    | List screens                                                       |
+| `POST`   | `/screens`                       | Bearer         | `access-control.screens` · create  | Create a screen                                                    |
+| `PATCH`  | `/screens/:id`                   | Bearer         | `access-control.screens` · edit    | Edit a screen                                                      |
+| `DELETE` | `/screens/:id`                   | Bearer         | `access-control.screens` · delete  | Delete a screen                                                    |
+| `GET`    | `/profiles`                      | Bearer         | `access-control.profiles` · view   | List profiles                                                      |
+| `GET`    | `/profiles/:id`                  | Bearer         | `access-control.profiles` · view   | Fetch a profile with its grants                                    |
+| `POST`   | `/profiles`                      | Bearer         | `access-control.profiles` · create | Create a profile                                                   |
+| `PATCH`  | `/profiles/:id`                  | Bearer         | `access-control.profiles` · edit   | Edit a profile (`409` on a system profile)                         |
+| `DELETE` | `/profiles/:id`                  | Bearer         | `access-control.profiles` · delete | Delete a profile (`409` on a system profile)                       |
+| `PUT`    | `/profiles/:id/screens`          | Bearer         | `access-control.profiles` · edit   | Replace a profile's screen grants                                  |
+
+> The JWT carries a `role` claim, but **authorization reads the role (and the
+> screen grants) from the database** (by user id), not from the token. A
+> promotion/demotion, a grant change, or a deactivation takes effect on the very
+> next request — no re-login needed. `GET /auth/me` likewise returns the `role`
+> read fresh from the DB, and `GET /me/permissions` returns the effective
+> per-screen permissions the frontend `can()` helper consumes.
 
 ### Example responses
 
@@ -177,13 +220,44 @@ drives RBAC UI — both read fresh from the DB, not the token):
 		"id": "3fa2...c9",
 		"username": "fulano",
 		"is_verified": false,
-		"role": "MEMBER"
+		"role": "USER"
 	}
 }
 ```
 
+`GET /me/permissions` → `200` (drives the sidebar and the `can()` UI gate; an
+`ADMIN` gets every screen with all actions `true`):
+
+```json
+{
+	"role": "USER",
+	"screens": [
+		{
+			"screen_key": "gym.check-in",
+			"view": true,
+			"create": true,
+			"edit": false,
+			"delete": false
+		}
+	],
+	"menu": [
+		{
+			"screen_key": "gym.dashboard",
+			"screen_name": "Dashboard",
+			"path": "/",
+			"screen_order": 0,
+			"module_key": "gym",
+			"module_name": "Gym",
+			"module_order": 1
+		}
+	],
+	"default_screen_key": "gym.dashboard"
+}
+```
+
 A failed validation returns `400` with the issues; an unauthorized or revoked
-token returns `401`; a missing `ADMIN` role returns `403`.
+token (or a deactivated account) returns `401`; lacking the required role/screen
+grant returns `403`.
 
 > **Input validation rules** (field lengths, formats, `username`/`identifier`
 > shapes, `MIN_TEXT_LENGTH`) are defined by each route's Zod schema. The Zod
@@ -259,6 +333,70 @@ There is no endpoint to create admins. The single ADMIN is provisioned by the
 pnpm seeddb
 ```
 
+## Access control
+
+Authorization has two layers: the coarse `Role` (`ADMIN` bypasses everything) and
+a dynamic, screen-level grant model. A `Module` groups `Screen`s; a `Profile`
+bundles per-screen action grants (`can_view`/`can_create`/`can_edit`/
+`can_delete`) and is assigned to users (`UserProfile`). The
+`requireScreen(screenKey, action)` route guard reads the caller's **effective**
+permissions (the OR of all their profile grants) from the DB on every request, so
+a grant or profile change applies on the next request — no re-login. A user with
+`is_active=false` is cut off on their next request (and can't log in).
+
+`GET /me/permissions` returns `{ role, screens, menu, default_screen_key }`:
+`screens` is the effective per-screen actions, `menu` is the viewable navigable
+screens (so the frontend builds its sidebar without the admin-only `/modules` +
+`/screens` calls), and `default_screen_key` resolves as **user override**
+(`User.default_screen_key`, set via `PATCH /auth/me`, if still viewable) → the
+profile-default grant (`ProfileScreen.is_default`) with the smallest (module
+order, screen order) the user can view → `null`.
+
+`pnpm seeddb` provisions the catalog (modules `access-control`, `gym`; their
+screens) plus three **system** profiles (protected from delete / key rename) and
+one **demo user** per profile. The demo users have role `USER` and their password
+is the same `ADMIN_PASSWORD`:
+
+| Username  | Profile       | Can reach                                                 |
+| --------- | ------------- | --------------------------------------------------------- |
+| `johndoe` | `gym-member`  | dashboard, check-in (create), gyms, history               |
+| `manager` | `gym-manager` | the member screens + edit gyms, validate check-ins, users |
+| `support` | `support`     | manage profiles (full), edit users, view screens          |
+
+The `gym-member` profile is the `is_default` one — it is auto-attached to every
+new account created via `POST /users`.
+
+Smoke test (clean DB, `pnpm seeddb` run):
+
+```sh
+BASE="http://127.0.0.1:3333"
+
+# Sign in as a demo user (password = ADMIN_PASSWORD, e.g. Admin@12345)
+MANAGER_TOKEN=$(curl -s -X POST "$BASE/auth/login" -H "Content-Type: application/json" \
+  -d '{"identifier":"manager","password":"Admin@12345"}' | \
+  python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+
+# Effective permissions + sidebar menu + default landing screen
+curl -s "$BASE/me/permissions" -H "Authorization: Bearer $MANAGER_TOKEN" | python3 -m json.tool
+
+# Guarded route the manager CAN reach (has the gym.gyms create grant) -> 201
+curl -s -o /dev/null -w "POST /gyms -> %{http_code}\n" -X POST "$BASE/gyms" \
+  -H "Content-Type: application/json" -H "Authorization: Bearer $MANAGER_TOKEN" \
+  -d '{"title":"Academia SOLID","description":"x","phone":"9999-8888","latitude":-25.46,"longitude":-49.30}'
+
+# Guarded route the manager CANNOT reach (no access-control.modules grant) -> 403
+curl -s -o /dev/null -w "GET /modules -> %{http_code}\n" "$BASE/modules" \
+  -H "Authorization: Bearer $MANAGER_TOKEN"
+
+# Sign in as a member: the same /modules call is 403, and so is POST /gyms
+MEMBER_TOKEN=$(curl -s -X POST "$BASE/auth/login" -H "Content-Type: application/json" \
+  -d '{"identifier":"johndoe","password":"Admin@12345"}' | \
+  python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+curl -s -o /dev/null -w "member POST /gyms -> %{http_code}\n" -X POST "$BASE/gyms" \
+  -H "Content-Type: application/json" -H "Authorization: Bearer $MEMBER_TOKEN" \
+  -d '{"title":"x","latitude":0,"longitude":0}'   # expect 403
+```
+
 ## Tests
 
 - `pnpm test` — unit tests (use-cases, in-memory repositories, no database).
@@ -292,7 +430,7 @@ BASE="http://127.0.0.1:3333"
 # 1. Healthcheck
 echo "=== 1. GET /hello ===" && curl -s "$BASE/hello" && echo
 
-# 2. Register a regular MEMBER (username 3-30 [a-z0-9_]; password: min 8 + upper/lower/number/special)
+# 2. Register a regular USER (username 3-30 [a-z0-9_]; password: min 8 + upper/lower/number/special)
 echo -e "\n=== 2. POST /users ===" && \
 MEMBER_ID=$(curl -s -X POST "$BASE/users" -H "Content-Type: application/json" \
   -d '{"username":"fulano","email":"fulano@email.com","password":"Fulano@123"}' | \
@@ -319,8 +457,8 @@ for i in 1 2 3 4 5 6; do
   echo "Attempt $i: $STATUS"
 done
 
-# 3. Login as MEMBER by USERNAME (identifier accepts email OR username)
-echo -e "\n=== 3. POST /auth/login (member, by username) ===" && \
+# 3. Login as USER by USERNAME (identifier accepts email OR username)
+echo -e "\n=== 3. POST /auth/login (user, by username) ===" && \
 TOKEN=$(curl -s -c /tmp/cookies.txt -X POST "$BASE/auth/login" \
   -H "Content-Type: application/json" \
   -d '{"identifier":"fulano","password":"Fulano@123"}' | \
@@ -335,8 +473,8 @@ curl -s "$BASE/auth/me" -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
 echo -e "\n=== 5. PATCH /auth/refresh ===" && \
 curl -s -b /tmp/cookies.txt -c /tmp/cookies.txt -X PATCH "$BASE/auth/refresh" | python3 -m json.tool
 
-# 6. Create a gym as MEMBER -> expected 403 (role ADMIN required)
-echo -e "\n=== 6. POST /gyms (expected 403 - MEMBER) ===" && \
+# 6. Create a gym as a fresh USER -> expected 403 (lacks the gym.gyms create grant)
+echo -e "\n=== 6. POST /gyms (expected 403 - USER without grant) ===" && \
 curl -s -X POST "$BASE/gyms" -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"title":"Test Gym","description":"Test","phone":"9999-8888","latitude":-25.4677004,"longitude":-49.304584}' | \
@@ -445,8 +583,8 @@ curl -s -X PATCH "$BASE/auth/me" -H "Content-Type: application/json" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -d '{"username":"admin_renamed"}' | python3 -m json.tool
 
-# 15. Admin promotes the member to ADMIN (PATCH /users/:userId) -> expected 200
-echo -e "\n=== 15. PATCH /users/:userId (ADMIN promotes member - expected 200) ===" && \
+# 15. Admin promotes the user to ADMIN (PATCH /users/:userId) -> expected 200
+echo -e "\n=== 15. PATCH /users/:userId (ADMIN promotes user - expected 200) ===" && \
 curl -s -X PATCH "$BASE/users/$MEMBER_ID" -H "Content-Type: application/json" \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -d '{"role":"ADMIN"}' | python3 -m json.tool
