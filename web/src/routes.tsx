@@ -17,6 +17,7 @@ import { ForgotPassword } from './pages/auth/forgot-password/forgot-password'
 import { ResetPassword } from './pages/auth/reset-password/reset-password'
 import { SignIn } from './pages/auth/sign-in/sign-in'
 import { VerifyEmail } from './pages/auth/verify-email/verify-email'
+import { TransferDemo } from './pages/dev/transfer-demo'
 import { NotFound } from './pages/e404'
 import { ErrorPage } from './pages/error'
 import { Register } from './pages/register/register'
@@ -52,6 +53,12 @@ export const router = createBrowserRouter([
 							},
 							// Account is self-service — every authed user.
 							{ path: 'account', element: <Account /> },
+							// TEMP (Phase 3): TransferTable playground; removed
+							// when Phase 4 wires it into Manage Profiles.
+							{
+								path: 'transfer-demo',
+								element: <TransferDemo />,
+							},
 							{
 								element: (
 									<RequireScreen
