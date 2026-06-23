@@ -115,7 +115,9 @@ export function useProfileDetailPM() {
 				queryKey: ['profile', profileId],
 			})
 			// Grants may change the current user's own menu/guards.
-			await queryClient.invalidateQueries({ queryKey: ['me-permissions'] })
+			await queryClient.invalidateQueries({
+				queryKey: ['me-permissions'],
+			})
 			navigate('/admin/profiles')
 		},
 		onError: (err) => {

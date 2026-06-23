@@ -209,7 +209,10 @@ export function UserEdit() {
 
 				{!pm.isLoading && !pm.isError && pm.user && (
 					<div className='w-full max-w-3xl'>
-						<UserProfilesCard userId={pm.user.id} />
+						<UserProfilesCard
+							userId={pm.user.id}
+							userIsAdmin={pm.user.role === 'ADMIN'}
+						/>
 					</div>
 				)}
 			</div>

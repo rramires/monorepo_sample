@@ -47,10 +47,7 @@ import { signOutMock } from './sign-out-mock'
 import { updateGymMock } from './update-gym-mock'
 import { updateProfileMock } from './update-profile-mock'
 import { updateUserMock } from './update-user-mock'
-import {
-	getUserProfilesMock,
-	setUserProfilesMock,
-} from './user-profiles-mock'
+import { getUserProfilesMock, setUserProfilesMock } from './user-profiles-mock'
 import { validateCheckInMock } from './validate-check-in-mock'
 import {
 	verifyEmailByLinkMock,

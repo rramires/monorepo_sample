@@ -41,7 +41,12 @@ export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
 		formState: { errors, isSubmitting },
 	} = useForm<ProfileForm>({
 		resolver: zodResolver(profileForm),
-		defaultValues: { key: '', name: '', description: '', is_default: false },
+		defaultValues: {
+			key: '',
+			name: '',
+			description: '',
+			is_default: false,
+		},
 	})
 
 	function onOpenChange(next: boolean) {

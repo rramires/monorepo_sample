@@ -60,7 +60,10 @@ export const createProfileMock = http.post('/profiles', async ({ request }) => {
 
 	const parsed = createProfileBodySchema.safeParse(await request.json())
 	if (!parsed.success) {
-		return HttpResponse.json({ message: 'Validation error.' }, { status: 400 })
+		return HttpResponse.json(
+			{ message: 'Validation error.' },
+			{ status: 400 },
+		)
 	}
 
 	// is_system is seed-only; user-created profiles are never system profiles.
@@ -170,7 +173,9 @@ export const setProfileScreensMock = http.put<{ id: string }>(
 			)
 		}
 
-		const parsed = setProfileScreensBodySchema.safeParse(await request.json())
+		const parsed = setProfileScreensBodySchema.safeParse(
+			await request.json(),
+		)
 		if (!parsed.success) {
 			return HttpResponse.json(
 				{ message: 'Validation error.' },

@@ -47,9 +47,14 @@ export const router = createBrowserRouter([
 								children: [{ path: 'gyms', element: <Gyms /> }],
 							},
 							{
-								element: <RequireScreen screen='gym.check-in' />,
+								element: (
+									<RequireScreen screen='gym.check-in' />
+								),
 								children: [
-									{ path: 'check-ins', element: <CheckIns /> },
+									{
+										path: 'check-ins',
+										element: <CheckIns />,
+									},
 								],
 							},
 							// Account is self-service — every authed user.

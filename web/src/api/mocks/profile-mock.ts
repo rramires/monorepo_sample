@@ -16,7 +16,8 @@ export const profileMock = http.get('/auth/me', ({ request }) => {
 	// Response is parsed through the shared contract DTO so any drift from the
 	// backend's wire shape fails loudly here. The default member's verification
 	// state is driven by the verify-email flow's in-memory toggle.
-	const is_verified = user.id === 'mock-user-id' ? isVerified() : user.is_verified
+	const is_verified =
+		user.id === 'mock-user-id' ? isVerified() : user.is_verified
 
 	return HttpResponse.json(
 		userResponseSchema.parse({

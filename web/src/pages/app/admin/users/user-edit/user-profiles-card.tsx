@@ -1,8 +1,5 @@
 import type { ProfileModel } from '@/api/profiles'
-import {
-	type TransferColumn,
-	TransferTable,
-} from '@/components/transfer-table'
+import { type TransferColumn, TransferTable } from '@/components/transfer-table'
 import { Button } from '@/components/ui/button'
 import {
 	Card,
@@ -25,7 +22,13 @@ const profileColumn: TransferColumn<ProfileModel> = {
 	),
 }
 
-export function UserProfilesCard({ userId }: { userId: string }) {
+export function UserProfilesCard({
+	userId,
+	userIsAdmin,
+}: {
+	userId: string
+	userIsAdmin: boolean
+}) {
 	const pm = useUserProfilesPM(userId)
 
 	return (
@@ -37,23 +40,37 @@ export function UserProfilesCard({ userId }: { userId: string }) {
 				</CardDescription>
 			</CardHeader>
 			<CardContent className='flex flex-col gap-4'>
-				<TransferTable
-					items={pm.profiles}
-					getRowId={(p) => p.id}
-					assignedIds={pm.assignedIds}
-					onAssignedChange={pm.setAssignedIds}
-					availableColumns={[profileColumn]}
-					assignedColumns={[profileColumn]}
-					labels={{ available: 'Available', assigned: 'Assigned' }}
-					searchable
-					getSearchText={(p) => `${p.name} ${p.key}`}
-				/>
-				{pm.canEdit && (
-					<div className='flex justify-end'>
-						<Button onClick={pm.save} disabled={pm.isSaving}>
-							Save profiles
-						</Button>
-					</div>
+				{userIsAdmin ? (
+					<p className='text-muted-foreground text-sm'>
+						All profiles and screens are assigned to the admin.
+					</p>
+				) : (
+					<>
+						<TransferTable
+							items={pm.profiles}
+							getRowId={(p) => p.id}
+							assignedIds={pm.assignedIds}
+							onAssignedChange={pm.setAssignedIds}
+							availableColumns={[profileColumn]}
+							assignedColumns={[profileColumn]}
+							labels={{
+								available: 'Available',
+								assigned: 'Assigned',
+							}}
+							searchable
+							getSearchText={(p) => `${p.name} ${p.key}`}
+						/>
+						{pm.canEdit && (
+							<div className='flex justify-end'>
+								<Button
+									onClick={pm.save}
+									disabled={pm.isSaving}
+								>
+									Save profiles
+								</Button>
+							</div>
+						)}
+					</>
 				)}
 			</CardContent>
 		</Card>

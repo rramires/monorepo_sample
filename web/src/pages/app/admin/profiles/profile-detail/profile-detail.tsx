@@ -3,10 +3,7 @@ import { Link } from 'react-router'
 
 import type { ScreenModel } from '@/api/screens'
 import { PageTitle } from '@/components/title/page-title'
-import {
-	type TransferColumn,
-	TransferTable,
-} from '@/components/transfer-table'
+import { type TransferColumn, TransferTable } from '@/components/transfer-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'

@@ -97,26 +97,27 @@ export function AdminProfiles() {
 													Grants
 												</Link>
 											</Button>
-											{pm.canDelete && !profile.isSystem && (
-												<ConfirmDialog
-													title='Delete profile'
-													description={`Delete "${profile.name}"? Users lose this profile.`}
-													confirmLabel='Delete'
-													onConfirm={() =>
-														pm.deleteProfile(
-															profile.id,
-														)
-													}
-													trigger={
-														<Button
-															variant='outline'
-															size='sm'
-														>
-															<Trash2 />
-														</Button>
-													}
-												/>
-											)}
+											{pm.canDelete &&
+												!profile.isSystem && (
+													<ConfirmDialog
+														title='Delete profile'
+														description={`Delete "${profile.name}"? Users lose this profile.`}
+														confirmLabel='Delete'
+														onConfirm={() =>
+															pm.deleteProfile(
+																profile.id,
+															)
+														}
+														trigger={
+															<Button
+																variant='outline'
+																size='sm'
+															>
+																<Trash2 />
+															</Button>
+														}
+													/>
+												)}
 										</TableCell>
 									</TableRow>
 								))}

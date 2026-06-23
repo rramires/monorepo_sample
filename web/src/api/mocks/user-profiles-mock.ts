@@ -42,7 +42,9 @@ export const setUserProfilesMock = http.put<{ id: string }>(
 			)
 		}
 
-		const parsed = assignUserProfilesBodySchema.safeParse(await request.json())
+		const parsed = assignUserProfilesBodySchema.safeParse(
+			await request.json(),
+		)
 		if (!parsed.success) {
 			return HttpResponse.json(
 				{ message: 'Validation error.' },

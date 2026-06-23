@@ -27,7 +27,10 @@ export const createModuleMock = http.post('/modules', async ({ request }) => {
 
 	const parsed = createModuleBodySchema.safeParse(await request.json())
 	if (!parsed.success) {
-		return HttpResponse.json({ message: 'Validation error.' }, { status: 400 })
+		return HttpResponse.json(
+			{ message: 'Validation error.' },
+			{ status: 400 },
+		)
 	}
 
 	const module: Module = { id: nextId(), ...parsed.data }

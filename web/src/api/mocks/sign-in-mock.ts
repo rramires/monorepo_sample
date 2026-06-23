@@ -25,8 +25,7 @@ export const signInMock = http.post<never, SignInBody>(
 		if (password === 'Password1!') {
 			const user =
 				users.find(
-					(u) =>
-						u.username === identifier || u.email === identifier,
+					(u) => u.username === identifier || u.email === identifier,
 				) ?? users.find((u) => u.id === 'mock-user-id')
 			return HttpResponse.json({ token: tokenFor(user!.id) })
 		}

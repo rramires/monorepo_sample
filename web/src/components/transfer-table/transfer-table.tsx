@@ -26,13 +26,8 @@ import { useTransferTable } from './use-transfer-table'
 // per side, so the assigned side can carry extra cells (e.g. action toggles).
 // Controlled via assignedIds / onAssignedChange.
 export function TransferTable<T>(props: TransferTableProps<T>) {
-	const {
-		availableColumns,
-		assignedColumns,
-		labels,
-		searchable,
-		getRowId,
-	} = props
+	const { availableColumns, assignedColumns, labels, searchable, getRowId } =
+		props
 	const pm = useTransferTable(props)
 	const [activeId, setActiveId] = useState<string | null>(null)
 

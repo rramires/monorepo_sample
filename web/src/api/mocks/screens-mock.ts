@@ -32,7 +32,10 @@ export const createScreenMock = http.post('/screens', async ({ request }) => {
 
 	const parsed = createScreenBodySchema.safeParse(await request.json())
 	if (!parsed.success) {
-		return HttpResponse.json({ message: 'Validation error.' }, { status: 400 })
+		return HttpResponse.json(
+			{ message: 'Validation error.' },
+			{ status: 400 },
+		)
 	}
 
 	const screen: Screen = { id: nextId(), ...parsed.data }

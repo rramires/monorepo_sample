@@ -1,9 +1,4 @@
-import type {
-	Module,
-	Profile,
-	ProfileScreen,
-	Screen,
-} from '@root/contracts'
+import type { Module, Profile, ProfileScreen, Screen } from '@root/contracts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Access-control seed — the single source of truth for the RBAC demo dataset.
