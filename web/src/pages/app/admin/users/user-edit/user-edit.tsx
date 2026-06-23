@@ -23,6 +23,7 @@ import {
 import { Switch } from '@/components/ui/switch'
 
 import { useUserEditPM } from './use-user-edit-pm'
+import { UserProfilesCard } from './user-profiles-card'
 
 export function UserEdit() {
 	const pm = useUserEditPM()
@@ -31,8 +32,8 @@ export function UserEdit() {
 		<>
 			<PageTitle title='Edit user' />
 
-			<div className='flex flex-1 justify-center p-8'>
-				<Card className='w-full max-w-lg'>
+			<div className='flex flex-1 flex-col items-center gap-6 p-8'>
+				<Card className='w-full max-w-3xl'>
 					{pm.isLoading && (
 						<CardHeader>
 							<CardTitle>Loading…</CardTitle>
@@ -205,6 +206,12 @@ export function UserEdit() {
 						</>
 					)}
 				</Card>
+
+				{!pm.isLoading && !pm.isError && pm.user && (
+					<div className='w-full max-w-3xl'>
+						<UserProfilesCard userId={pm.user.id} />
+					</div>
+				)}
 			</div>
 		</>
 	)

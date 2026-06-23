@@ -1,16 +1,19 @@
 import { useQuery } from '@tanstack/react-query'
 import {
+	Boxes,
 	Dumbbell,
 	History,
 	LayoutDashboard,
 	type LucideIcon,
+	MonitorSmartphone,
+	ShieldCheck,
 	Users,
 } from 'lucide-react'
 import { useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 
-import { getModules } from '@/api/get-modules'
-import { getScreens } from '@/api/get-screens'
+import { getModules } from '@/api/modules'
+import { getScreens } from '@/api/screens'
 import { useAuth } from '@/components/auth/auth-hooks'
 import { usePermissions } from '@/hooks/use-permissions'
 
@@ -22,6 +25,9 @@ const NAV_ENTRIES: Record<string, { icon: LucideIcon; label: string }> = {
 	'gym.dashboard': { icon: LayoutDashboard, label: 'Dashboard' },
 	'gym.gyms': { icon: Dumbbell, label: 'Gyms' },
 	'gym.check-in': { icon: History, label: 'Check-ins' },
+	'access-control.modules': { icon: Boxes, label: 'Modules' },
+	'access-control.screens': { icon: MonitorSmartphone, label: 'Screens' },
+	'access-control.profiles': { icon: ShieldCheck, label: 'Profiles' },
 	'access-control.users': { icon: Users, label: 'Users' },
 }
 
@@ -39,7 +45,7 @@ export interface NavSection {
 
 export function useAppSidebarPM() {
 	const { user, signOut, status } = useAuth()
-	const { can } = usePermissions()
+	const { can, isLoading: permsLoading } = usePermissions()
 	const navigate = useNavigate()
 	const location = useLocation()
 
@@ -91,6 +97,8 @@ export function useAppSidebarPM() {
 	return {
 		user,
 		sections,
+		isLoading:
+			permsLoading || modulesQuery.isLoading || screensQuery.isLoading,
 		pathname: location.pathname,
 		handleSignOut,
 	}

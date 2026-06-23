@@ -1,0 +1,66 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { isAxiosError } from 'axios'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+
+import { getProfiles } from '@/api/profiles'
+import { getUserProfiles, setUserProfiles } from '@/api/user-profiles'
+import { useAuth } from '@/components/auth/auth-hooks'
+import { usePermissions } from '@/hooks/use-permissions'
+
+export function useUserProfilesPM(userId: string) {
+	const queryClient = useQueryClient()
+	const { can } = usePermissions()
+	const { user } = useAuth()
+
+	const { data: profiles = [] } = useQuery({
+		queryKey: ['profiles'],
+		queryFn: getProfiles,
+	})
+	const assignedQuery = useQuery({
+		queryKey: ['user-profiles', userId],
+		queryFn: () => getUserProfiles(userId),
+		enabled: !!userId,
+	})
+
+	const [assignedIds, setAssignedIds] = useState<string[]>([])
+
+	useEffect(() => {
+		if (assignedQuery.data) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect
+			setAssignedIds(assignedQuery.data)
+		}
+	}, [assignedQuery.data])
+
+	const save = useMutation({
+		mutationFn: () => setUserProfiles(userId, assignedIds),
+		onSuccess: async () => {
+			toast.success('Profiles updated.')
+			await queryClient.invalidateQueries({
+				queryKey: ['user-profiles', userId],
+			})
+			// Editing your own profiles changes your menu/guards.
+			if (user?.id === userId) {
+				await queryClient.invalidateQueries({
+					queryKey: ['me-permissions'],
+				})
+			}
+		},
+		onError: (err) => {
+			toast.error(
+				(isAxiosError(err) && err.response?.data?.message) ||
+					'Could not update the profiles.',
+			)
+		},
+	})
+
+	return {
+		profiles,
+		assignedIds,
+		setAssignedIds,
+		isLoading: assignedQuery.isLoading,
+		canEdit: can('access-control.users', 'edit'),
+		save: () => save.mutate(),
+		isSaving: save.isPending,
+	}
+}

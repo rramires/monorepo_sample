@@ -1,4 +1,4 @@
-import { FlaskConical, GlobeCheck, LogOut, UserRoundPen } from 'lucide-react'
+import { GlobeCheck, LogOut, UserRoundPen } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { Badge } from '@/components/ui/badge'
@@ -57,29 +57,6 @@ export function AppSidebar() {
 						</SidebarGroupContent>
 					</SidebarGroup>
 				))}
-
-				{/* TEMP (Phase 3): client-side link to the TransferTable
-				    playground. Removed in Phase 4. Typing the URL would reload
-				    and drop the in-memory session in mock mode. */}
-				<SidebarGroup>
-					<SidebarGroupLabel>Dev</SidebarGroupLabel>
-					<SidebarGroupContent>
-						<SidebarMenu>
-							<SidebarMenuItem>
-								<SidebarMenuButton
-									asChild
-									isActive={pm.pathname === '/transfer-demo'}
-									tooltip='TransferTable demo'
-								>
-									<Link to='/transfer-demo'>
-										<FlaskConical />
-										<span>TransferTable demo</span>
-									</Link>
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
 			</SidebarContent>
 
 			<SidebarFooter>

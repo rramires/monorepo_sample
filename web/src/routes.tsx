@@ -1,23 +1,26 @@
 import { createBrowserRouter } from 'react-router'
 
+import { LandingRoute } from './components/auth/landing-route'
 import { ProtectedRoute } from './components/auth/protected-route'
 import { RequireScreen } from './components/auth/require-screen'
 import { AppLayout } from './pages/_layouts/app-layout/app-layout'
 import { AuthLayout } from './pages/_layouts/auth-layout'
 import { RegisterLayout } from './pages/_layouts/register-layout'
 import { Account } from './pages/app/account/account'
+import { AdminModules } from './pages/app/admin/modules/modules'
+import { ProfileDetail } from './pages/app/admin/profiles/profile-detail/profile-detail'
+import { AdminProfiles } from './pages/app/admin/profiles/profiles'
+import { AdminScreens } from './pages/app/admin/screens/screens'
 import { UserEdit } from './pages/app/admin/users/user-edit/user-edit'
 import { AdminUsers } from './pages/app/admin/users/users'
 import { CheckIns } from './pages/app/check-ins/check-ins'
 import { Gyms } from './pages/app/gyms/gyms'
-import { Home } from './pages/app/home/home'
 import { NewGym } from './pages/app/new-gym/new-gym'
 import { ConfirmEmailChange } from './pages/auth/confirm-email-change/confirm-email-change'
 import { ForgotPassword } from './pages/auth/forgot-password/forgot-password'
 import { ResetPassword } from './pages/auth/reset-password/reset-password'
 import { SignIn } from './pages/auth/sign-in/sign-in'
 import { VerifyEmail } from './pages/auth/verify-email/verify-email'
-import { TransferDemo } from './pages/dev/transfer-demo'
 import { NotFound } from './pages/e404'
 import { ErrorPage } from './pages/error'
 import { Register } from './pages/register/register'
@@ -34,13 +37,11 @@ export const router = createBrowserRouter([
 					{
 						element: <AppLayout />,
 						children: [
+							// Index lands on the dashboard or the user's first
+							// allowed screen — no Forbidden on login.
+							{ index: true, element: <LandingRoute /> },
 							// Each screen route is guarded by the same `can()`
-							// the menu uses; the backend mirrors it later
-							// (defense in depth).
-							{
-								element: <RequireScreen screen='gym.dashboard' />,
-								children: [{ index: true, element: <Home /> }],
-							},
+							// the menu uses; the backend mirrors it later.
 							{
 								element: <RequireScreen screen='gym.gyms' />,
 								children: [{ path: 'gyms', element: <Gyms /> }],
@@ -53,12 +54,6 @@ export const router = createBrowserRouter([
 							},
 							// Account is self-service — every authed user.
 							{ path: 'account', element: <Account /> },
-							// TEMP (Phase 3): TransferTable playground; removed
-							// when Phase 4 wires it into Manage Profiles.
-							{
-								path: 'transfer-demo',
-								element: <TransferDemo />,
-							},
 							{
 								element: (
 									<RequireScreen
@@ -82,6 +77,43 @@ export const router = createBrowserRouter([
 									{
 										path: 'admin/users/:userId',
 										element: <UserEdit />,
+									},
+								],
+							},
+							{
+								element: (
+									<RequireScreen screen='access-control.modules' />
+								),
+								children: [
+									{
+										path: 'admin/modules',
+										element: <AdminModules />,
+									},
+								],
+							},
+							{
+								element: (
+									<RequireScreen screen='access-control.screens' />
+								),
+								children: [
+									{
+										path: 'admin/screens',
+										element: <AdminScreens />,
+									},
+								],
+							},
+							{
+								element: (
+									<RequireScreen screen='access-control.profiles' />
+								),
+								children: [
+									{
+										path: 'admin/profiles',
+										element: <AdminProfiles />,
+									},
+									{
+										path: 'admin/profiles/:profileId',
+										element: <ProfileDetail />,
 									},
 								],
 							},
