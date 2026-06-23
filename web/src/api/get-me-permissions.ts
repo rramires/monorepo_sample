@@ -15,6 +15,7 @@ export interface ScreenPermission {
 export interface MyPermissions {
 	role: Role
 	screens: ScreenPermission[]
+	defaultScreenKey: string | null
 }
 
 export async function getMePermissions(): Promise<MyPermissions> {
@@ -32,5 +33,6 @@ export async function getMePermissions(): Promise<MyPermissions> {
 			edit: s.edit,
 			delete: s.delete,
 		})),
+		defaultScreenKey: parsed.default_screen_key,
 	}
 }

@@ -41,4 +41,27 @@ export class PrismaPermissionsRepository implements IPermissionsRepository {
 		const screens = await prisma.screen.findMany({ select: { key: true } })
 		return screens.map((s) => s.key)
 	}
+
+	async getDefaultScreenCandidates(userId: string) {
+		const grants = await prisma.profileScreen.findMany({
+			where: {
+				is_default: true,
+				profile: { users: { some: { user_id: userId } } },
+			},
+			include: {
+				screen: {
+					select: {
+						key: true,
+						order: true,
+						module: { select: { order: true } },
+					},
+				},
+			},
+		})
+		return grants.map((g) => ({
+			screen_key: g.screen.key,
+			module_order: g.screen.module.order,
+			screen_order: g.screen.order,
+		}))
+	}
 }

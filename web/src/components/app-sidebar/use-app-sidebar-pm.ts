@@ -32,6 +32,7 @@ const NAV_ENTRIES: Record<string, { icon: LucideIcon; label: string }> = {
 }
 
 export interface NavItem {
+	key: string
 	to: string
 	label: string
 	icon: LucideIcon
@@ -81,6 +82,7 @@ export function useAppSidebarPM() {
 					.filter((s) => can(s.key, 'view'))
 					.sort((a, b) => a.order - b.order)
 					.map((s) => ({
+						key: s.key,
 						to: s.path as string,
 						label: NAV_ENTRIES[s.key].label,
 						icon: NAV_ENTRIES[s.key].icon,

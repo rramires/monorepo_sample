@@ -14,8 +14,12 @@ export function makeRegisterBodySchema(policy: PasswordPolicy) {
 }
 export type RegisterBody = z.infer<ReturnType<typeof makeRegisterBodySchema>>
 
-// PATCH /auth/me — self update (username only).
-export const updateMeBodySchema = z.object({ username: usernameSchema })
+// PATCH /auth/me — self update (username and/or preferred landing screen).
+export const updateMeBodySchema = z.object({
+	username: usernameSchema.optional(),
+	// The user's preferred landing screen key; null clears it.
+	default_screen_key: z.string().nullish(),
+})
 export type UpdateMeBody = z.infer<typeof updateMeBodySchema>
 
 // PATCH /users/:userId — admin update. The "at least one field" rule is a

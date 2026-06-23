@@ -15,4 +15,15 @@ export interface IPermissionsRepository {
 	): Promise<EffectiveScreenPermission[]>
 	// Every screen key in the catalog (used for the ADMIN all-access view).
 	listAllScreenKeys(): Promise<string[]>
+	// Profile-default grants for a user, with ordering info so the resolver can
+	// pick "the first in the sidebar" (smallest module then screen order).
+	getDefaultScreenCandidates(
+		userId: string,
+	): Promise<DefaultScreenCandidate[]>
+}
+
+export interface DefaultScreenCandidate {
+	screen_key: string
+	module_order: number
+	screen_order: number
 }

@@ -19,5 +19,8 @@ export type ScreenPermission = z.infer<typeof screenPermissionSchema>
 export const mePermissionsSchema = z.object({
 	role: roleSchema,
 	screens: z.array(screenPermissionSchema),
+	// The resolved landing screen key (user override → profile default → null);
+	// the frontend redirects here on login when set.
+	default_screen_key: z.string().nullable(),
 })
 export type MePermissions = z.infer<typeof mePermissionsSchema>

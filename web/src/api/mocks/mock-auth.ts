@@ -2,11 +2,57 @@ import type { MePermissions, ScreenPermission } from '@root/contracts'
 import { HttpResponse } from 'msw'
 
 import {
+	modules,
 	profileScreens,
 	screens,
+	userDefaultScreen,
 	userProfiles,
 } from './data/access-control-seed'
 import { findUser } from './users-data'
+
+// Resolve the landing screen: user override (if viewable) → the default grant
+// with the smallest (module order, screen order) the user can view → null.
+function resolveDefaultScreen(
+	userId: string,
+	viewableKeys: Set<string>,
+): string | null {
+	const override = userDefaultScreen[userId]
+	if (override && viewableKeys.has(override)) {
+		return override
+	}
+
+	const screenById = new Map(screens.map((s) => [s.id, s]))
+	const moduleOrder = new Map(modules.map((m) => [m.id, m.order]))
+	const myProfileIds = userProfiles
+		.filter((up) => up.user_id === userId)
+		.map((up) => up.profile_id)
+
+	let best: string | null = null
+	let bestRank = [Infinity, Infinity]
+	for (const pid of myProfileIds) {
+		for (const grant of profileScreens[pid] ?? []) {
+			if (!grant.is_default) {
+				continue
+			}
+			const screen = screenById.get(grant.screen_id)
+			if (!screen || !viewableKeys.has(screen.key)) {
+				continue
+			}
+			const rank = [
+				moduleOrder.get(screen.module_id) ?? Infinity,
+				screen.order,
+			]
+			if (
+				rank[0] < bestRank[0] ||
+				(rank[0] === bestRank[0] && rank[1] < bestRank[1])
+			) {
+				best = screen.key
+				bestRank = rank
+			}
+		}
+	}
+	return best
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Mock auth: a bearer token identifies a seeded user. The two legacy tokens are
@@ -66,6 +112,7 @@ export function computePermissions(userId: string): MePermissions | null {
 	}
 
 	if (user.role === 'ADMIN') {
+		const allKeys = new Set(screens.map((s) => s.key))
 		return {
 			role: 'ADMIN',
 			screens: screens.map((s) => ({
@@ -75,6 +122,7 @@ export function computePermissions(userId: string): MePermissions | null {
 				edit: true,
 				delete: true,
 			})),
+			default_screen_key: resolveDefaultScreen(userId, allKeys),
 		}
 	}
 
@@ -108,5 +156,13 @@ export function computePermissions(userId: string): MePermissions | null {
 		}
 	}
 
-	return { role: 'USER', screens: [...merged.values()] }
+	const screensList = [...merged.values()]
+	const viewableKeys = new Set(
+		screensList.filter((s) => s.view).map((s) => s.screen_key),
+	)
+	return {
+		role: 'USER',
+		screens: screensList,
+		default_screen_key: resolveDefaultScreen(userId, viewableKeys),
+	}
 }

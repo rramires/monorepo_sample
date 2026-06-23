@@ -137,6 +137,7 @@ type Grant = {
 	create?: boolean
 	edit?: boolean
 	delete?: boolean
+	default?: boolean
 }
 
 function grant(g: Grant): ProfileScreen {
@@ -150,6 +151,7 @@ function grant(g: Grant): ProfileScreen {
 		can_create: g.create ?? false,
 		can_edit: g.edit ?? false,
 		can_delete: g.delete ?? false,
+		is_default: g.default ?? false,
 	}
 }
 
@@ -157,13 +159,13 @@ function grant(g: Grant): ProfileScreen {
 // entry; the TransferTable reads it back.
 export const profileScreens: Record<string, ProfileScreen[]> = {
 	'prof-gym-member': [
-		grant({ screen_key: 'gym.dashboard' }),
+		grant({ screen_key: 'gym.dashboard', default: true }),
 		grant({ screen_key: 'gym.check-in', create: true }),
 		grant({ screen_key: 'gym.gyms' }),
 		grant({ screen_key: 'gym.history' }),
 	],
 	'prof-gym-manager': [
-		grant({ screen_key: 'gym.dashboard' }),
+		grant({ screen_key: 'gym.dashboard', default: true }),
 		grant({ screen_key: 'gym.check-in', create: true }),
 		grant({ screen_key: 'gym.gyms', create: true, edit: true }),
 		grant({ screen_key: 'gym.history' }),
@@ -176,6 +178,7 @@ export const profileScreens: Record<string, ProfileScreen[]> = {
 			create: true,
 			edit: true,
 			delete: true,
+			default: true,
 		}),
 		grant({ screen_key: 'access-control.users', edit: true }),
 		grant({ screen_key: 'access-control.screens' }),
@@ -190,3 +193,7 @@ export const userProfiles: { user_id: string; profile_id: string }[] = [
 	{ user_id: 'mock-manager-id', profile_id: 'prof-gym-manager' },
 	{ user_id: 'mock-support-id', profile_id: 'prof-support' },
 ]
+
+// Per-user preferred landing screen (overrides the profile default). Mutable:
+// PATCH /auth/me sets it. Keyed by user id → screen key (or null to clear).
+export const userDefaultScreen: Record<string, string | null> = {}

@@ -5,11 +5,12 @@ import { useAppSidebarPM } from '@/components/app-sidebar/use-app-sidebar-pm'
 import { usePermissions } from '@/hooks/use-permissions'
 import { Home } from '@/pages/app/home/home'
 
-// The index route ("/"). Shows the gym Dashboard to anyone who can view it;
-// otherwise sends the user to their first available screen (e.g. support lands
-// on Users), falling back to Account. Avoids a Forbidden screen on login.
+// The index route ("/"). Sends the user to their resolved landing screen:
+// the preferred/default screen (from /me/permissions) → the gym Dashboard if
+// they can view it → their first available screen → Account. Avoids a Forbidden
+// screen on login.
 export function LandingRoute() {
-	const { can, isLoading } = usePermissions()
+	const { can, isLoading, permissions } = usePermissions()
 	const { sections, isLoading: navLoading } = useAppSidebarPM()
 
 	if (isLoading || navLoading) {
@@ -20,10 +21,20 @@ export function LandingRoute() {
 		)
 	}
 
-	if (can('gym.dashboard', 'view')) {
-		return <Home />
+	const navItems = sections.flatMap((s) => s.items)
+
+	let target: string | undefined
+	const preferred = permissions?.defaultScreenKey
+	if (preferred) {
+		target = navItems.find((i) => i.key === preferred)?.to
+	}
+	if (!target) {
+		target = can('gym.dashboard', 'view') ? '/' : navItems[0]?.to
 	}
 
-	const firstPath = sections[0]?.items[0]?.to
-	return <Navigate to={firstPath ?? '/account'} replace />
+	// '/' is this very route — render the dashboard rather than redirect to self.
+	if (!target || target === '/') {
+		return <Home />
+	}
+	return <Navigate to={target} replace />
 }

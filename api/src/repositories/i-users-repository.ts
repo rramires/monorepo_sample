@@ -20,6 +20,7 @@ export interface IUsersRepository {
 			role?: Role
 			is_verified?: boolean
 			is_active?: boolean
+			default_screen_key?: string | null
 			password_hash?: string
 			password_changed_at?: Date
 		},

@@ -89,6 +89,7 @@ export const UserScalarFieldEnum = {
   role: 'role',
   is_verified: 'is_verified',
   is_active: 'is_active',
+  default_screen_key: 'default_screen_key',
   created_at: 'created_at',
   password_changed_at: 'password_changed_at'
 } as const
@@ -139,7 +140,8 @@ export const ProfileScreenScalarFieldEnum = {
   can_view: 'can_view',
   can_create: 'can_create',
   can_edit: 'can_edit',
-  can_delete: 'can_delete'
+  can_delete: 'can_delete',
+  is_default: 'is_default'
 } as const
 
 export type ProfileScreenScalarFieldEnum = (typeof ProfileScreenScalarFieldEnum)[keyof typeof ProfileScreenScalarFieldEnum]
@@ -248,7 +250,8 @@ export const UserOrderByRelevanceFieldEnum = {
   id: 'id',
   username: 'username',
   email: 'email',
-  password_hash: 'password_hash'
+  password_hash: 'password_hash',
+  default_screen_key: 'default_screen_key'
 } as const
 
 export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]

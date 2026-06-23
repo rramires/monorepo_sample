@@ -8,6 +8,7 @@ export interface GrantRow {
 	can_create: boolean
 	can_edit: boolean
 	can_delete: boolean
+	is_default: boolean
 }
 
 // Partial edit: `undefined` = leave as-is; `null` clears the nullable

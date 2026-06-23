@@ -43,6 +43,8 @@ export function useProfileDetailPM() {
 	const [isDefault, setIsDefault] = useState(false)
 	const [assignedIds, setAssignedIds] = useState<string[]>([])
 	const [grants, setGrants] = useState<Record<string, Actions>>({})
+	// The profile's default landing screen (≤1). Acts like a radio.
+	const [defaultScreenId, setDefaultScreenId] = useState<string | null>(null)
 
 	// Seed local edit state from the loaded profile (runs when the profile
 	// arrives or the id changes).
@@ -56,6 +58,9 @@ export function useProfileDetailPM() {
 		setDescription(profile.description ?? '')
 		setIsDefault(profile.isDefault)
 		setAssignedIds(profile.screens.map((g) => g.screenId))
+		setDefaultScreenId(
+			profile.screens.find((g) => g.isDefault)?.screenId ?? null,
+		)
 		setGrants(
 			Object.fromEntries(
 				profile.screens.map((g) => [
@@ -83,6 +88,13 @@ export function useProfileDetailPM() {
 			}
 			return next
 		})
+		// Drop the default if its screen was removed.
+		setDefaultScreenId((prev) => (prev && ids.includes(prev) ? prev : null))
+	}
+
+	// Radio-style: pick the profile's default screen (click again to clear).
+	function setDefault(screenId: string) {
+		setDefaultScreenId((prev) => (prev === screenId ? null : screenId))
 	}
 
 	function toggleAction(screenId: string, key: keyof Actions) {
@@ -105,6 +117,7 @@ export function useProfileDetailPM() {
 			const list: GrantModel[] = assignedIds.map((screenId) => ({
 				screenId,
 				...(grants[screenId] ?? VIEW_DEFAULT),
+				isDefault: screenId === defaultScreenId,
 			}))
 			await setProfileScreens(profileId, list)
 		},
@@ -141,6 +154,8 @@ export function useProfileDetailPM() {
 		setIsDefault,
 		assignedIds,
 		grants,
+		defaultScreenId,
+		setDefault,
 		handleAssignedChange,
 		toggleAction,
 		canEdit: can('access-control.profiles', 'edit'),

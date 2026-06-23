@@ -55,16 +55,22 @@ const PROFILES = [
 	{ key: 'support', name: 'Support', description: 'Back-office: administers profiles and user access.', is_default: false },
 ]
 
-type Grant = { screen: string; create?: boolean; edit?: boolean; delete?: boolean }
+type Grant = {
+	screen: string
+	create?: boolean
+	edit?: boolean
+	delete?: boolean
+	default?: boolean
+}
 const GRANTS: Record<string, Grant[]> = {
 	'gym-member': [
-		{ screen: 'gym.dashboard' },
+		{ screen: 'gym.dashboard', default: true },
 		{ screen: 'gym.check-in', create: true },
 		{ screen: 'gym.gyms' },
 		{ screen: 'gym.history' },
 	],
 	'gym-manager': [
-		{ screen: 'gym.dashboard' },
+		{ screen: 'gym.dashboard', default: true },
 		{ screen: 'gym.check-in', create: true },
 		{ screen: 'gym.gyms', create: true, edit: true },
 		{ screen: 'gym.history' },
@@ -72,7 +78,13 @@ const GRANTS: Record<string, Grant[]> = {
 		{ screen: 'access-control.users', create: true },
 	],
 	support: [
-		{ screen: 'access-control.profiles', create: true, edit: true, delete: true },
+		{
+			screen: 'access-control.profiles',
+			create: true,
+			edit: true,
+			delete: true,
+			default: true,
+		},
 		{ screen: 'access-control.users', edit: true },
 		{ screen: 'access-control.screens' },
 	],
@@ -143,6 +155,7 @@ async function seedAccessControl() {
 				can_create: g.create ?? false,
 				can_edit: g.edit ?? false,
 				can_delete: g.delete ?? false,
+				is_default: g.default ?? false,
 			}
 			await prisma.profileScreen.upsert({
 				where: {

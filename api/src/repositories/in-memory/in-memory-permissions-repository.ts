@@ -10,6 +10,9 @@ interface Grant {
 	can_create: boolean
 	can_edit: boolean
 	can_delete: boolean
+	is_default?: boolean
+	module_order?: number
+	screen_order?: number
 }
 
 // In-memory permissions store for unit tests. Seed `userProfiles`, `grants`
@@ -53,5 +56,20 @@ export class InMemoryPermissionsRepository implements IPermissionsRepository {
 
 	async listAllScreenKeys(): Promise<string[]> {
 		return this.screenKeys
+	}
+
+	async getDefaultScreenCandidates(userId: string) {
+		const myProfiles = new Set(
+			this.userProfiles
+				.filter((up) => up.user_id === userId)
+				.map((up) => up.profile_id),
+		)
+		return this.grants
+			.filter((g) => g.is_default && myProfiles.has(g.profile_id))
+			.map((g) => ({
+				screen_key: g.screen_key,
+				module_order: g.module_order ?? 0,
+				screen_order: g.screen_order ?? 0,
+			}))
 	}
 }

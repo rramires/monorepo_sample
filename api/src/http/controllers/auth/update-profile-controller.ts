@@ -20,16 +20,20 @@ export async function updateProfileController(
 				.min(env.MIN_TEXT_LENGTH)
 				.max(30)
 				.regex(/^[a-zA-Z0-9_]+$/, 'letters, numbers, underscore only')
-				.transform((s) => s.toLowerCase()),
+				.transform((s) => s.toLowerCase())
+				.optional(),
+			// Preferred landing screen key; null clears it.
+			default_screen_key: z.string().nullish(),
 		})
 		.strict()
-	const { username } = bodySchema.parse(request.body)
+	const { username, default_screen_key } = bodySchema.parse(request.body)
 
 	const updateProfileUseCase = makeUpdateProfileUseCase()
 	try {
 		const { user } = await updateProfileUseCase.execute({
 			userId: request.user.sub,
 			username,
+			default_screen_key,
 		})
 
 		return reply.status(200).send({

@@ -23,6 +23,7 @@ export interface GrantModel {
 	create: boolean
 	edit: boolean
 	delete: boolean
+	isDefault: boolean
 }
 
 export interface ProfileDetailModel extends ProfileModel {
@@ -52,6 +53,7 @@ function toDetail(p: z.infer<typeof profileDetailSchema>): ProfileDetailModel {
 			create: s.can_create,
 			edit: s.can_edit,
 			delete: s.can_delete,
+			isDefault: s.is_default,
 		})),
 	}
 }
@@ -96,6 +98,7 @@ export async function setProfileScreens(
 			can_create: g.create,
 			can_edit: g.edit,
 			can_delete: g.delete,
+			is_default: g.isDefault,
 		})),
 	}
 	const response = await api.put(`/profiles/${id}/screens`, body)

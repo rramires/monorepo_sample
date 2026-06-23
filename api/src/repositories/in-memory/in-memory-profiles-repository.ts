@@ -36,6 +36,7 @@ export class InMemoryProfilesRepository implements IProfilesRepository {
 				can_create: g.can_create,
 				can_edit: g.can_edit,
 				can_delete: g.can_delete,
+				is_default: g.is_default,
 			}))
 
 		return {

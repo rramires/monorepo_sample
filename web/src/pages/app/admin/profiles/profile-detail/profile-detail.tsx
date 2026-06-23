@@ -68,6 +68,19 @@ export function ProfileDetail() {
 				/>
 			),
 		})),
+		{
+			key: 'default',
+			header: 'Default',
+			className: 'text-center',
+			cell: (s: ScreenModel) => (
+				<Checkbox
+					checked={pm.defaultScreenId === s.id}
+					onCheckedChange={() => pm.setDefault(s.id)}
+					disabled={!pm.canEdit}
+					aria-label={`${s.key} default`}
+				/>
+			),
+		},
 	]
 
 	return (

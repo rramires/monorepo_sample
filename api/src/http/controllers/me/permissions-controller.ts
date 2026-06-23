@@ -12,10 +12,11 @@ export async function permissionsController(
 	const getUserPermissions = makeGetUserPermissionsUseCase()
 
 	try {
-		const { role, screens } = await getUserPermissions.execute({
-			userId: request.user.sub,
-		})
-		return reply.status(200).send({ role, screens })
+		const { role, screens, default_screen_key } =
+			await getUserPermissions.execute({
+				userId: request.user.sub,
+			})
+		return reply.status(200).send({ role, screens, default_screen_key })
 	} catch (err) {
 		if (err instanceof ResourceNotFoundError) {
 			return reply.status(401).send({ message: err.message })

@@ -32,6 +32,7 @@ export type UserMinAggregateOutputType = {
   role: $Enums.Role | null
   is_verified: boolean | null
   is_active: boolean | null
+  default_screen_key: string | null
   created_at: Date | null
   password_changed_at: Date | null
 }
@@ -44,6 +45,7 @@ export type UserMaxAggregateOutputType = {
   role: $Enums.Role | null
   is_verified: boolean | null
   is_active: boolean | null
+  default_screen_key: string | null
   created_at: Date | null
   password_changed_at: Date | null
 }
@@ -56,6 +58,7 @@ export type UserCountAggregateOutputType = {
   role: number
   is_verified: number
   is_active: number
+  default_screen_key: number
   created_at: number
   password_changed_at: number
   _all: number
@@ -70,6 +73,7 @@ export type UserMinAggregateInputType = {
   role?: true
   is_verified?: true
   is_active?: true
+  default_screen_key?: true
   created_at?: true
   password_changed_at?: true
 }
@@ -82,6 +86,7 @@ export type UserMaxAggregateInputType = {
   role?: true
   is_verified?: true
   is_active?: true
+  default_screen_key?: true
   created_at?: true
   password_changed_at?: true
 }
@@ -94,6 +99,7 @@ export type UserCountAggregateInputType = {
   role?: true
   is_verified?: true
   is_active?: true
+  default_screen_key?: true
   created_at?: true
   password_changed_at?: true
   _all?: true
@@ -179,6 +185,7 @@ export type UserGroupByOutputType = {
   role: $Enums.Role
   is_verified: boolean
   is_active: boolean
+  default_screen_key: string | null
   created_at: Date
   password_changed_at: Date | null
   _count: UserCountAggregateOutputType | null
@@ -212,6 +219,7 @@ export type UserWhereInput = {
   role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
   is_verified?: Prisma.BoolFilter<"User"> | boolean
   is_active?: Prisma.BoolFilter<"User"> | boolean
+  default_screen_key?: Prisma.StringNullableFilter<"User"> | string | null
   created_at?: Prisma.DateTimeFilter<"User"> | Date | string
   password_changed_at?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   checkIns?: Prisma.CheckInListRelationFilter
@@ -229,6 +237,7 @@ export type UserOrderByWithRelationInput = {
   role?: Prisma.SortOrder
   is_verified?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
+  default_screen_key?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
   password_changed_at?: Prisma.SortOrderInput | Prisma.SortOrder
   checkIns?: Prisma.CheckInOrderByRelationAggregateInput
@@ -250,6 +259,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
   is_verified?: Prisma.BoolFilter<"User"> | boolean
   is_active?: Prisma.BoolFilter<"User"> | boolean
+  default_screen_key?: Prisma.StringNullableFilter<"User"> | string | null
   created_at?: Prisma.DateTimeFilter<"User"> | Date | string
   password_changed_at?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   checkIns?: Prisma.CheckInListRelationFilter
@@ -267,6 +277,7 @@ export type UserOrderByWithAggregationInput = {
   role?: Prisma.SortOrder
   is_verified?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
+  default_screen_key?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
   password_changed_at?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
@@ -285,6 +296,7 @@ export type UserScalarWhereWithAggregatesInput = {
   role?: Prisma.EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
   is_verified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   is_active?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  default_screen_key?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   created_at?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   password_changed_at?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
 }
@@ -297,6 +309,7 @@ export type UserCreateInput = {
   role?: $Enums.Role
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: string | null
   created_at?: Date | string
   password_changed_at?: Date | string | null
   checkIns?: Prisma.CheckInCreateNestedManyWithoutUserInput
@@ -314,6 +327,7 @@ export type UserUncheckedCreateInput = {
   role?: $Enums.Role
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: string | null
   created_at?: Date | string
   password_changed_at?: Date | string | null
   checkIns?: Prisma.CheckInUncheckedCreateNestedManyWithoutUserInput
@@ -331,6 +345,7 @@ export type UserUpdateInput = {
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  default_screen_key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   password_changed_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checkIns?: Prisma.CheckInUpdateManyWithoutUserNestedInput
@@ -348,6 +363,7 @@ export type UserUncheckedUpdateInput = {
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  default_screen_key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   password_changed_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checkIns?: Prisma.CheckInUncheckedUpdateManyWithoutUserNestedInput
@@ -365,6 +381,7 @@ export type UserCreateManyInput = {
   role?: $Enums.Role
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: string | null
   created_at?: Date | string
   password_changed_at?: Date | string | null
 }
@@ -377,6 +394,7 @@ export type UserUpdateManyMutationInput = {
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  default_screen_key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   password_changed_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -389,6 +407,7 @@ export type UserUncheckedUpdateManyInput = {
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  default_screen_key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   password_changed_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -407,6 +426,7 @@ export type UserCountOrderByAggregateInput = {
   role?: Prisma.SortOrder
   is_verified?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
+  default_screen_key?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   password_changed_at?: Prisma.SortOrder
 }
@@ -419,6 +439,7 @@ export type UserMaxOrderByAggregateInput = {
   role?: Prisma.SortOrder
   is_verified?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
+  default_screen_key?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   password_changed_at?: Prisma.SortOrder
 }
@@ -431,6 +452,7 @@ export type UserMinOrderByAggregateInput = {
   role?: Prisma.SortOrder
   is_verified?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
+  default_screen_key?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   password_changed_at?: Prisma.SortOrder
 }
@@ -450,6 +472,10 @@ export type EnumRoleFieldUpdateOperationsInput = {
 
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -538,6 +564,7 @@ export type UserCreateWithoutProfilesInput = {
   role?: $Enums.Role
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: string | null
   created_at?: Date | string
   password_changed_at?: Date | string | null
   checkIns?: Prisma.CheckInCreateNestedManyWithoutUserInput
@@ -554,6 +581,7 @@ export type UserUncheckedCreateWithoutProfilesInput = {
   role?: $Enums.Role
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: string | null
   created_at?: Date | string
   password_changed_at?: Date | string | null
   checkIns?: Prisma.CheckInUncheckedCreateNestedManyWithoutUserInput
@@ -586,6 +614,7 @@ export type UserUpdateWithoutProfilesInput = {
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  default_screen_key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   password_changed_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checkIns?: Prisma.CheckInUpdateManyWithoutUserNestedInput
@@ -602,6 +631,7 @@ export type UserUncheckedUpdateWithoutProfilesInput = {
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  default_screen_key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   password_changed_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checkIns?: Prisma.CheckInUncheckedUpdateManyWithoutUserNestedInput
@@ -618,6 +648,7 @@ export type UserCreateWithoutCheckInsInput = {
   role?: $Enums.Role
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: string | null
   created_at?: Date | string
   password_changed_at?: Date | string | null
   email_verifications?: Prisma.EmailVerificationCreateNestedManyWithoutUserInput
@@ -634,6 +665,7 @@ export type UserUncheckedCreateWithoutCheckInsInput = {
   role?: $Enums.Role
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: string | null
   created_at?: Date | string
   password_changed_at?: Date | string | null
   email_verifications?: Prisma.EmailVerificationUncheckedCreateNestedManyWithoutUserInput
@@ -666,6 +698,7 @@ export type UserUpdateWithoutCheckInsInput = {
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  default_screen_key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   password_changed_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   email_verifications?: Prisma.EmailVerificationUpdateManyWithoutUserNestedInput
@@ -682,6 +715,7 @@ export type UserUncheckedUpdateWithoutCheckInsInput = {
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  default_screen_key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   password_changed_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   email_verifications?: Prisma.EmailVerificationUncheckedUpdateManyWithoutUserNestedInput
@@ -698,6 +732,7 @@ export type UserCreateWithoutEmail_verificationsInput = {
   role?: $Enums.Role
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: string | null
   created_at?: Date | string
   password_changed_at?: Date | string | null
   checkIns?: Prisma.CheckInCreateNestedManyWithoutUserInput
@@ -714,6 +749,7 @@ export type UserUncheckedCreateWithoutEmail_verificationsInput = {
   role?: $Enums.Role
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: string | null
   created_at?: Date | string
   password_changed_at?: Date | string | null
   checkIns?: Prisma.CheckInUncheckedCreateNestedManyWithoutUserInput
@@ -746,6 +782,7 @@ export type UserUpdateWithoutEmail_verificationsInput = {
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  default_screen_key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   password_changed_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checkIns?: Prisma.CheckInUpdateManyWithoutUserNestedInput
@@ -762,6 +799,7 @@ export type UserUncheckedUpdateWithoutEmail_verificationsInput = {
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  default_screen_key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   password_changed_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checkIns?: Prisma.CheckInUncheckedUpdateManyWithoutUserNestedInput
@@ -778,6 +816,7 @@ export type UserCreateWithoutEmail_changesInput = {
   role?: $Enums.Role
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: string | null
   created_at?: Date | string
   password_changed_at?: Date | string | null
   checkIns?: Prisma.CheckInCreateNestedManyWithoutUserInput
@@ -794,6 +833,7 @@ export type UserUncheckedCreateWithoutEmail_changesInput = {
   role?: $Enums.Role
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: string | null
   created_at?: Date | string
   password_changed_at?: Date | string | null
   checkIns?: Prisma.CheckInUncheckedCreateNestedManyWithoutUserInput
@@ -826,6 +866,7 @@ export type UserUpdateWithoutEmail_changesInput = {
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  default_screen_key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   password_changed_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checkIns?: Prisma.CheckInUpdateManyWithoutUserNestedInput
@@ -842,6 +883,7 @@ export type UserUncheckedUpdateWithoutEmail_changesInput = {
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  default_screen_key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   password_changed_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checkIns?: Prisma.CheckInUncheckedUpdateManyWithoutUserNestedInput
@@ -858,6 +900,7 @@ export type UserCreateWithoutPassword_resetsInput = {
   role?: $Enums.Role
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: string | null
   created_at?: Date | string
   password_changed_at?: Date | string | null
   checkIns?: Prisma.CheckInCreateNestedManyWithoutUserInput
@@ -874,6 +917,7 @@ export type UserUncheckedCreateWithoutPassword_resetsInput = {
   role?: $Enums.Role
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: string | null
   created_at?: Date | string
   password_changed_at?: Date | string | null
   checkIns?: Prisma.CheckInUncheckedCreateNestedManyWithoutUserInput
@@ -906,6 +950,7 @@ export type UserUpdateWithoutPassword_resetsInput = {
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  default_screen_key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   password_changed_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checkIns?: Prisma.CheckInUpdateManyWithoutUserNestedInput
@@ -922,6 +967,7 @@ export type UserUncheckedUpdateWithoutPassword_resetsInput = {
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   is_verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  default_screen_key?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   password_changed_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   checkIns?: Prisma.CheckInUncheckedUpdateManyWithoutUserNestedInput
@@ -1005,6 +1051,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   role?: boolean
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: boolean
   created_at?: boolean
   password_changed_at?: boolean
   checkIns?: boolean | Prisma.User$checkInsArgs<ExtArgs>
@@ -1025,11 +1072,12 @@ export type UserSelectScalar = {
   role?: boolean
   is_verified?: boolean
   is_active?: boolean
+  default_screen_key?: boolean
   created_at?: boolean
   password_changed_at?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "username" | "email" | "password_hash" | "role" | "is_verified" | "is_active" | "created_at" | "password_changed_at", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "username" | "email" | "password_hash" | "role" | "is_verified" | "is_active" | "default_screen_key" | "created_at" | "password_changed_at", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   checkIns?: boolean | Prisma.User$checkInsArgs<ExtArgs>
   email_verifications?: boolean | Prisma.User$email_verificationsArgs<ExtArgs>
@@ -1056,6 +1104,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     role: $Enums.Role
     is_verified: boolean
     is_active: boolean
+    default_screen_key: string | null
     created_at: Date
     password_changed_at: Date | null
   }, ExtArgs["result"]["user"]>
@@ -1439,6 +1488,7 @@ export interface UserFieldRefs {
   readonly role: Prisma.FieldRef<"User", 'Role'>
   readonly is_verified: Prisma.FieldRef<"User", 'Boolean'>
   readonly is_active: Prisma.FieldRef<"User", 'Boolean'>
+  readonly default_screen_key: Prisma.FieldRef<"User", 'String'>
   readonly created_at: Prisma.FieldRef<"User", 'DateTime'>
   readonly password_changed_at: Prisma.FieldRef<"User", 'DateTime'>
 }

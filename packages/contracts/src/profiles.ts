@@ -22,6 +22,8 @@ export const profileScreenSchema = z.object({
 	can_create: z.boolean().default(false),
 	can_edit: z.boolean().default(false),
 	can_delete: z.boolean().default(false),
+	// At most one grant per profile is the profile's default landing screen.
+	is_default: z.boolean().default(false),
 })
 export type ProfileScreen = z.infer<typeof profileScreenSchema>
 

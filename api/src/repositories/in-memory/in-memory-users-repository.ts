@@ -16,6 +16,7 @@ function toPublic(user: User): PublicUser {
 		role: user.role,
 		is_verified: user.is_verified,
 		is_active: user.is_active,
+		default_screen_key: user.default_screen_key,
 		created_at: user.created_at,
 		password_changed_at: user.password_changed_at,
 	}
@@ -35,6 +36,7 @@ export class InMemoryUsersRepository implements IUsersRepository {
 			role: data.role ?? 'USER',
 			is_verified: data.is_verified ?? false,
 			is_active: data.is_active ?? true,
+			default_screen_key: data.default_screen_key ?? null,
 			created_at: new Date(),
 			password_changed_at: null,
 		}
@@ -84,6 +86,7 @@ export class InMemoryUsersRepository implements IUsersRepository {
 			role?: Role
 			is_verified?: boolean
 			is_active?: boolean
+			default_screen_key?: string | null
 			password_hash?: string
 			password_changed_at?: Date
 		},
@@ -107,6 +110,9 @@ export class InMemoryUsersRepository implements IUsersRepository {
 		}
 		if (data.is_active !== undefined) {
 			user.is_active = data.is_active
+		}
+		if (data.default_screen_key !== undefined) {
+			user.default_screen_key = data.default_screen_key
 		}
 		if (data.password_hash !== undefined) {
 			user.password_hash = data.password_hash
