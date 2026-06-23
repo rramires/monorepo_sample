@@ -9,6 +9,11 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/User'
+export type * from './models/Module'
+export type * from './models/Screen'
+export type * from './models/Profile'
+export type * from './models/ProfileScreen'
+export type * from './models/UserProfile'
 export type * from './models/CheckIn'
 export type * from './models/Gym'
 export type * from './models/EmailVerification'

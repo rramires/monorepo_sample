@@ -410,10 +410,6 @@ export type GymUpdateOneRequiredWithoutCheckInsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.GymUpdateToOneWithWhereWithoutCheckInsInput, Prisma.GymUpdateWithoutCheckInsInput>, Prisma.GymUncheckedUpdateWithoutCheckInsInput>
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type DecimalFieldUpdateOperationsInput = {
   set?: runtime.Decimal | runtime.DecimalJsLike | number | string
   increment?: runtime.Decimal | runtime.DecimalJsLike | number | string

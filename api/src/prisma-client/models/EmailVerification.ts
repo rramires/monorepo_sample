@@ -476,14 +476,6 @@ export type EmailVerificationUncheckedUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.EmailVerificationScalarWhereInput | Prisma.EmailVerificationScalarWhereInput[]
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type EmailVerificationCreateWithoutUserInput = {
   id?: string
   link_token?: string

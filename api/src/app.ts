@@ -12,6 +12,10 @@ import { authRoutes } from './http/controllers/auth/routes'
 import { checkInsRoutes } from './http/controllers/check-ins/routes'
 import { gymsRoutes } from './http/controllers/gyms/routes'
 import { healthRoutes } from './http/controllers/health/routes'
+import { meRoutes } from './http/controllers/me/routes'
+import { modulesRoutes } from './http/controllers/modules/routes'
+import { profilesRoutes } from './http/controllers/profiles/routes'
+import { screensRoutes } from './http/controllers/screens/routes'
 import { usersRoutes } from './http/controllers/users/routes'
 import { prisma } from './lib/prisma'
 import { reportError } from './lib/report-error'
@@ -81,6 +85,10 @@ app.register(authRoutes)
 app.register(usersRoutes)
 app.register(gymsRoutes)
 app.register(checkInsRoutes)
+app.register(meRoutes)
+app.register(modulesRoutes)
+app.register(screensRoutes)
+app.register(profilesRoutes)
 // Errors
 app.setErrorHandler((error, request, reply) => {
 	if (error instanceof ZodError) {
