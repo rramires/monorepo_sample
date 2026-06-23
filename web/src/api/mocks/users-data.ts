@@ -1,8 +1,4 @@
-import { HttpResponse } from 'msw'
-
 import type { PublicUser } from '../get-users'
-
-const ADMIN_TOKEN = 'Bearer mock-admin-jwt-token'
 
 // Mutable mock state: the user directory the admin area reads and edits. Seeded
 // with the two demo accounts (admin + johndoe, matching the profile mock) plus
@@ -14,6 +10,7 @@ export const users: PublicUser[] = [
 		email: 'admin@example.com',
 		role: 'ADMIN',
 		is_verified: true,
+		is_active: true,
 		created_at: '2026-01-01T12:00:00.000Z',
 		password_changed_at: null,
 	},
@@ -21,9 +18,31 @@ export const users: PublicUser[] = [
 		id: 'mock-user-id',
 		username: 'johndoe',
 		email: 'johndoe@example.com',
-		role: 'MEMBER',
+		role: 'USER',
 		is_verified: false,
+		is_active: true,
 		created_at: '2026-02-01T12:00:00.000Z',
+		password_changed_at: null,
+	},
+	// Access-control demo users: sign in as these to see the menu/guard change.
+	{
+		id: 'mock-manager-id',
+		username: 'manager',
+		email: 'manager@example.com',
+		role: 'USER',
+		is_verified: true,
+		is_active: true,
+		created_at: '2026-02-02T12:00:00.000Z',
+		password_changed_at: null,
+	},
+	{
+		id: 'mock-support-id',
+		username: 'support',
+		email: 'support@example.com',
+		role: 'USER',
+		is_verified: true,
+		is_active: true,
+		created_at: '2026-02-03T12:00:00.000Z',
 		password_changed_at: null,
 	},
 	...Array.from({ length: 21 }, (_, index) => {
@@ -32,26 +51,15 @@ export const users: PublicUser[] = [
 			id: `mock-user-${n}`,
 			username: `member${n}`,
 			email: `member${n}@example.com`,
-			role: 'MEMBER' as const,
+			role: 'USER' as const,
 			is_verified: n % 2 === 0,
+			// A couple of inactive accounts to show the disabled state.
+			is_active: n % 7 !== 0,
 			created_at: `2026-03-${String(n).padStart(2, '0')}T12:00:00.000Z`,
 			password_changed_at: null,
 		}
 	}),
 ]
-
-// Mirror the backend role guard: admin routes answer 401 without a token and
-// 403 for a non-admin token. Returns a response to short-circuit with, or null
-// when the caller is an admin.
-export function requireAdmin(authHeader: string | null) {
-	if (!authHeader) {
-		return HttpResponse.json({ message: 'Unauthorized.' }, { status: 401 })
-	}
-	if (authHeader !== ADMIN_TOKEN) {
-		return HttpResponse.json({ message: 'Forbidden.' }, { status: 403 })
-	}
-	return null
-}
 
 export function findUser(id: string) {
 	return users.find((user) => user.id === id)

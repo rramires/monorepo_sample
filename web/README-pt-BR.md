@@ -44,10 +44,20 @@ Vitest · Playwright
   a durabilidade vem do **cookie httpOnly de refresh** da API. No carregamento a
   app faz refresh silencioso e restaura a sessão; um interceptor de 401
   (single-flight) faz refresh-and-replay de forma transparente.
-- **RBAC na UI** — `ProtectedRoute` protege a área autenticada; `RoleRoute`
-  protege as telas de admin e renderiza `Forbidden` **no lugar** (o layout
-  permanece). O papel é lido fresco de `GET /auth/me`, nunca confiado de um token
-  velho.
+- **RBAC na UI** — `ProtectedRoute` protege a área autenticada; `RequireScreen`
+  protege cada tela por uma checagem `can(screenKey, action)` e renderiza
+  `Forbidden` **no lugar** (o layout permanece). As permissões são lidas frescas
+  de `GET /me/permissions`, nunca confiadas de um token velho.
+- **Controle de acesso híbrido (RBAC)** — um papel fixo (`ADMIN` ignora tudo,
+  `USER` segue os grants) mais **Profiles** dinâmicos que agrupam grants por tela
+  (view/create/edit/delete). **Modules** agrupam **Screens**; os profiles carregam
+  `is_default` (anexado no registro) e `is_system` (protegido). A **sidebar é
+  dirigida por dados** — monta suas seções a partir do `menu` de
+  `GET /me/permissions`, então cada usuário vê só as telas que pode ver. As telas
+  de admin sob `/admin` gerenciam modules, screens, profiles (com um editor de
+  grants drag-and-drop) e usuários (atribuir profiles, desativar). Uma **tela de
+  destino padrão** por profile mais um **override** por usuário decidem onde cada
+  um cai após o login.
 - **Gate de verificação de e-mail** — um usuário não verificado vê um banner e a
   ação de check-in fica bloqueada; ao verificar, o banner some sem novo login
   (`reloadUser` refaz `/auth/me`).
@@ -55,8 +65,9 @@ Vitest · Playwright
   fluxo de confirmação (OTP **ou** link), espelhando o pattern A do backend (o
   endereço comprovado permanece até o novo ser confirmado).
 - **Área admin** — tabela de usuários paginada, página dedicada de edição de
-  usuário (username/email/role/`is_verified` com as regras do backend) e edição
-  de academia a partir do card (Dialog).
+  usuário (username/email/role/`is_verified`/`is_active` com as regras do backend,
+  mais um card de profiles), as telas CRUD de controle de acesso (modules, screens,
+  profiles) e edição de academia a partir do card (Dialog).
 - **Academias & check-ins** — academias próximas por geolocalização + busca por
   nome; check-in a partir do card; histórico de check-ins com **Validate** para
   ADMIN; a home é um **dashboard** com gráfico de atividade em Recharts.
@@ -92,9 +103,18 @@ pnpm dev                 # → http://localhost:3001
 ```
 
 **Login de demonstração (modo mock):** qualquer email/username com a senha
-`Password1!`. Entre como **`admin`** para receber um token de admin e alcançar as
-telas protegidas por papel (New gym, Users); qualquer outro identificador é um
-membro comum.
+`Password1!`. Entre como **`admin`** para receber um token de admin e alcançar
+todas as telas (o admin ignora todos os grants). O seed também traz três membros
+com profile, cada um caindo numa sidebar diferente:
+
+- **`johndoe`** — profile `gym-member` (Dashboard, Gyms, Check-ins).
+- **`manager`** — profile `gym-manager` (as telas de academia + criar academias +
+  a tela admin de Users).
+- **`support`** — profile `support` (as telas Profiles/Screens/Users de controle
+  de acesso, sem telas de academia).
+
+Qualquer outro identificador é um membro comum, sem profile. O mesmo comportamento
+de RBAC vale no modo API real — o menu e as guardas vêm de `GET /me/permissions`.
 
 No modo API real, registre-se pela UI (ou entre como o ADMIN do seed — veja as
 envs `ADMIN_*` do `solid_api_sample`). O CORS da API precisa liberar esta origem
@@ -152,24 +172,30 @@ Arquivos (o Vite carrega por mode; arquivos posteriores vencem):
 
 `src/routes.tsx` monta a árvore com o React Router. A área autenticada fica atrás
 de `ProtectedRoute` (redireciona visitantes para `/sign-in`) e usa `AppLayout`
-(sidebar + header); telas de admin adicionam `RoleRoute allow={['ADMIN']}`.
+(sidebar + header); o índice `/` resolve a tela de destino do usuário via
+`LandingRoute`, e cada tela é protegida por `RequireScreen screen='<chave>'
+[action]` (o mesmo `can()` que o menu usa).
 
-| Caminho                       | Guarda            | Página             | Notas                                      |
-| ----------------------------- | ----------------- | ------------------ | ------------------------------------------ |
-| `/`                           | Protected         | Home               | Dashboard (métricas + gráfico Recharts)    |
-| `/gyms`                       | Protected         | Gyms               | Próximas (geolocalização) + busca por nome |
-| `/check-ins`                  | Protected         | CheckIns           | Histórico; ADMIN vê **Validate**           |
-| `/account`                    | Protected         | Account            | Editar username · trocar e-mail (OTP/link) |
-| `/gyms/new`                   | Protected + ADMIN | NewGym             | Criar academia                             |
-| `/admin/users`                | Protected + ADMIN | AdminUsers         | Tabela de usuários paginada                |
-| `/admin/users/:userId`        | Protected + ADMIN | UserEdit           | Editar username/email/role/`is_verified`   |
-| `/sign-in`                    | público (auth)    | SignIn             |                                            |
-| `/register`                   | público           | Register           |                                            |
-| `/forgot-password`            | público (auth)    | ForgotPassword     |                                            |
-| `/users/reset-password`       | público (auth)    | ResetPassword      | Token via `?token=` ou email + OTP         |
-| `/users/verify-email`         | público (auth)    | VerifyEmail        | Landing do link (`?token=`) + OTP          |
-| `/users/confirm-email-change` | público (auth)    | ConfirmEmailChange | Landing do link de troca de e-mail         |
-| `*`                           | —                 | NotFound           | 404                                        |
+| Caminho                       | Guarda                    | Página             | Notas                                                           |
+| ----------------------------- | ------------------------- | ------------------ | --------------------------------------------------------------- |
+| `/`                           | Protected                 | LandingRoute       | Resolve a tela de destino do usuário (dashboard/primeira)       |
+| `/gyms`                       | `gym.gyms`                | Gyms               | Próximas (geolocalização) + busca por nome                      |
+| `/check-ins`                  | `gym.check-in`            | CheckIns           | Histórico; ADMIN vê **Validate**                                |
+| `/account`                    | Protected                 | Account            | Editar username · trocar e-mail · escolher tela de destino      |
+| `/gyms/new`                   | `gym.gyms` (create)       | NewGym             | Criar academia                                                  |
+| `/admin/users`                | `access-control.users`    | AdminUsers         | Tabela de usuários paginada                                     |
+| `/admin/users/:userId`        | `access-control.users`    | UserEdit           | Editar username/email/role/`is_verified`/`is_active` + profiles |
+| `/admin/modules`              | `access-control.modules`  | AdminModules       | CRUD de modules                                                 |
+| `/admin/screens`              | `access-control.screens`  | AdminScreens       | CRUD de screens (por module)                                    |
+| `/admin/profiles`             | `access-control.profiles` | AdminProfiles      | CRUD de profiles                                                |
+| `/admin/profiles/:profileId`  | `access-control.profiles` | ProfileDetail      | Editor de grants (TransferTable) + tela padrão                  |
+| `/sign-in`                    | público (auth)            | SignIn             |                                                                 |
+| `/register`                   | público                   | Register           |                                                                 |
+| `/forgot-password`            | público (auth)            | ForgotPassword     |                                                                 |
+| `/users/reset-password`       | público (auth)            | ResetPassword      | Token via `?token=` ou email + OTP                              |
+| `/users/verify-email`         | público (auth)            | VerifyEmail        | Landing do link (`?token=`) + OTP                               |
+| `/users/confirm-email-change` | público (auth)            | ConfirmEmailChange | Landing do link de troca de e-mail                              |
+| `*`                           | —                         | NotFound           | 404                                                             |
 
 O contrato da API que essas páginas consomem (rotas, papéis, formatos de erro)
 está documentado no [README do `solid_api_sample`](../api/README.md).
@@ -227,11 +253,20 @@ pnpm dev:test    # http://localhost:5001
    check-in num card → toast + as métricas do dashboard atualizam.
 3. **Check-ins** → o histórico mostra o check-in; como admin, **Validate** nele.
 4. **Account** → renomeie seu username; inicie uma troca de e-mail → confirme com
-   o OTP impresso pelo mock (ou a landing do link).
+   o OTP impresso pelo mock (ou a landing do link); escolha uma **Landing screen**
+   (ou "Automatic") e confirme que o próximo login cai nela.
 5. **Admin → Users** → abra um membro → mude role/`is_verified` → Save; confirme
    que a tabela reflete. Ao editar **você mesmo**, o papel vira um badge
-   somente-leitura.
-6. Entre como membro comum e confirme que `/admin/users` e `/gyms/new` renderizam
+   somente-leitura. Desligue o switch **Active** de um membro e confirme que ele
+   não consegue mais entrar. Mova um profile no **card de profiles** do usuário e
+   salve.
+6. **Admin → Profiles** → abra um profile → no **editor de grants** arraste (ou use
+   `>>`/`<<`) telas entre Available e Assigned, marque view/create/edit/delete,
+   escolha a tela **Default** do profile → Save. **Modules** e **Screens** oferecem
+   o mesmo CRUD para o catálogo.
+7. Saia e entre como **`johndoe`**, **`manager`**, **`support`** em seguida — cada
+   um vê uma **sidebar diferente** montada a partir dos grants do seu profile; o
+   admin vê todas as seções. Visitar uma tela que você não tem renderiza
    **Forbidden** no lugar.
 
 Para um smoke com **backend real**, rode `pnpm dev` contra o `solid_api_sample` e

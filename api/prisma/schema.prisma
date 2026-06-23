@@ -14,8 +14,8 @@ datasource db {
 }
 
 enum Role {
-  MEMBER
   ADMIN
+  USER
 }
 
 model User {
@@ -23,8 +23,12 @@ model User {
   username      String   @unique @db.VarChar(30)
   email         String   @unique @db.VarChar(254)
   password_hash String   @db.VarChar(60)
-  role          Role     @default(MEMBER)
+  role          Role     @default(USER)
   is_verified   Boolean  @default(false)
+  // Deactivated accounts can't log in and are cut off on their next request.
+  is_active     Boolean  @default(true)
+  // The user's preferred landing screen key (overrides their profile default).
+  default_screen_key String? @db.VarChar(100)
   created_at    DateTime @default(now())
   // Set on every password change. Tokens issued before this instant are
   // rejected (global logout) via the password-changed registry.
@@ -34,8 +38,86 @@ model User {
   email_verifications EmailVerification[]
   password_resets     PasswordReset[]
   email_changes       EmailChange[]
+  profiles            UserProfile[]
 
   @@map("users")
+}
+
+// ─── Access control (RBAC) ───────────────────────────────────────────────────
+// A module groups screens; a screen is the unit grants attach to; a profile
+// bundles screen grants (with per-action booleans) and is assigned to users.
+// Profiles are global (no tenant) — a cloning project adds company_id here.
+model Module {
+  id          String  @id @default(uuid()) @db.VarChar(36)
+  key         String  @unique @db.VarChar(100)
+  name        String  @db.VarChar(100)
+  description String? @db.VarChar(500)
+  order       Int     @default(0)
+
+  screens Screen[]
+
+  @@map("modules")
+}
+
+model Screen {
+  id          String  @id @default(uuid()) @db.VarChar(36)
+  key         String  @unique @db.VarChar(100)
+  name        String  @db.VarChar(100)
+  path        String? @db.VarChar(200)
+  description String? @db.VarChar(500)
+  order       Int     @default(0)
+
+  module_id String @db.VarChar(36)
+  module    Module @relation(fields: [module_id], references: [id], onDelete: Cascade)
+
+  grants ProfileScreen[]
+
+  @@map("screens")
+}
+
+model Profile {
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  key         String   @unique @db.VarChar(100)
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(500)
+  // is_system protects seeded profiles (no delete / no key rename); grants stay
+  // editable. is_default is auto-attached to new users on /register.
+  is_system   Boolean  @default(false)
+  is_default  Boolean  @default(false)
+  created_at  DateTime @default(now())
+
+  screens ProfileScreen[]
+  users   UserProfile[]
+
+  @@map("profiles")
+}
+
+model ProfileScreen {
+  profile_id String  @db.VarChar(36)
+  screen_id  String  @db.VarChar(36)
+  can_view   Boolean @default(true)
+  can_create Boolean @default(false)
+  can_edit   Boolean @default(false)
+  can_delete Boolean @default(false)
+  // At most one grant per profile is the profile's default landing screen.
+  is_default Boolean @default(false)
+
+  profile Profile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  screen  Screen  @relation(fields: [screen_id], references: [id], onDelete: Cascade)
+
+  @@id([profile_id, screen_id])
+  @@map("profile_screens")
+}
+
+model UserProfile {
+  user_id    String @db.VarChar(36)
+  profile_id String @db.VarChar(36)
+
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, profile_id])
+  @@map("user_profiles")
 }
 
 model CheckIn {

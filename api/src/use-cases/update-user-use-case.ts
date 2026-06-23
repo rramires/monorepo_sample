@@ -8,6 +8,7 @@ import { IUsersRepository, PublicUser } from '@/repositories/i-users-repository'
 import { sha256 } from '@/utils/sha256'
 
 import { CannotChangeOwnRoleError } from './errors/cannot-change-own-role-error'
+import { CannotDeactivateSelfError } from './errors/cannot-deactivate-self-error'
 import { ResourceNotFoundError } from './errors/resource-not-found-error'
 import { UserAlreadyExistsError } from './errors/user-already-exists-error'
 
@@ -18,6 +19,7 @@ interface UpdateUserUseCaseRequest {
 	email?: string
 	role?: Role
 	is_verified?: boolean
+	is_active?: boolean
 }
 
 interface UpdateUserUseCaseResponse {
@@ -41,6 +43,7 @@ export class UpdateUserUseCase {
 		email,
 		role,
 		is_verified,
+		is_active,
 	}: UpdateUserUseCaseRequest): Promise<UpdateUserUseCaseResponse> {
 		// 404 before any mutation.
 		const target = await this.usersRepository.findById(userId)
@@ -53,6 +56,7 @@ export class UpdateUserUseCase {
 			email?: string
 			role?: Role
 			is_verified?: boolean
+			is_active?: boolean
 		} = {}
 
 		// username uniqueness (excluding the target itself).
@@ -68,10 +72,19 @@ export class UpdateUserUseCase {
 		// only admins reach this route, blocking self-demotion alone guarantees at
 		// least one admin always remains.
 		if (role !== undefined) {
-			if (userId === actorId && role === Role.MEMBER) {
+			if (userId === actorId && role === Role.USER) {
 				throw new CannotChangeOwnRoleError()
 			}
 			data.role = role
+		}
+
+		// Self-deactivation guard: you can't disable your own account (would lock
+		// yourself out immediately on the next request).
+		if (is_active !== undefined) {
+			if (userId === actorId && is_active === false) {
+				throw new CannotDeactivateSelfError()
+			}
+			data.is_active = is_active
 		}
 
 		// Email change: a new address is unproven, so is_verified drops to false

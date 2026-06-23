@@ -1,4 +1,5 @@
-import { LoaderCircle } from 'lucide-react'
+import { LoaderCircle, Plus } from 'lucide-react'
+import { Link } from 'react-router'
 
 import { PageTitle } from '@/components/title/page-title'
 import { Button } from '@/components/ui/button'
@@ -15,11 +16,21 @@ export function Gyms() {
 			<PageTitle title='Gyms' />
 
 			<div className='flex flex-1 flex-col gap-6 p-8'>
-				<div>
-					<h2 className='text-2xl font-medium'>Gyms</h2>
-					<p className='text-muted-foreground text-sm'>
-						Find a gym near you, or search by name.
-					</p>
+				<div className='flex items-start justify-between gap-4'>
+					<div>
+						<h2 className='text-2xl font-medium'>Gyms</h2>
+						<p className='text-muted-foreground text-sm'>
+							Find a gym near you, or search by name.
+						</p>
+					</div>
+					{pm.canCreate && (
+						<Button asChild size='sm'>
+							<Link to='/gyms/new'>
+								<Plus />
+								New gym
+							</Link>
+						</Button>
+					)}
 				</div>
 
 				<Input

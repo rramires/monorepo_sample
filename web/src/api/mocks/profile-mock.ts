@@ -1,42 +1,32 @@
 import { userResponseSchema } from '@root/contracts'
 import { http, HttpResponse } from 'msw'
 
+import { userIdFromToken } from './mock-auth'
 import { findUser } from './users-data'
 import { isVerified } from './verified-state'
 
 export const profileMock = http.get('/auth/me', ({ request }) => {
-	const auth = request.headers.get('Authorization')
+	const userId = userIdFromToken(request.headers.get('Authorization'))
+	const user = userId ? findUser(userId) : undefined
 
-	// The admin token identifies the seeded admin (already verified). Username is
-	// read from the directory so a self-service rename (PATCH /auth/me) shows up.
+	if (!user) {
+		return HttpResponse.json({ message: 'Unauthorized.' }, { status: 401 })
+	}
+
 	// Response is parsed through the shared contract DTO so any drift from the
-	// backend's wire shape fails loudly here.
-	if (auth === 'Bearer mock-admin-jwt-token') {
-		return HttpResponse.json(
-			userResponseSchema.parse({
-				user: {
-					id: 'mock-admin-id',
-					username: findUser('mock-admin-id')?.username ?? 'admin',
-					is_verified: true,
-					role: 'ADMIN',
-				},
-			}),
-		)
-	}
+	// backend's wire shape fails loudly here. The default member's verification
+	// state is driven by the verify-email flow's in-memory toggle.
+	const is_verified =
+		user.id === 'mock-user-id' ? isVerified() : user.is_verified
 
-	// The demo access token identifies the seeded member.
-	if (auth === 'Bearer mock-jwt-token') {
-		return HttpResponse.json(
-			userResponseSchema.parse({
-				user: {
-					id: 'mock-user-id',
-					username: findUser('mock-user-id')?.username ?? 'johndoe',
-					is_verified: isVerified(),
-					role: 'MEMBER',
-				},
-			}),
-		)
-	}
-
-	return HttpResponse.json({ message: 'Unauthorized.' }, { status: 401 })
+	return HttpResponse.json(
+		userResponseSchema.parse({
+			user: {
+				id: user.id,
+				username: user.username,
+				is_verified,
+				role: user.role,
+			},
+		}),
+	)
 })

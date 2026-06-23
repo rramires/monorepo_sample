@@ -36,7 +36,7 @@ function renderWithRole(role: Role) {
 
 describe('RoleRoute', () => {
 	it('shows Forbidden when the role is not allowed', () => {
-		renderWithRole('MEMBER')
+		renderWithRole('USER')
 
 		expect(screen.getByText('403 — Admins only')).toBeInTheDocument()
 		expect(screen.queryByText('secret content')).not.toBeInTheDocument()

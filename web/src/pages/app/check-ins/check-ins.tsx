@@ -63,7 +63,7 @@ export function CheckIns() {
 											: 'Pending'}
 									</Badge>
 
-									{pm.isAdmin && !item.validated && (
+									{pm.canValidate && !item.validated && (
 										<Button
 											size='sm'
 											variant='outline'

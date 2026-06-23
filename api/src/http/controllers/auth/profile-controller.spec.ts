@@ -34,7 +34,7 @@ describe('Profile (e2e)', () => {
 				// this flag to show the "confirm your email" banner.
 				is_verified: false,
 				// Default role for a new user; surfaced fresh for RBAC UI.
-				role: Role.MEMBER,
+				role: Role.USER,
 			}),
 		)
 	})
@@ -43,7 +43,7 @@ describe('Profile (e2e)', () => {
 		// Valid token whose subject no longer exists in the database
 		const token = app.jwt.sign({
 			sub: 'non-existent-user-id',
-			role: Role.MEMBER,
+			role: Role.USER,
 		})
 
 		const response = await request(app.server)

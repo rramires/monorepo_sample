@@ -1,5 +1,6 @@
 import { hash } from 'bcryptjs'
 
+import type { IUserProfilesRepository } from '@/repositories/i-user-profiles-repository'
 import { IUsersRepository, PublicUser } from '@/repositories/i-users-repository'
 
 import { UserAlreadyExistsError } from './errors/user-already-exists-error'
@@ -15,7 +16,11 @@ interface RegisterUseCaseResponse {
 }
 
 export class RegisterUseCase {
-	constructor(private usersRepository: IUsersRepository) {}
+	constructor(
+		private usersRepository: IUsersRepository,
+		// Optional: when provided, the is_default profile is attached on register.
+		private userProfilesRepository?: IUserProfilesRepository,
+	) {}
 	/* 
 		Hack: Using "private" or "public" in the constructor parameters does 
 		the same as declaring the property before the constructor and then assigning this:
@@ -49,6 +54,10 @@ export class RegisterUseCase {
 			email,
 			password_hash,
 		})
+
+		// New users inherit the is_default profile (their baseline screens).
+		await this.userProfilesRepository?.attachDefault(user.id)
+
 		return {
 			user,
 		}

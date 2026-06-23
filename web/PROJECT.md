@@ -170,17 +170,21 @@ src/
 │   └── mocks/
 │       ├── <name>-mock.ts   # MSW handler mirroring the backend route
 │       ├── *-data.ts        # mutable in-memory mock state (users, gyms, check-ins)
+│       ├── data/            # access-control-seed.ts (single source for the RBAC dataset)
+│       ├── mock-auth.ts     # computePermissions · resolveDefaultScreen · buildMenu · token↔user
 │       ├── verified-state.ts# shared mock flag (email verification)
 │       └── index.ts         # setupWorker(...handlers) + enableMSW() (test mode only)
 ├── components/
-│   ├── auth/                # AuthContext/Provider/hooks · ProtectedRoute · RoleRoute · Forbidden · verify-email-banner/
+│   ├── auth/                # AuthContext/Provider/hooks · ProtectedRoute · RequireScreen · LandingRoute · Forbidden · verify-email-banner/
 │   ├── theme/               # ThemeContext/Provider/hooks · mode-toggle
 │   ├── title/               # TitleContext/Provider · page-title (per-page document.title)
-│   ├── app-sidebar/         # app-sidebar.tsx (view) + use-app-sidebar-pm.ts
+│   ├── app-sidebar/         # app-sidebar.tsx (view) + use-app-sidebar-pm.ts (data-driven from /me/permissions.menu)
+│   ├── transfer-table/      # reusable two-table multi-select + dnd-kit assignment widget
 │   ├── ui/                  # shadcn/ui components (generated; do not hand-edit casually)
 │   └── ui-sample/           # cascade tier-3 reference: custom Tailwind + tailwind-variants
 ├── hooks/
 │   ├── use-mobile.ts        # useIsMobile (matchMedia)
+│   ├── use-permissions.ts   # usePermissions() + can(screenKey, action); ADMIN bypasses
 │   └── use-check-in.ts      # shared check-in mutation (geo + POST + invalidate)
 ├── lib/
 │   ├── api.ts               # Axios instance + interceptors (token attach, 401 single-flight refresh)
@@ -191,7 +195,7 @@ src/
 │   └── utils.ts             # cn() (clsx + tailwind-merge)
 └── pages/
     ├── _layouts/            # app-layout/ · auth-layout · register-layout
-    ├── app/                 # authed area: home/ (dashboard) · gyms/ · check-ins/ · account/ · new-gym/ · admin/users/(+user-edit/)
+    ├── app/                 # authed area: home/ (dashboard) · gyms/ · check-ins/ · account/ · new-gym/ · admin/{modules,screens,profiles/(+profile-detail/),users/(+user-edit/)}
     ├── auth/                # sign-in/ · forgot-password/ · reset-password/ · verify-email/ · confirm-email-change/
     ├── register/
     ├── e404.tsx · error.tsx
@@ -298,6 +302,62 @@ the generic string.
 prompts the user and the check-in action is blocked (or the `403` is handled).
 After the user verifies (link/OTP), `reloadUser()` refetches `/auth/me` and the
 banner clears — no re-login, mirroring the backend's fresh-from-DB read.
+
+### 5.5 Access control (RBAC)
+
+Beyond the coarse `role`, the app has a **hybrid RBAC** model: a fixed role
+(`ADMIN` bypasses everything, `USER` follows grants) plus dynamic **Profiles**
+that bundle **per-screen grants** (`view`/`create`/`edit`/`delete`). **Modules**
+group **Screens**; a profile carries `is_default` (auto-attached to a user on
+register) and `is_system` (protected — its key can't change and it can't be
+deleted). A user may hold several profiles; their grants **merge** (OR).
+
+- **`usePermissions()` / `can()`** (`hooks/use-permissions.ts`) — loads
+  `GET /me/permissions` as **server state** (TanStack Query, keyed by user id, so
+  a different user refetches), exposes `can(screenKey, action='view')`. ADMIN
+  short-circuits to `true`; while loading, `can()` is conservatively `false` so
+  nothing flashes before grants resolve. The permission model (`get-me-permissions.ts`)
+  carries `screens` (the grants), `menu` (the nav catalog) and `defaultScreenKey`.
+- **`RequireScreen screen='<key>' [action]`** (`components/auth/require-screen.tsx`)
+  — the route-level mirror of `can()`. Sits **inside** `ProtectedRoute`; renders
+  the child route only when the user `can()` the action, else **`Forbidden` in
+  place** (layout stays). The backend enforces the same with `requireScreen`
+  (defense in depth). This **replaces** the older role-only `RoleRoute` for the
+  screen-gated routes.
+- **`LandingRoute`** (`components/auth/landing-route.tsx`) — the index (`/`)
+  resolver: sends the user to their preferred `defaultScreenKey` → the gym
+  Dashboard if viewable → their first available screen → renders Home. Avoids a
+  Forbidden on login.
+- **Data-driven sidebar** (`app-sidebar/use-app-sidebar-pm.ts`) — builds its
+  sections from `permissions.menu` (already only the viewable screens, grouped and
+  ordered by module/screen order), intersected with `NAV_ENTRIES` (the screens that
+  have a real page + their icon/label). It **no longer fetches** `/modules` +
+  `/screens`; the menu grows as more pages get built.
+- **Admin screens** (`pages/app/admin/`) — each a view + PM pair, gated by its
+  `access-control.*` screen key:
+    - **Modules** (`/admin/modules`) and **Screens** (`/admin/screens`) — CRUD the
+      catalog (dialogs for create/edit; deleting a screen cascades its grants).
+    - **Profiles** (`/admin/profiles`) — CRUD profiles (with `is_default`/`is_system`
+      badges); **ProfileDetail** (`/admin/profiles/:profileId`) edits one profile
+      and its grants via the **`TransferTable`** — the assigned side has per-action
+      checkboxes (view/create/edit/delete) and a **Default** radio picking the
+      profile's default landing screen.
+    - **Users** (`/admin/users`) — paginated table; **UserEdit**
+      (`/admin/users/:userId`) edits username/email/role/`is_verified` plus an
+      **Active** switch (`is_active`; self-deactivation blocked) and a **profiles**
+      card (a `TransferTable` assigning profiles; admins show a read-only note).
+      Deactivating a user blocks login and cuts access on the next request.
+- **Per-user default landing screen** (`pages/app/account/landing-card.tsx`) —
+  lets a user pick which of _their_ screens to land on after sign-in; "Automatic"
+  clears the override (`default_screen_key: null` via `PATCH /auth/me`), falling
+  back to the profile's default. Saving invalidates `['me-permissions']`.
+
+The MSW mock mirrors the backend verbatim: `mocks/data/access-control-seed.ts` is
+the single dataset (modules, screens, profiles + grants, user↔profile links);
+`mocks/mock-auth.ts` holds `computePermissions` (merge a user's profile grants;
+ADMIN gets all), `resolveDefaultScreen`, `buildMenu` and the token↔user mapping;
+the `*-mock.ts` handlers serve `/modules`, `/screens`, `/profiles`,
+`/users/:id/profiles` and `/me/permissions`.
 
 ---
 
@@ -461,8 +521,10 @@ leak past `src/api`. Build against the mock first; the real API is wired last.
   mixed.
 - Access token in memory only (anti-XSS); durability via the httpOnly refresh
   cookie; single-flight 401 refresh-and-replay.
-- RBAC read fresh from `/auth/me`; `Forbidden` rendered in place, not trusted
-  from a token.
+- RBAC read fresh from `/me/permissions` (`can()` + `RequireScreen`); `Forbidden`
+  rendered in place, not trusted from a token. Hybrid model: fixed role + dynamic
+  profiles bundling per-screen grants; the sidebar and landing screen are
+  data-driven from the same payload.
 - Typed `src/api` layer is the single place wire shapes (snake_case) map to app
   models (camelCase).
 - Tailwind v4 (CSS-config) + shadcn cascade + token-based theming (one-class

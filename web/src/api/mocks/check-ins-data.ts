@@ -1,15 +1,11 @@
 import type { CheckIn } from '../get-check-ins-history'
+import { userIdFromToken } from './mock-auth'
 
-// Mock-only in-memory store for check-ins. Maps the demo tokens to the seeded
-// user ids the /auth/me mock returns, so history/metrics scope to "me".
+// Mock-only in-memory store for check-ins. Resolves the caller via the shared
+// token→user map (so suffix tokens for the demo users work too), scoping
+// history/metrics to "me".
 export function userIdFromAuth(authHeader: string | null) {
-	if (authHeader === 'Bearer mock-admin-jwt-token') {
-		return 'mock-admin-id'
-	}
-	if (authHeader === 'Bearer mock-jwt-token') {
-		return 'mock-user-id'
-	}
-	return null
+	return userIdFromToken(authHeader)
 }
 
 // ISO timestamp for `n` days ago at noon (noon avoids timezone day-boundary

@@ -26,7 +26,7 @@ describe('Get user by id (e2e)', () => {
 	beforeAll(async () => {
 		await app.ready()
 
-		// Target user to be fetched (stays a plain MEMBER).
+		// Target user to be fetched (stays a plain USER).
 		const target = await createUser('target@example.com', 'targetuser')
 		targetId = target.id
 
@@ -61,8 +61,10 @@ describe('Get user by id (e2e)', () => {
 			id: targetId,
 			username: 'targetuser',
 			email: 'target@example.com',
-			role: 'MEMBER',
+			role: 'USER',
 			is_verified: false,
+			is_active: true,
+			default_screen_key: null,
 			created_at: expect.any(String),
 			password_changed_at: null,
 		})

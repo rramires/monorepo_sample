@@ -1,16 +1,20 @@
 import { createBrowserRouter } from 'react-router'
 
+import { LandingRoute } from './components/auth/landing-route'
 import { ProtectedRoute } from './components/auth/protected-route'
-import { RoleRoute } from './components/auth/role-route'
+import { RequireScreen } from './components/auth/require-screen'
 import { AppLayout } from './pages/_layouts/app-layout/app-layout'
 import { AuthLayout } from './pages/_layouts/auth-layout'
 import { RegisterLayout } from './pages/_layouts/register-layout'
 import { Account } from './pages/app/account/account'
+import { AdminModules } from './pages/app/admin/modules/modules'
+import { ProfileDetail } from './pages/app/admin/profiles/profile-detail/profile-detail'
+import { AdminProfiles } from './pages/app/admin/profiles/profiles'
+import { AdminScreens } from './pages/app/admin/screens/screens'
 import { UserEdit } from './pages/app/admin/users/user-edit/user-edit'
 import { AdminUsers } from './pages/app/admin/users/users'
 import { CheckIns } from './pages/app/check-ins/check-ins'
 import { Gyms } from './pages/app/gyms/gyms'
-import { Home } from './pages/app/home/home'
 import { NewGym } from './pages/app/new-gym/new-gym'
 import { ConfirmEmailChange } from './pages/auth/confirm-email-change/confirm-email-change'
 import { ForgotPassword } from './pages/auth/forgot-password/forgot-password'
@@ -33,14 +37,44 @@ export const router = createBrowserRouter([
 					{
 						element: <AppLayout />,
 						children: [
-							{ index: true, element: <Home /> },
-							{ path: 'gyms', element: <Gyms /> },
-							{ path: 'check-ins', element: <CheckIns /> },
+							// Index lands on the dashboard or the user's first
+							// allowed screen — no Forbidden on login.
+							{ index: true, element: <LandingRoute /> },
+							// Each screen route is guarded by the same `can()`
+							// the menu uses; the backend mirrors it later.
+							{
+								element: <RequireScreen screen='gym.gyms' />,
+								children: [{ path: 'gyms', element: <Gyms /> }],
+							},
+							{
+								element: (
+									<RequireScreen screen='gym.check-in' />
+								),
+								children: [
+									{
+										path: 'check-ins',
+										element: <CheckIns />,
+									},
+								],
+							},
+							// Account is self-service — every authed user.
 							{ path: 'account', element: <Account /> },
 							{
-								element: <RoleRoute allow={['ADMIN']} />,
+								element: (
+									<RequireScreen
+										screen='gym.gyms'
+										action='create'
+									/>
+								),
 								children: [
 									{ path: 'gyms/new', element: <NewGym /> },
+								],
+							},
+							{
+								element: (
+									<RequireScreen screen='access-control.users' />
+								),
+								children: [
 									{
 										path: 'admin/users',
 										element: <AdminUsers />,
@@ -48,6 +82,43 @@ export const router = createBrowserRouter([
 									{
 										path: 'admin/users/:userId',
 										element: <UserEdit />,
+									},
+								],
+							},
+							{
+								element: (
+									<RequireScreen screen='access-control.modules' />
+								),
+								children: [
+									{
+										path: 'admin/modules',
+										element: <AdminModules />,
+									},
+								],
+							},
+							{
+								element: (
+									<RequireScreen screen='access-control.screens' />
+								),
+								children: [
+									{
+										path: 'admin/screens',
+										element: <AdminScreens />,
+									},
+								],
+							},
+							{
+								element: (
+									<RequireScreen screen='access-control.profiles' />
+								),
+								children: [
+									{
+										path: 'admin/profiles',
+										element: <AdminProfiles />,
+									},
+									{
+										path: 'admin/profiles/:profileId',
+										element: <ProfileDetail />,
 									},
 								],
 							},

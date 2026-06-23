@@ -23,6 +23,7 @@ import {
 import { Switch } from '@/components/ui/switch'
 
 import { useUserEditPM } from './use-user-edit-pm'
+import { UserProfilesCard } from './user-profiles-card'
 
 export function UserEdit() {
 	const pm = useUserEditPM()
@@ -31,8 +32,8 @@ export function UserEdit() {
 		<>
 			<PageTitle title='Edit user' />
 
-			<div className='flex flex-1 justify-center p-8'>
-				<Card className='w-full max-w-lg'>
+			<div className='flex flex-1 flex-col items-center gap-6 p-8'>
+				<Card className='w-full max-w-3xl'>
 					{pm.isLoading && (
 						<CardHeader>
 							<CardTitle>Loading…</CardTitle>
@@ -142,7 +143,7 @@ export function UserEdit() {
 																<SelectValue />
 															</SelectTrigger>
 															<SelectContent>
-																<SelectItem value='MEMBER'>
+																<SelectItem value='USER'>
 																	Member
 																</SelectItem>
 																<SelectItem value='ADMIN'>
@@ -183,6 +184,34 @@ export function UserEdit() {
 											/>
 										</div>
 
+										<div className='flex items-center justify-between'>
+											<div>
+												<Label htmlFor='is_active'>
+													Active
+												</Label>
+												{pm.isSelf && (
+													<p className='text-muted-foreground text-sm'>
+														You can't deactivate
+														your own account.
+													</p>
+												)}
+											</div>
+											<Controller
+												control={pm.control}
+												name='is_active'
+												render={({ field }) => (
+													<Switch
+														id='is_active'
+														checked={field.value}
+														onCheckedChange={
+															field.onChange
+														}
+														disabled={pm.isSelf}
+													/>
+												)}
+											/>
+										</div>
+
 										<div className='flex gap-2'>
 											<Button
 												type='submit'
@@ -205,6 +234,15 @@ export function UserEdit() {
 						</>
 					)}
 				</Card>
+
+				{!pm.isLoading && !pm.isError && pm.user && (
+					<div className='w-full max-w-3xl'>
+						<UserProfilesCard
+							userId={pm.user.id}
+							userIsAdmin={pm.user.role === 'ADMIN'}
+						/>
+					</div>
+				)}
 			</div>
 		</>
 	)

@@ -93,7 +93,7 @@ describe('Refresh Token (e2e)', () => {
 			.send({ identifier: email, password: user.password })
 		const cookies = authResponse.get('Set-Cookie') || []
 
-		// Promote in the DB AFTER the refresh token (claiming MEMBER) was issued.
+		// Promote in the DB AFTER the refresh token (claiming USER) was issued.
 		await prisma.user.update({
 			where: { id: userId },
 			data: { role: Role.ADMIN },
@@ -106,7 +106,7 @@ describe('Refresh Token (e2e)', () => {
 		expect(response.status).toEqual(200)
 
 		// The rotated access token must carry the fresh DB role (ADMIN), not the
-		// stale MEMBER claim copied from the presented refresh token.
+		// stale USER claim copied from the presented refresh token.
 		const payload = JSON.parse(
 			Buffer.from(
 				response.body.token.split('.')[1],

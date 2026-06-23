@@ -36,7 +36,7 @@ test('admin lists users and promotes a member', async ({ page }) => {
 	// this is the case that broke on a real browser but not in happy-dom.
 	await expect(page.getByRole('combobox')).toContainText('Member')
 
-	// Promote MEMBER → ADMIN via the role select.
+	// Promote USER → ADMIN via the role select.
 	await page.getByRole('combobox').click()
 	await page.getByRole('option', { name: 'Admin' }).click()
 	await page.getByRole('button', { name: 'Save changes' }).click()

@@ -91,14 +91,19 @@ src/
 ├── prisma-client/           # CLIENTE GERADO pelo Prisma 7 (output custom)
 ├── http/
 │   ├── controllers/
-│   │   ├── auth/            # auth + self-service (login, logout, refresh, me, editar username, troca de e-mail)
-│   │   ├── users/           # rotas de conta (cadastro, verificação de e-mail, reset de senha, confirmar troca de e-mail, listar/buscar/editar admin)
+│   │   ├── auth/            # auth + self-service (login, logout, refresh, me, editar username + default_screen_key, troca de e-mail)
+│   │   ├── users/           # rotas de conta (cadastro, verificação de e-mail, reset de senha, confirmar troca de e-mail, listar/buscar/editar admin, atribuição de perfis)
+│   │   ├── me/              # GET /me/permissions (telas efetivas + menu da sidebar + tela inicial padrão)
+│   │   ├── modules/         # controle de acesso: CRUD de módulos (tela access-control.modules)
+│   │   ├── screens/         # controle de acesso: CRUD de telas (tela access-control.screens)
+│   │   ├── profiles/        # controle de acesso: CRUD de perfis + atribuição de grants (tela access-control.profiles)
 │   │   ├── gyms/            # rotas + controllers de academias (criar, editar, buscar, nearby)
 │   │   ├── check-ins/       # rotas + controllers de check-ins
 │   │   └── health/          # healthcheck (/hello)
 │   ├── middlewares/
-│   │   ├── verify-jwt-middleware.ts   # autenticação + checagem na denylist
-│   │   ├── verify-user-role.ts        # autorização (RBAC; lê papel do DB; 403 se papel errado)
+│   │   ├── verify-jwt-middleware.ts   # autenticação + checagem na denylist + recheck de is_active
+│   │   ├── verify-user-role.ts        # guard de papel legado (RBAC; lê papel do DB; 403 se papel errado)
+│   │   ├── require-screen.ts          # guard de controle de acesso: requireScreen(screenKey, action); lê grants efetivos do DB; ADMIN ignora
 │   │   ├── verify-email-verified.ts   # bloqueia não verificados (REQUIRE_EMAIL_VERIFICATION)
 │   │   └── rate-limit.ts              # limite estrito p/ rotas de auth
 │   └── schemas/
@@ -150,7 +155,7 @@ Exemplo: **`POST /auth/login`** (login) e **`POST /gyms/:gymId/check-ins`** (rot
 4. Hooks `onRequest` da rota (se houver):
      • strictAuthLimit(app)          → rate limit estrito (5/min) em /users e /auth/login
      • verifyJwtMiddleware           → autenticação (401 se inválido ou revogado)
-     • verifyUserRole(Role.ADMIN)    → autorização (403 se papel errado)
+     • requireScreen(key, action)    → autorização (403 se faltar o grant; ADMIN ignora)
         │
 5. Controller:
      • Valida params/body/query com Zod  (ZodError → 400 no error handler)
@@ -225,25 +230,30 @@ regras de entrada — tamanhos, formatos, charset, nulabilidade — e são
 doc **não** repete os valores literais (eles driftariam). Leia as regras na
 fonte via este índice rota → controller:
 
-| Rota                                     | Controller (schema Zod)                                                 |
-| ---------------------------------------- | ----------------------------------------------------------------------- |
-| `POST /users`                            | `src/http/controllers/users/register-controller.ts`                     |
-| `POST /auth/login`                       | `src/http/controllers/auth/authenticate-controller.ts`                  |
-| `POST /gyms`                             | `src/http/controllers/gyms/create-controller.ts`                        |
-| `GET /gyms/search`                       | `src/http/controllers/gyms/search-controller.ts`                        |
-| `GET /gyms/nearby`                       | `src/http/controllers/gyms/nearby-controller.ts`                        |
-| `POST /gyms/:gymId/check-ins`            | `src/http/controllers/check-ins/check-in-controller.ts`                 |
-| `GET` / `POST /users/verify-email[/otp]` | `src/http/controllers/users/verify-email-controller.ts`                 |
-| `POST /users/forgot-password`            | `src/http/controllers/users/forgot-password-controller.ts`              |
-| `POST /users/reset-password`             | `src/http/controllers/users/reset-password-controller.ts`               |
-| `PATCH /gyms/:gymId`                     | `src/http/controllers/gyms/update-controller.ts`                        |
-| `PATCH /auth/me`                         | `src/http/controllers/auth/update-profile-controller.ts`                |
-| `POST /auth/me/email`                    | `src/http/controllers/auth/request-email-change-controller.ts`          |
-| `POST /auth/me/email/confirm`            | `src/http/controllers/auth/confirm-email-change-by-otp-controller.ts`   |
-| `GET /users/confirm-email-change`        | `src/http/controllers/users/confirm-email-change-by-link-controller.ts` |
-| `GET /users`                             | `src/http/controllers/users/list-controller.ts`                         |
-| `GET /users/:userId`                     | `src/http/controllers/users/get-user-controller.ts`                     |
-| `PATCH /users/:userId`                   | `src/http/controllers/users/update-controller.ts`                       |
+| Rota                                        | Controller (schema Zod)                                                 |
+| ------------------------------------------- | ----------------------------------------------------------------------- |
+| `POST /users`                               | `src/http/controllers/users/register-controller.ts`                     |
+| `POST /auth/login`                          | `src/http/controllers/auth/authenticate-controller.ts`                  |
+| `POST /gyms`                                | `src/http/controllers/gyms/create-controller.ts`                        |
+| `GET /gyms/search`                          | `src/http/controllers/gyms/search-controller.ts`                        |
+| `GET /gyms/nearby`                          | `src/http/controllers/gyms/nearby-controller.ts`                        |
+| `POST /gyms/:gymId/check-ins`               | `src/http/controllers/check-ins/check-in-controller.ts`                 |
+| `GET` / `POST /users/verify-email[/otp]`    | `src/http/controllers/users/verify-email-controller.ts`                 |
+| `POST /users/forgot-password`               | `src/http/controllers/users/forgot-password-controller.ts`              |
+| `POST /users/reset-password`                | `src/http/controllers/users/reset-password-controller.ts`               |
+| `PATCH /gyms/:gymId`                        | `src/http/controllers/gyms/update-controller.ts`                        |
+| `PATCH /auth/me`                            | `src/http/controllers/auth/update-profile-controller.ts`                |
+| `POST /auth/me/email`                       | `src/http/controllers/auth/request-email-change-controller.ts`          |
+| `POST /auth/me/email/confirm`               | `src/http/controllers/auth/confirm-email-change-by-otp-controller.ts`   |
+| `GET /users/confirm-email-change`           | `src/http/controllers/users/confirm-email-change-by-link-controller.ts` |
+| `GET /users`                                | `src/http/controllers/users/list-controller.ts`                         |
+| `GET /users/:userId`                        | `src/http/controllers/users/get-user-controller.ts`                     |
+| `PATCH /users/:userId`                      | `src/http/controllers/users/update-controller.ts`                       |
+| `GET` / `PUT /users/:userId/profiles`       | `src/http/controllers/users/user-profiles-controller.ts`                |
+| `POST` / `PATCH` / `DELETE /modules[/:id]`  | `src/http/controllers/modules/*-controller.ts`                          |
+| `POST` / `PATCH` / `DELETE /screens[/:id]`  | `src/http/controllers/screens/*-controller.ts`                          |
+| `POST` / `PATCH` / `DELETE /profiles[/:id]` | `src/http/controllers/profiles/*-controller.ts`                         |
+| `PUT /profiles/:id/screens`                 | `src/http/controllers/profiles/set-screens-controller.ts`               |
 
 Formatos notáveis: `username` (piso `MIN_TEXT_LENGTH` … 30, `[a-zA-Z0-9_]`,
 gravado lowercase — mesma regra no cadastro **e** nas edições de perfil/admin),
@@ -295,52 +305,82 @@ locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do monorepo e
 
 ### 5.2 Autorização (o que o usuário pode fazer) — RBAC
 
-- Papéis no enum `Role`: `MEMBER` (padrão) e `ADMIN`.
-- `verifyUserRole(role)` é um _middleware factory_ que lê o **papel do banco**
-  (por `request.user.sub`, via o mesmo use-case do `GET /auth/me`) e compara com o
-  papel exigido — o claim `role` assinado nunca é confiado para autorização, então
-  um rebaixamento passa a valer na próxima requisição. Usado nas rotas
-  administrativas; roda depois do `verifyJwtMiddleware`.
+- Papéis no enum `Role`: `USER` (padrão) e `ADMIN`. O papel é a camada grossa; o
+  acesso fino é o modelo de grants em nível de tela (§5.7).
+- `requireScreen(screenKey, action)` é o **guard principal** (um _middleware
+  factory_). Ele lê as **permissões efetivas do banco** (por `request.user.sub`,
+  via `GetUserPermissionsUseCase` — o mesmo use-case do `GET /me/permissions`) e
+  libera a requisição só quando o usuário `can()` executar `action`
+  (`view`/`create`/`edit`/`delete`) na `screenKey`. Um `ADMIN` ignora toda
+  checagem. Os claims `role`/grants assinados nunca são confiados para
+  autorização, então uma mudança de grant, perfil ou papel passa a valer na
+  próxima requisição. Roda depois do `verifyJwtMiddleware`. Modelo completo na
+  §5.7.
+- `verifyUserRole(role)` é o guard de papel puro legado (lê o papel do banco e
+  compara com o exigido); fica como referência, mas as rotas atuais usam
+  `requireScreen`.
 - **Por que `403` e não `401`:** o usuário está **autenticado** (token válido), mas
   **sem permissão** → `403 Forbidden`. O `401 Unauthorized` fica reservado para
-  falha de **autenticação** (token ausente/inválido/revogado). Misturar os dois
-  mascara a causa real do erro para o cliente.
+  falha de **autenticação** (token ausente/inválido/revogado, ou uma conta
+  desativada — ver §5.7). Misturar os dois mascara a causa real do erro para o
+  cliente.
 
 ### 5.3 Mapa de rotas × proteção
 
-| Método | Rota                             | Auth (JWT) | Papel exigido | Observação                                       |
-| ------ | -------------------------------- | :--------: | :-----------: | ------------------------------------------------ |
-| GET    | `/hello`                         |     ❌     |       —       | health/teste                                     |
-| POST   | `/users`                         |     ❌     |       —       | registro (público)                               |
-| POST   | `/auth/login`                    |     ❌     |       —       | login                                            |
-| PATCH  | `/auth/refresh`                  |   cookie   |       —       | rotação de token                                 |
-| GET    | `/auth/me`                       |     ✅     |       —       | perfil próprio                                   |
-| POST   | `/auth/logout`                   |     ✅     |       —       | revoga o token atual (denylist) + limpa cookie   |
-| PATCH  | `/auth/me`                       |     ✅     |       —       | self: editar o próprio username                  |
-| POST   | `/auth/me/email`                 |     ✅     |       —       | self: solicitar troca de e-mail (confirma novo)  |
-| POST   | `/auth/me/email/confirm`         |     ✅     |       —       | self: confirmar troca de e-mail via OTP          |
-| GET    | `/gyms/search`                   |     ✅     |       —       | busca por título                                 |
-| GET    | `/gyms/nearby`                   |     ✅     |       —       | busca por proximidade                            |
-| POST   | `/gyms`                          |     ✅     |   **ADMIN**   | cadastrar academia                               |
-| PATCH  | `/gyms/:gymId`                   |     ✅     |   **ADMIN**   | editar academia (título/descrição/telefone)      |
-| GET    | `/check-ins/history`             |     ✅     |       —       | histórico próprio                                |
-| GET    | `/check-ins/metrics`             |     ✅     |       —       | total próprio                                    |
-| POST   | `/gyms/:gymId/check-ins`         |     ✅     |       —       | check-in (e-mail verificado se flag ligada)      |
-| PATCH  | `/check-ins/:checkInId/validate` |     ✅     |   **ADMIN**   | validar check-in                                 |
-| POST   | `/users/send-verification`       |     ✅     |       —       | enviar e-mail de verificação (link + OTP)        |
-| GET    | `/users/verify-email`            |     ❌     |       —       | verificar e-mail via link token (`?token=`)      |
-| POST   | `/users/verify-email/otp`        |     ✅     |       —       | verificar e-mail via código OTP                  |
-| POST   | `/users/resend-verification`     |     ✅     |       —       | reenviar e-mail de verificação                   |
-| POST   | `/users/forgot-password`         |     ❌     |       —       | solicitar reset; sempre `202` (anti-enumeração)  |
-| POST   | `/users/reset-password`          |     ❌     |       —       | resetar via link token ou email + OTP            |
-| GET    | `/users/confirm-email-change`    |     ❌     |       —       | confirmar troca de e-mail via link (`?token=`)   |
-| GET    | `/users`                         |     ✅     |   **ADMIN**   | listar usuários (paginado, 20/página)            |
-| GET    | `/users/:userId`                 |     ✅     |   **ADMIN**   | buscar um usuário por id (PublicUser)            |
-| PATCH  | `/users/:userId`                 |     ✅     |   **ADMIN**   | editar usuário (username/email/role/is_verified) |
+> A coluna **Guard** é a tela + ação do `requireScreen` (`ADMIN` ignora); `—`
+> significa só autenticação. O modelo completo de grants é a §5.7.
+
+| Método | Rota                             | Auth (JWT) | Guard (tela · ação)                | Observação                                                 |
+| ------ | -------------------------------- | :--------: | ---------------------------------- | ---------------------------------------------------------- |
+| GET    | `/hello`                         |     ❌     | —                                  | health/teste                                               |
+| POST   | `/users`                         |     ❌     | —                                  | registro (público)                                         |
+| POST   | `/auth/login`                    |     ❌     | —                                  | login                                                      |
+| PATCH  | `/auth/refresh`                  |   cookie   | —                                  | rotação de token                                           |
+| GET    | `/auth/me`                       |     ✅     | —                                  | perfil próprio                                             |
+| POST   | `/auth/logout`                   |     ✅     | —                                  | revoga o token atual (denylist) + limpa cookie             |
+| PATCH  | `/auth/me`                       |     ✅     | —                                  | self: editar o próprio username / `default_screen_key`     |
+| POST   | `/auth/me/email`                 |     ✅     | —                                  | self: solicitar troca de e-mail (confirma novo)            |
+| POST   | `/auth/me/email/confirm`         |     ✅     | —                                  | self: confirmar troca de e-mail via OTP                    |
+| GET    | `/me/permissions`                |     ✅     | —                                  | telas efetivas + menu da sidebar + tela padrão             |
+| GET    | `/gyms/search`                   |     ✅     | —                                  | busca por título                                           |
+| GET    | `/gyms/nearby`                   |     ✅     | —                                  | busca por proximidade                                      |
+| POST   | `/gyms`                          |     ✅     | `gym.gyms` · create                | cadastrar academia                                         |
+| PATCH  | `/gyms/:gymId`                   |     ✅     | `gym.gyms` · edit                  | editar academia (título/descrição/telefone)                |
+| GET    | `/check-ins/history`             |     ✅     | —                                  | histórico próprio                                          |
+| GET    | `/check-ins/metrics`             |     ✅     | —                                  | total próprio                                              |
+| POST   | `/gyms/:gymId/check-ins`         |     ✅     | —                                  | check-in (e-mail verificado se flag ligada)                |
+| PATCH  | `/check-ins/:checkInId/validate` |     ✅     | `gym.validations` · create         | validar check-in                                           |
+| POST   | `/users/send-verification`       |     ✅     | —                                  | enviar e-mail de verificação (link + OTP)                  |
+| GET    | `/users/verify-email`            |     ❌     | —                                  | verificar e-mail via link token (`?token=`)                |
+| POST   | `/users/verify-email/otp`        |     ✅     | —                                  | verificar e-mail via código OTP                            |
+| POST   | `/users/resend-verification`     |     ✅     | —                                  | reenviar e-mail de verificação                             |
+| POST   | `/users/forgot-password`         |     ❌     | —                                  | solicitar reset; sempre `202` (anti-enumeração)            |
+| POST   | `/users/reset-password`          |     ❌     | —                                  | resetar via link token ou email + OTP                      |
+| GET    | `/users/confirm-email-change`    |     ❌     | —                                  | confirmar troca de e-mail via link (`?token=`)             |
+| GET    | `/users`                         |     ✅     | `access-control.users` · view      | listar usuários (paginado, 20/página)                      |
+| GET    | `/users/:userId`                 |     ✅     | `access-control.users` · view      | buscar um usuário por id (PublicUser)                      |
+| PATCH  | `/users/:userId`                 |     ✅     | `access-control.users` · edit      | editar usuário (username/email/role/is_verified/is_active) |
+| GET    | `/users/:userId/profiles`        |     ✅     | `access-control.users` · view      | listar os perfis atribuídos a um usuário                   |
+| PUT    | `/users/:userId/profiles`        |     ✅     | `access-control.users` · edit      | substituir as atribuições de perfil de um usuário          |
+| GET    | `/modules`                       |     ✅     | `access-control.modules` · view    | listar módulos                                             |
+| POST   | `/modules`                       |     ✅     | `access-control.modules` · create  | criar um módulo                                            |
+| PATCH  | `/modules/:id`                   |     ✅     | `access-control.modules` · edit    | editar um módulo                                           |
+| DELETE | `/modules/:id`                   |     ✅     | `access-control.modules` · delete  | excluir um módulo (`409` se ainda tiver telas)             |
+| GET    | `/screens`                       |     ✅     | `access-control.screens` · view    | listar telas                                               |
+| POST   | `/screens`                       |     ✅     | `access-control.screens` · create  | criar uma tela                                             |
+| PATCH  | `/screens/:id`                   |     ✅     | `access-control.screens` · edit    | editar uma tela                                            |
+| DELETE | `/screens/:id`                   |     ✅     | `access-control.screens` · delete  | excluir uma tela                                           |
+| GET    | `/profiles`                      |     ✅     | `access-control.profiles` · view   | listar perfis                                              |
+| GET    | `/profiles/:id`                  |     ✅     | `access-control.profiles` · view   | buscar um perfil com seus grants                           |
+| POST   | `/profiles`                      |     ✅     | `access-control.profiles` · create | criar um perfil                                            |
+| PATCH  | `/profiles/:id`                  |     ✅     | `access-control.profiles` · edit   | editar um perfil (`409` em perfil de sistema)              |
+| DELETE | `/profiles/:id`                  |     ✅     | `access-control.profiles` · delete | excluir um perfil (`409` em perfil de sistema)             |
+| PUT    | `/profiles/:id/screens`          |     ✅     | `access-control.profiles` · edit   | substituir os grants de tela de um perfil                  |
 
 > Padrão para proteger um grupo: `app.addHook('onRequest', verifyJwtMiddleware)`
-> no início da função de rotas. Para exigir papel: adicionar
-> `{ onRequest: [verifyUserRole(Role.ADMIN)] }` na rota específica.
+> no início da função de rotas. Para condicionar uma rota a um grant de tela:
+> adicionar `{ onRequest: [requireScreen('screen.key', 'action')] }` na rota
+> específica.
 
 **Gate de verificação de e-mail.** Com `REQUIRE_EMAIL_VERIFICATION=true`,
 exatamente uma rota exige e-mail verificado — `POST /gyms/:gymId/check-ins`, via
@@ -391,21 +431,23 @@ matriz de acesso por rota e um smoke test com a flag ligada estão no README
   troca por Redis substituindo `src/lib/login-attempt-tracker.ts` (mesma interface
   assíncrona). Retorna `429 Too Many Requests`.
 - **Defesa contra mass-assignment nas edições:** toda rota de edição valida um
-  **whitelist `.strict()`** — `PATCH /auth/me` aceita só `username` (nunca
-  `role`/`is_verified`/`email`/`password`); `PATCH /users/:userId` aceita só
-  `username`/`email`/`role`/`is_verified`. Chave desconhecida vira `400`, então um
-  member não escala injetando campos.
+  **whitelist `.strict()`** — `PATCH /auth/me` aceita só `username` e
+  `default_screen_key` (nunca `role`/`is_verified`/`is_active`/`email`/`password`);
+  `PATCH /users/:userId` aceita só `username`/`email`/`role`/`is_verified`/
+  `is_active`. Chave desconhecida vira `400`, então um usuário não escala
+  injetando campos.
 - **Um modelo de autoridade por handler (self vs admin):** o self-service age sobre
   `request.user.sub` e mora em `/auth/me` (sem id na URL); as edições administrativas
   pegam o id da URL e são guardadas por `verifyUserRole(ADMIN)` em `/users/:userId`.
   Cada handler tem um único modelo de autoridade, sem ramo "self-ou-admin" para
   errar. Como `verifyUserRole` roda no `onRequest`, um não-admin leva `403` mesmo
   para id inexistente (sem vazar existência — `403` antes de `404`).
-- **Sem auto-rebaixamento (invariante ≥1 admin):** `PATCH /users/:userId` rejeita
-  `role: MEMBER` quando o alvo é o próprio ator (`400 CannotChangeOwnRoleError`).
-  Como só admins chegam à rota, rebaixar _outros_ nunca remove o último admin, então
-  bloquear só o auto-rebaixamento garante ≥1 admin sempre — sem query de "contar
-  admins".
+- **Sem auto-rebaixamento / sem auto-desativação:** `PATCH /users/:userId` rejeita
+  `role: USER` quando o alvo é o próprio ator (`400 CannotChangeOwnRoleError`) e
+  rejeita `is_active: false` em si mesmo (`400 CannotDeactivateSelfError`) — um
+  admin não consegue tirar o próprio papel `ADMIN` nem se trancar para fora. Como
+  só quem tem o grant chega à rota, isso mantém ao menos um admin utilizável sem
+  uma query separada de "contar admins".
 - **Troca de e-mail é prova-gated:**
     - _Self (pattern A):_ `POST /auth/me/email` nunca sobrescreve o endereço comprovado;
       grava um `EmailChange` pendente e envia confirmação ao **novo** endereço mais um
@@ -466,6 +508,53 @@ enviar o cookie em requisições cross-origin não seguras.
 > cookies cross-origin em subdomínio diferente), `@fastify/csrf-protection`
 > deve ser adicionado.
 
+### 5.7 Controle de acesso (telas & perfis RBAC)
+
+A autorização tem duas camadas: o `Role` grosso (`ADMIN` ignora tudo) e um modelo
+dinâmico de grants em nível de tela. O modelo de dados (§6.6) é: um `Module`
+agrupa `Screen`s; uma `Screen` é a unidade onde os grants ficam; um `Profile`
+reúne grants de ação por tela (`ProfileScreen`); um usuário recebe perfis
+(`UserProfile`).
+
+- **O guard — `requireScreen(screenKey, action)`** (`require-screen.ts`): a cada
+  requisição ele chama o `GetUserPermissionsUseCase` para computar as permissões
+  **efetivas** do chamador e libera só quando a flag `action` da tela
+  correspondente é `true`. Lido fresh do banco a cada requisição (nunca do JWT),
+  então uma mudança de grant/perfil vale na próxima requisição. O `ADMIN` retorna
+  cedo (ignora). Autenticado-mas-sem-grant → `403 { "message": "Forbidden." }`;
+  um usuário desconhecido (`ResourceNotFoundError`) → `401`.
+- **Permissões efetivas** (`get-user-permissions-use-case.ts`): para um não-admin,
+  as ações por tela (`view`/`create`/`edit`/`delete`) são o **OR de todos os
+  grants dos perfis do usuário**. Para um `ADMIN`, toda tela do catálogo volta com
+  as quatro ações `true`.
+- **`GET /me/permissions`** retorna `{ role, screens, menu, default_screen_key }`:
+    - `screens` — as ações efetivas por tela (alimenta o gate `can()` do frontend).
+    - `menu` — as telas **navegáveis visíveis** (`screen_key`, `screen_name`,
+      `path`, `screen_order`, `module_key`, `module_name`, `module_order`),
+      ordenadas por (ordem de módulo, ordem de tela). O frontend monta a sidebar a
+      partir disso **sem** chamar as rotas admin-gated `/modules` + `/screens`.
+    - `default_screen_key` — resolvido como: o override do usuário
+      (`User.default_screen_key`, definido via `PATCH /auth/me`, se ainda visível)
+      → o grant default do perfil (`ProfileScreen.is_default`) com a menor (ordem
+      de módulo, ordem de tela) que o usuário pode ver → `null`.
+- **Corte imediato por `is_active`:** o `verifyJwtMiddleware` relê o usuário a
+  cada requisição e rejeita (`401`) uma conta inexistente ou desativada
+  (`is_active=false`) — um usuário demitido é cortado na hora, não quando o token
+  expira. O login também é recusado: o `AuthenticateUseCase` lança
+  `AccountInactiveError` → `403 { "message": "Account is inactive." }`.
+- **Perfis `is_default` / `is_system`:** o perfil `is_default` é anexado
+  automaticamente a uma conta nova no `POST /users`. Perfis `is_system` são do
+  seed e protegidos — editar a key ou excluir um é `409` (`SystemProfileError`);
+  os grants seguem editáveis.
+- **Mapeamento de erros do CRUD** (controllers, via `instanceof`):
+  `ResourceNotFoundError` → `404`; excluir um módulo que ainda tem telas → `409`
+  (`ModuleHasScreensError`); editar/excluir um perfil de sistema → `409`
+  (`SystemProfileError`); no `PATCH /users/:userId`, rebaixar/desativar a si
+  mesmo → `400` (`CannotChangeOwnRoleError` / `CannotDeactivateSelfError`).
+  Creates retornam `201`; os `PUT` de grants/perfis retornam `200`.
+- **Seam:** o `IPermissionsRepository` tem implementação Prisma e in-memory,
+  então a lógica de permissão é testada unitariamente sem banco.
+
 ---
 
 ## 6. Camada de Dados
@@ -489,8 +578,12 @@ enviar o cookie em requisições cross-origin não seguras.
 ### 6.3 Modelos
 
 - `User` (id uuid, **`username` único**, email único, password_hash, role,
-  `is_verified` bool, `password_changed_at?`, created_at) 1—N `CheckIn`.
-  `username` é único (índice b-tree via `@unique`), gravado em lowercase.
+  `is_verified` bool, `is_active` bool (padrão `true`),
+  `default_screen_key?` (nullable), `password_changed_at?`, created_at) 1—N
+  `CheckIn`, N—N `Profile` (via `UserProfile`). `username` é único (índice b-tree
+  via `@unique`), gravado em lowercase. `is_active=false` bloqueia o login e corta
+  o usuário na próxima requisição (§5.7); `default_screen_key` é o override de
+  tela inicial preferida do usuário.
 - `Gym` (id uuid, title, description?, phone?, latitude/longitude decimal) 1—N `CheckIn`.
 
 Os tamanhos de coluna são fixados com Prisma `@db.VarChar(n)` para casar com o
@@ -532,6 +625,32 @@ Os tamanhos de coluna são fixados com Prisma `@db.VarChar(n)` para casar com o
 - Registrado em `prisma.config.ts` (`migrations.seed`) e no script
   `pnpm seeddb` (`prisma db seed`). O `migrate deploy` usado nos testes
   **não** dispara o seed.
+- O mesmo seed (`seedAccessControl`) faz upsert idempotente do **catálogo** de
+  controle de acesso (módulos `access-control`/`gym` + suas telas), três perfis de
+  **sistema** (`gym-member` (o `is_default`), `gym-manager`, `support`) com seus
+  grants, e um **usuário demo** (papel `USER`, senha = `ADMIN_PASSWORD`) por
+  perfil (`johndoe`/`manager`/`support`).
+
+### 6.6 Modelos de controle de acesso (RBAC)
+
+O modelo de grants em nível de tela por trás da §5.7 — global (sem tenant; um
+projeto-clone adiciona um `company_id` em `Profile`/`Module`):
+
+- `Module` (`id` uuid, **`key` único**, `name`, `description?`, `order`) 1—N
+  `Screen` (tabela `modules`). Agrupa telas para a sidebar.
+- `Screen` (`id` uuid, **`key` único**, `name`, `path?` (a rota que o menu linka;
+  `null` = não navegável), `description?`, `order`, `module_id` FK
+  `onDelete: Cascade`) 1—N `ProfileScreen` (tabela `screens`).
+- `Profile` (`id` uuid, **`key` único**, `name`, `description?`, `is_system`
+  bool, `is_default` bool, `created_at`) (tabela `profiles`). `is_system` protege
+  perfis do seed (sem excluir / renomear key); `is_default` é anexado
+  automaticamente a novos usuários no `/register`.
+- `ProfileScreen` (PK composta `[profile_id, screen_id]`, bools `can_view`/
+  `can_create`/`can_edit`/`can_delete`, `is_default` bool — a tela inicial padrão
+  do perfil, ≤1 por perfil; ambas FKs `onDelete: Cascade`) (tabela
+  `profile_screens`).
+- `UserProfile` (PK composta `[user_id, profile_id]`, ambas FKs
+  `onDelete: Cascade`) (tabela `user_profiles`) — o join N—N usuário ↔ perfil.
 
 ---
 

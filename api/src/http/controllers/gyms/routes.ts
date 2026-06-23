@@ -1,8 +1,7 @@
 import { FastifyInstance } from 'fastify'
 
+import { requireScreen } from '@/http/middlewares/require-screen'
 import { verifyJwtMiddleware } from '@/http/middlewares/verify-jwt-middleware'
-import { verifyUserRole } from '@/http/middlewares/verify-user-role'
-import { Role } from '@/prisma-client'
 
 import { createController } from './create-controller'
 import { nearbyController } from './nearby-controller'
@@ -20,13 +19,13 @@ export async function gymsRoutes(app: FastifyInstance) {
 	//
 	app.post(
 		'/gyms',
-		{ onRequest: [verifyUserRole(Role.ADMIN)] },
+		{ onRequest: [requireScreen('gym.gyms', 'create')] },
 		createController,
 	)
 	//
 	app.patch(
 		'/gyms/:gymId',
-		{ onRequest: [verifyUserRole(Role.ADMIN)] },
+		{ onRequest: [requireScreen('gym.gyms', 'edit')] },
 		updateController,
 	)
 }

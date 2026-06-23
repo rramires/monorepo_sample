@@ -5,7 +5,7 @@ export interface GetProfileResponse {
 		id: string
 		username: string
 		is_verified: boolean
-		role: 'MEMBER' | 'ADMIN'
+		role: 'USER' | 'ADMIN'
 	}
 }
 

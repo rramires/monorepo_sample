@@ -34,32 +34,12 @@ export function AppSidebar() {
 			</SidebarHeader>
 
 			<SidebarContent>
-				<SidebarGroup>
-					<SidebarGroupContent>
-						<SidebarMenu>
-							{pm.items.map((item) => (
-								<SidebarMenuItem key={item.to}>
-									<SidebarMenuButton
-										asChild
-										isActive={pm.pathname === item.to}
-										tooltip={item.label}
-									>
-										<Link to={item.to}>
-											<item.icon />
-											<span>{item.label}</span>
-										</Link>
-									</SidebarMenuButton>
-								</SidebarMenuItem>
-							))}
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
-				{pm.adminItems.length > 0 && (
-					<SidebarGroup>
-						<SidebarGroupLabel>Admin</SidebarGroupLabel>
+				{pm.sections.map((section) => (
+					<SidebarGroup key={section.key}>
+						<SidebarGroupLabel>{section.label}</SidebarGroupLabel>
 						<SidebarGroupContent>
 							<SidebarMenu>
-								{pm.adminItems.map((item) => (
+								{section.items.map((item) => (
 									<SidebarMenuItem key={item.to}>
 										<SidebarMenuButton
 											asChild
@@ -76,7 +56,7 @@ export function AppSidebar() {
 							</SidebarMenu>
 						</SidebarGroupContent>
 					</SidebarGroup>
-				)}
+				))}
 			</SidebarContent>
 
 			<SidebarFooter>

@@ -6,8 +6,9 @@ export interface PublicUser {
 	id: string
 	username: string
 	email: string
-	role: 'MEMBER' | 'ADMIN'
+	role: 'USER' | 'ADMIN'
 	is_verified: boolean
+	is_active: boolean
 	created_at: string
 	password_changed_at: string | null
 }

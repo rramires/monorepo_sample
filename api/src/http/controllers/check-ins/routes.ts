@@ -1,9 +1,8 @@
 import { FastifyInstance } from 'fastify'
 
+import { requireScreen } from '@/http/middlewares/require-screen'
 import { verifyEmailVerified } from '@/http/middlewares/verify-email-verified'
 import { verifyJwtMiddleware } from '@/http/middlewares/verify-jwt-middleware'
-import { verifyUserRole } from '@/http/middlewares/verify-user-role'
-import { Role } from '@/prisma-client'
 
 import { checkInController } from './check-in-controller'
 import { historyController } from './history-controller'
@@ -27,7 +26,7 @@ export async function checkInsRoutes(app: FastifyInstance) {
 	//
 	app.patch(
 		'/check-ins/:checkInId/validate',
-		{ onRequest: [verifyUserRole(Role.ADMIN)] },
+		{ onRequest: [requireScreen('gym.validations', 'create')] },
 		validateController,
 	)
 }

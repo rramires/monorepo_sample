@@ -52,6 +52,11 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
+  Module: 'Module',
+  Screen: 'Screen',
+  Profile: 'Profile',
+  ProfileScreen: 'ProfileScreen',
+  UserProfile: 'UserProfile',
   CheckIn: 'CheckIn',
   Gym: 'Gym',
   EmailVerification: 'EmailVerification',
@@ -83,11 +88,71 @@ export const UserScalarFieldEnum = {
   password_hash: 'password_hash',
   role: 'role',
   is_verified: 'is_verified',
+  is_active: 'is_active',
+  default_screen_key: 'default_screen_key',
   created_at: 'created_at',
   password_changed_at: 'password_changed_at'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const ModuleScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  name: 'name',
+  description: 'description',
+  order: 'order'
+} as const
+
+export type ModuleScalarFieldEnum = (typeof ModuleScalarFieldEnum)[keyof typeof ModuleScalarFieldEnum]
+
+
+export const ScreenScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  name: 'name',
+  path: 'path',
+  description: 'description',
+  order: 'order',
+  module_id: 'module_id'
+} as const
+
+export type ScreenScalarFieldEnum = (typeof ScreenScalarFieldEnum)[keyof typeof ScreenScalarFieldEnum]
+
+
+export const ProfileScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  name: 'name',
+  description: 'description',
+  is_system: 'is_system',
+  is_default: 'is_default',
+  created_at: 'created_at'
+} as const
+
+export type ProfileScalarFieldEnum = (typeof ProfileScalarFieldEnum)[keyof typeof ProfileScalarFieldEnum]
+
+
+export const ProfileScreenScalarFieldEnum = {
+  profile_id: 'profile_id',
+  screen_id: 'screen_id',
+  can_view: 'can_view',
+  can_create: 'can_create',
+  can_edit: 'can_edit',
+  can_delete: 'can_delete',
+  is_default: 'is_default'
+} as const
+
+export type ProfileScreenScalarFieldEnum = (typeof ProfileScreenScalarFieldEnum)[keyof typeof ProfileScreenScalarFieldEnum]
+
+
+export const UserProfileScalarFieldEnum = {
+  user_id: 'user_id',
+  profile_id: 'profile_id'
+} as const
+
+export type UserProfileScalarFieldEnum = (typeof UserProfileScalarFieldEnum)[keyof typeof UserProfileScalarFieldEnum]
 
 
 export const CheckInScalarFieldEnum = {
@@ -185,10 +250,59 @@ export const UserOrderByRelevanceFieldEnum = {
   id: 'id',
   username: 'username',
   email: 'email',
-  password_hash: 'password_hash'
+  password_hash: 'password_hash',
+  default_screen_key: 'default_screen_key'
 } as const
 
 export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
+
+
+export const ModuleOrderByRelevanceFieldEnum = {
+  id: 'id',
+  key: 'key',
+  name: 'name',
+  description: 'description'
+} as const
+
+export type ModuleOrderByRelevanceFieldEnum = (typeof ModuleOrderByRelevanceFieldEnum)[keyof typeof ModuleOrderByRelevanceFieldEnum]
+
+
+export const ScreenOrderByRelevanceFieldEnum = {
+  id: 'id',
+  key: 'key',
+  name: 'name',
+  path: 'path',
+  description: 'description',
+  module_id: 'module_id'
+} as const
+
+export type ScreenOrderByRelevanceFieldEnum = (typeof ScreenOrderByRelevanceFieldEnum)[keyof typeof ScreenOrderByRelevanceFieldEnum]
+
+
+export const ProfileOrderByRelevanceFieldEnum = {
+  id: 'id',
+  key: 'key',
+  name: 'name',
+  description: 'description'
+} as const
+
+export type ProfileOrderByRelevanceFieldEnum = (typeof ProfileOrderByRelevanceFieldEnum)[keyof typeof ProfileOrderByRelevanceFieldEnum]
+
+
+export const ProfileScreenOrderByRelevanceFieldEnum = {
+  profile_id: 'profile_id',
+  screen_id: 'screen_id'
+} as const
+
+export type ProfileScreenOrderByRelevanceFieldEnum = (typeof ProfileScreenOrderByRelevanceFieldEnum)[keyof typeof ProfileScreenOrderByRelevanceFieldEnum]
+
+
+export const UserProfileOrderByRelevanceFieldEnum = {
+  user_id: 'user_id',
+  profile_id: 'profile_id'
+} as const
+
+export type UserProfileOrderByRelevanceFieldEnum = (typeof UserProfileOrderByRelevanceFieldEnum)[keyof typeof UserProfileOrderByRelevanceFieldEnum]
 
 
 export const CheckInOrderByRelevanceFieldEnum = {

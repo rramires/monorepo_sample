@@ -64,7 +64,7 @@ describe('Update User (e2e)', () => {
 		const response = await request(app.server)
 			.patch(`/users/${adminId}`)
 			.set('Authorization', `Bearer ${adminToken}`)
-			.send({ role: 'MEMBER' })
+			.send({ role: 'USER' })
 
 		expect(response.statusCode).toEqual(400)
 	})

@@ -4,6 +4,7 @@ import { User } from '@/prisma-client'
 import { ILoginAttemptTracker } from '@/repositories/i-login-attempt-tracker'
 import { IUsersRepository } from '@/repositories/i-users-repository'
 
+import { AccountInactiveError } from './errors/account-inactive-error'
 import { InvalidCredentialsError } from './errors/invalid-credentials-error'
 import { TooManyAttemptsError } from './errors/too-many-attempts-error'
 
@@ -70,6 +71,12 @@ export class AuthenticateUseCase {
 		}
 
 		await this.loginAttemptTracker.clearAttempts(lockKey)
+
+		// Credentials are valid — but a deactivated account can't sign in. Checked
+		// after the password match so it doesn't reveal account state to attackers.
+		if (!user.is_active) {
+			throw new AccountInactiveError()
+		}
 
 		return {
 			user,

@@ -2,7 +2,7 @@ import { createContext } from 'react'
 
 export type AuthStatus = 'loading' | 'authed' | 'guest'
 
-export type Role = 'MEMBER' | 'ADMIN'
+export type Role = 'USER' | 'ADMIN'
 
 export interface User {
 	id: string

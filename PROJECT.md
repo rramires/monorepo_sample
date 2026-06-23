@@ -80,9 +80,11 @@ they can't drift from the real API.
 
 Fastify + Prisma + MySQL, SOLID/clean layering (controllers → use-cases →
 repositories behind interfaces, wired by factories). JWT access token + httpOnly
-refresh cookie, RBAC read from the DB, rate limiting + login lockout. Runs on
-`:3333`; MySQL via `api/docker-compose.yml` (compose project `monorepo_sample`,
-host `3306`). `pnpm -C api db:fresh` resets the DB and seeds the admin.
+refresh cookie, **hybrid RBAC** (role + dynamic profiles bundling per-screen
+grants) resolved from the DB and exposed as effective permissions, rate limiting
++ login lockout. Runs on `:3333`; MySQL via `api/docker-compose.yml` (compose
+project `monorepo_sample`, host `3306`). `pnpm -C api db:fresh` resets the DB and
+seeds the admin.
 
 ## 5. Frontend (summary → `web/PROJECT.md`)
 
@@ -91,7 +93,8 @@ React 19 + Vite + Tailwind v4 + shadcn. **Presentation Model** (`x.tsx` view +
 server state, `src/api` maps wire `snake_case` → camelCase models. **Mock-first**:
 MSW mirrors the backend verbatim and is the default dev/test target
 (`pnpm -C web dev:test`, `:5001`); the real API is wired last (`pnpm -C web dev`,
-`:3001`).
+`:3001`). Access control is data-driven from the backend's effective permissions
+(`can()`/`RequireScreen` gating nav, routes, and buttons) — see `web/PROJECT.md`.
 
 ## 6. Dev & gates
 

@@ -4,6 +4,7 @@ import { loginBodySchema } from '@root/contracts'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 import { env } from '@/env'
+import { AccountInactiveError } from '@/use-cases/errors/account-inactive-error'
 import { InvalidCredentialsError } from '@/use-cases/errors/invalid-credentials-error'
 import { TooManyAttemptsError } from '@/use-cases/errors/too-many-attempts-error'
 import { makeAuthenticateUseCase } from '@/use-cases/factories/make-authenticate-use-case'
@@ -70,6 +71,10 @@ export async function authenticateController(
 		if (err instanceof InvalidCredentialsError) {
 			// 401 Unauthorized
 			return reply.status(401).send({ message: err.message })
+		}
+		if (err instanceof AccountInactiveError) {
+			// 403 Forbidden — valid credentials, but the account is disabled.
+			return reply.status(403).send({ message: err.message })
 		}
 		// Other unspecified errors (Fastify capture this)
 		throw err

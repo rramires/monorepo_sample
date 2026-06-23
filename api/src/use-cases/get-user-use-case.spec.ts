@@ -38,8 +38,10 @@ describe('Get User Use Case', () => {
 			id: createdUser.id,
 			username: newUser.username,
 			email: newUser.email,
-			role: 'MEMBER',
+			role: 'USER',
 			is_verified: false,
+			is_active: true,
+			default_screen_key: null,
 			created_at: expect.any(Date),
 			password_changed_at: null,
 		})
