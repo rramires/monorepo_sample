@@ -29,7 +29,7 @@ function generateDatabaseUrl(dbName: string) {
  */
 export default <Environment>{
 	name: 'prisma',
-	transformMode: 'ssr',
+	viteEnvironment: 'ssr',
 	async setup() {
 		if (!process.env.DATABASE_URL) {
 			throw new Error('Please provide DATABASE_URL env variable')
