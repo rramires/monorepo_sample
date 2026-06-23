@@ -64,4 +64,21 @@ export class PrismaPermissionsRepository implements IPermissionsRepository {
 			screen_order: g.screen.order,
 		}))
 	}
+
+	async listScreenCatalog() {
+		const screens = await prisma.screen.findMany({
+			include: {
+				module: { select: { key: true, name: true, order: true } },
+			},
+		})
+		return screens.map((s) => ({
+			screen_key: s.key,
+			screen_name: s.name,
+			path: s.path,
+			screen_order: s.order,
+			module_key: s.module.key,
+			module_name: s.module.name,
+			module_order: s.module.order,
+		}))
+	}
 }

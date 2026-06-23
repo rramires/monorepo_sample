@@ -25,7 +25,9 @@ vi.mock('@/api/get-check-ins-history', () => ({
 
 // The member has no gym.validations grant; ADMIN bypasses `can()` regardless.
 vi.mock('@/api/get-me-permissions', () => ({
-	getMePermissions: vi.fn().mockResolvedValue({ role: 'USER', screens: [] }),
+	getMePermissions: vi
+		.fn()
+		.mockResolvedValue({ role: 'USER', screens: [], menu: [] }),
 }))
 
 function renderAs(role: Role) {

@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import {
 	Boxes,
 	Dumbbell,
@@ -12,15 +11,14 @@ import {
 import { useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 
-import { getModules } from '@/api/modules'
-import { getScreens } from '@/api/screens'
 import { useAuth } from '@/components/auth/auth-hooks'
 import { usePermissions } from '@/hooks/use-permissions'
 
 // The screens that have a real page today, with their nav icon + a short menu
 // label (decoupled from the catalog's longer screen name). A screen only becomes
-// a nav link once it's listed here (implemented) AND the user `can()` view it —
-// so the menu grows as Phase 4 builds the remaining admin pages.
+// a nav link once it's listed here (implemented) AND it appears in the user's
+// menu (viewable, from /me/permissions) — so the menu grows as the remaining
+// pages get built.
 const NAV_ENTRIES: Record<string, { icon: LucideIcon; label: string }> = {
 	'gym.dashboard': { icon: LayoutDashboard, label: 'Dashboard' },
 	'gym.gyms': { icon: Dumbbell, label: 'Gyms' },
@@ -45,51 +43,42 @@ export interface NavSection {
 }
 
 export function useAppSidebarPM() {
-	const { user, signOut, status } = useAuth()
-	const { can, isLoading: permsLoading } = usePermissions()
+	const { user, signOut } = useAuth()
+	const { isLoading: permsLoading, permissions } = usePermissions()
 	const navigate = useNavigate()
 	const location = useLocation()
 
-	const enabled = status === 'authed'
-	const modulesQuery = useQuery({
-		queryKey: ['modules'],
-		queryFn: getModules,
-		enabled,
-		staleTime: 5 * 60 * 1000,
-	})
-	const screensQuery = useQuery({
-		queryKey: ['screens'],
-		queryFn: () => getScreens(),
-		enabled,
-		staleTime: 5 * 60 * 1000,
-	})
-
-	// Build the nav from the catalog: modules (by order) → their viewable,
-	// implemented screens (by order). Data-driven, so it mirrors the seed.
+	// Build the nav from the menu in /me/permissions: it already carries only the
+	// viewable screens, grouped/ordered by (module order, screen order). Keep the
+	// implemented ones (NAV_ENTRIES) and group them by module, preserving order.
 	const sections = useMemo<NavSection[]>(() => {
-		const modules = modulesQuery.data ?? []
-		const screens = screensQuery.data ?? []
+		const menu = permissions?.menu ?? []
+		const byModule = new Map<string, NavSection>()
 
-		return modules
-			.slice()
-			.sort((a, b) => a.order - b.order)
-			.map((module) => ({
-				key: module.key,
-				label: module.name,
-				items: screens
-					.filter((s) => s.moduleId === module.id)
-					.filter((s) => s.path && NAV_ENTRIES[s.key])
-					.filter((s) => can(s.key, 'view'))
-					.sort((a, b) => a.order - b.order)
-					.map((s) => ({
-						key: s.key,
-						to: s.path as string,
-						label: NAV_ENTRIES[s.key].label,
-						icon: NAV_ENTRIES[s.key].icon,
-					})),
-			}))
-			.filter((section) => section.items.length > 0)
-	}, [modulesQuery.data, screensQuery.data, can])
+		for (const item of menu) {
+			const entry = NAV_ENTRIES[item.screenKey]
+			if (!entry) {
+				continue
+			}
+			let section = byModule.get(item.moduleKey)
+			if (!section) {
+				section = {
+					key: item.moduleKey,
+					label: item.moduleName,
+					items: [],
+				}
+				byModule.set(item.moduleKey, section)
+			}
+			section.items.push({
+				key: item.screenKey,
+				to: item.path,
+				label: entry.label,
+				icon: entry.icon,
+			})
+		}
+
+		return [...byModule.values()].filter((s) => s.items.length > 0)
+	}, [permissions?.menu])
 
 	async function handleSignOut() {
 		await signOut()
@@ -99,8 +88,7 @@ export function useAppSidebarPM() {
 	return {
 		user,
 		sections,
-		isLoading:
-			permsLoading || modulesQuery.isLoading || screensQuery.isLoading,
+		isLoading: permsLoading,
 		pathname: location.pathname,
 		handleSignOut,
 	}

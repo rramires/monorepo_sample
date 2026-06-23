@@ -12,9 +12,22 @@ export interface ScreenPermission {
 	delete: boolean
 }
 
+// A navigable screen the user may view — the catalog bits the sidebar groups
+// into the menu (so it never calls the admin-gated /modules + /screens).
+export interface MenuScreen {
+	screenKey: string
+	screenName: string
+	path: string
+	screenOrder: number
+	moduleKey: string
+	moduleName: string
+	moduleOrder: number
+}
+
 export interface MyPermissions {
 	role: Role
 	screens: ScreenPermission[]
+	menu: MenuScreen[]
 	defaultScreenKey: string | null
 }
 
@@ -32,6 +45,15 @@ export async function getMePermissions(): Promise<MyPermissions> {
 			create: s.create,
 			edit: s.edit,
 			delete: s.delete,
+		})),
+		menu: parsed.menu.map((m) => ({
+			screenKey: m.screen_key,
+			screenName: m.screen_name,
+			path: m.path,
+			screenOrder: m.screen_order,
+			moduleKey: m.module_key,
+			moduleName: m.module_name,
+			moduleOrder: m.module_order,
 		})),
 		defaultScreenKey: parsed.default_screen_key,
 	}

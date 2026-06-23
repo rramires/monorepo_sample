@@ -54,6 +54,33 @@ function resolveDefaultScreen(
 	return best
 }
 
+// Build the menu (catalog) for a user: every navigable screen (has a `path`)
+// the user may view, grouped/ordered by (module order, screen order). Mirrors
+// the backend's GetUserPermissionsUseCase so the sidebar never fetches the
+// admin-gated /modules + /screens.
+function buildMenu(viewableKeys: Set<string>): MePermissions['menu'] {
+	const moduleById = new Map(modules.map((m) => [m.id, m]))
+	return screens
+		.filter((s) => s.path && viewableKeys.has(s.key))
+		.map((s) => {
+			const m = moduleById.get(s.module_id)
+			return {
+				screen_key: s.key,
+				screen_name: s.name,
+				path: s.path as string,
+				screen_order: s.order,
+				module_key: m?.key ?? '',
+				module_name: m?.name ?? '',
+				module_order: m?.order ?? 0,
+			}
+		})
+		.sort(
+			(a, b) =>
+				a.module_order - b.module_order ||
+				a.screen_order - b.screen_order,
+		)
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Mock auth: a bearer token identifies a seeded user. The two legacy tokens are
 // preserved (admin + the default member); any other demo user gets a token that
@@ -122,6 +149,7 @@ export function computePermissions(userId: string): MePermissions | null {
 				edit: true,
 				delete: true,
 			})),
+			menu: buildMenu(allKeys),
 			default_screen_key: resolveDefaultScreen(userId, allKeys),
 		}
 	}
@@ -163,6 +191,7 @@ export function computePermissions(userId: string): MePermissions | null {
 	return {
 		role: 'USER',
 		screens: screensList,
+		menu: buildMenu(viewableKeys),
 		default_screen_key: resolveDefaultScreen(userId, viewableKeys),
 	}
 }

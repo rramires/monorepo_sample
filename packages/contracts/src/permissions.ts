@@ -14,11 +14,29 @@ export const screenPermissionSchema = z.object({
 })
 export type ScreenPermission = z.infer<typeof screenPermissionSchema>
 
+// One menu entry — a screen the user may view that has a page (`path`). Carries
+// the catalog bits the sidebar needs (names + module grouping + orders) so the
+// frontend builds the nav from this alone, without calling the admin-gated
+// /modules and /screens endpoints.
+export const menuScreenSchema = z.object({
+	screen_key: z.string(),
+	screen_name: z.string(),
+	path: z.string(),
+	screen_order: z.number().int(),
+	module_key: z.string(),
+	module_name: z.string(),
+	module_order: z.number().int(),
+})
+export type MenuScreen = z.infer<typeof menuScreenSchema>
+
 // GET /me/permissions — drives the menu, the route guard and button visibility.
 // ADMIN bypasses everything (every action resolves true) regardless of profiles.
 export const mePermissionsSchema = z.object({
 	role: roleSchema,
 	screens: z.array(screenPermissionSchema),
+	// The viewable, navigable screens (catalog), grouped/ordered by the frontend
+	// into the sidebar. Self-contained: no admin-only catalog fetch needed.
+	menu: z.array(menuScreenSchema),
 	// The resolved landing screen key (user override → profile default → null);
 	// the frontend redirects here on login when set.
 	default_screen_key: z.string().nullable(),

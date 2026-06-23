@@ -20,10 +20,25 @@ export interface IPermissionsRepository {
 	getDefaultScreenCandidates(
 		userId: string,
 	): Promise<DefaultScreenCandidate[]>
+	// The full screen catalog (every navigable screen + its module), so the
+	// permissions use-case can build the user's menu without an admin-only fetch.
+	listScreenCatalog(): Promise<ScreenCatalogEntry[]>
 }
 
 export interface DefaultScreenCandidate {
 	screen_key: string
 	module_order: number
 	screen_order: number
+}
+
+// A catalog row: a screen with its page path and module grouping/ordering. The
+// use-case filters this down to what each user may view to form the menu.
+export interface ScreenCatalogEntry {
+	screen_key: string
+	screen_name: string
+	path: string | null
+	screen_order: number
+	module_key: string
+	module_name: string
+	module_order: number
 }

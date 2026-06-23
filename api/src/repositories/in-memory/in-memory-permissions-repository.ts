@@ -1,6 +1,7 @@
 import type {
 	EffectiveScreenPermission,
 	IPermissionsRepository,
+	ScreenCatalogEntry,
 } from '../i-permissions-repository'
 
 interface Grant {
@@ -21,6 +22,7 @@ export class InMemoryPermissionsRepository implements IPermissionsRepository {
 	public userProfiles: { user_id: string; profile_id: string }[] = []
 	public grants: Grant[] = []
 	public screenKeys: string[] = []
+	public catalog: ScreenCatalogEntry[] = []
 
 	async getEffectivePermissions(
 		userId: string,
@@ -71,5 +73,9 @@ export class InMemoryPermissionsRepository implements IPermissionsRepository {
 				module_order: g.module_order ?? 0,
 				screen_order: g.screen_order ?? 0,
 			}))
+	}
+
+	async listScreenCatalog() {
+		return this.catalog
 	}
 }
