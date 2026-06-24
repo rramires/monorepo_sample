@@ -179,9 +179,11 @@ Arquivos (o Vite carrega por mode; arquivos posteriores vencem):
 
 `src/routes.tsx` monta a árvore com o React Router. A área autenticada fica atrás
 de `ProtectedRoute` (redireciona visitantes para `/sign-in`) e usa `AppLayout`
-(sidebar + header); o índice `/` resolve a tela de destino do usuário via
-`LandingRoute`, e cada tela é protegida por `RequireScreen screen='<chave>'
-[action]` (o mesmo `can()` que o menu usa).
+(sidebar + header); o header carrega uma trilha de **breadcrumb** (crumbs
+estáticos da rota, folha dinâmica publicada pelas páginas de detalhe) e a sidebar
+mantém o item ativo aceso nas sub-rotas. O índice `/` resolve a tela de destino do
+usuário via `LandingRoute`, e cada tela é protegida por `RequireScreen
+screen='<chave>' [action]` (o mesmo `can()` que o menu usa).
 
 | Caminho                       | Guarda                    | Página             | Notas                                                           |
 | ----------------------------- | ------------------------- | ------------------ | --------------------------------------------------------------- |
