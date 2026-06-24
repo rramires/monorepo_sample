@@ -12,9 +12,9 @@ never copies). Architecture: [`PROJECT.md`](./PROJECT.md).
 > Monorepo: `api/` (Fastify+Prisma+MySQL) + `web/` (React+Vite+MSW) +
 > `packages/contracts/` (`@root/contracts`, Zod).
 >
-> Não há trabalho ativo. Item de **backlog** (NÃO começar sem o usuário fechar
-> escopo): invariante "exatamente 1 profile `is_default`" — bloquear desligar o
-> último default / no máx. um (backend profiles use-case + web profile-detail).
+> Não há trabalho ativo e o **backlog está vazio** — todos os itens coletados
+> foram entregues. Se o usuário trouxer algo novo: brainstorm rápido (1 pergunta
+> por vez, pt-BR), feche escopo, e só então toque.
 >
 > Doutrina: 1 branch local por grupo off `master`; **commit por fase** após gate
 > verde; **antes de cada commit**: `pnpm -C <app> lint:fix && pnpm -C <app> format`;
@@ -26,9 +26,9 @@ never copies). Architecture: [`PROJECT.md`](./PROJECT.md).
 
 ## Current state
 
-- **Branch:** `master` — clean. Last commit `fa07736`
-  (`Merge branch 'feat/form-autofocus'`), 2026-06-24. **If `master` is ahead of
-  `origin`, the user still needs to push.**
+- **Branch:** `master` — clean. Last commit `6dec7d1`
+  (`Merge branch 'chore/sidebar-module-order'`), 2026-06-24. **If `master` is
+  ahead of `origin`, the user still needs to push.**
 - **Done + merged + pushed — access-control follow-up package COMPLETE (G0–G6):**
   - **G0** web e2e scripts → `test:e2e`. **G1** `is_system` on Module+Screen
     (delete/key-rename → 409; screen locks module+path; read-only edit fields).
@@ -48,15 +48,22 @@ never copies). Architecture: [`PROJECT.md`](./PROJECT.md).
     kept so Granted never loses rows.
   - **G6** closed `api/PROJECT.md` §4.1 request-lifecycle graph (steps 10–13) +
     final EN+PT doc sweep (no drift).
-- **After the package — also done + merged + pushed:** `feat/form-autofocus`
-  (web) — forms autofocus their first field on mount (auth screens + new-gym /
-  user-edit / profile-detail; admin create/edit dialogs already do via Radix's
-  focus scope) and the sign-in "Forgot your password?" link moved below the Sign
-  in button (tab order identifier → password → Sign in → Forgot). Docs EN+PT.
+- **After the package — also done + merged + pushed:**
+  - `feat/form-autofocus` (web) — forms autofocus their first field on mount
+    (auth screens + new-gym / user-edit / profile-detail; admin dialogs already
+    do via Radix's focus scope) and the sign-in "Forgot your password?" link
+    moved below the Sign in button (tab order identifier → password → Sign in →
+    Forgot). Docs EN+PT.
+  - `feat/default-profile-invariant` (api + web) — exactly one `is_default`
+    profile: setting one demotes the rest (radio, `clearDefaultExcept`), turning
+    the current default off → 409 (`DefaultProfileRequiredError`); the
+    profile-detail Default switch is disabled when already default and confirms
+    before replacing the current default on promote. Specs/e2e + docs EN+PT.
+  - `chore/sidebar-module-order` — the data-driven sidebar lists **Gym before
+    Access Control** (swapped module `order` in the backend seed + MSW mock;
+    landing unaffected).
 - **In flight:** nothing.
-- **Backlog (not started; don't begin without the user closing scope):** exactly-
-  one-`is_default`-profile invariant. (`PLAN.md` was deleted after this feature
-  shipped.)
+- **Backlog:** empty — all collected items shipped. (`PLAN.md` deleted.)
 - **Demo (mock + seed):** users `admin` / `manager` / `support` / `johndoe`,
   senha `Password1!`. Mock seed has 24 gyms (2 inactive) to show pagination.
 
