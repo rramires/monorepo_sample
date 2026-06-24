@@ -58,6 +58,22 @@ describe('Nearby Gyms (e2e)', () => {
 				longitude: coordinatesPlus10km.lon,
 			})
 
+		// an inactive gym at the reference spot must NOT appear (member browse)
+		const closed = await request(app.server)
+			.post('/gyms')
+			.set('Authorization', `Bearer ${token}`)
+			.send({
+				title: 'Closed Gym',
+				description: null,
+				phone: null,
+				latitude: coordinates.lat,
+				longitude: coordinates.lon,
+			})
+		await request(app.server)
+			.patch(`/gyms/${closed.body.gym.id}`)
+			.set('Authorization', `Bearer ${token}`)
+			.send({ is_active: false })
+
 		const response = await request(app.server)
 			.get('/gyms/nearby')
 			.query({
@@ -68,6 +84,7 @@ describe('Nearby Gyms (e2e)', () => {
 			.send()
 
 		expect(response.statusCode).toEqual(200)
+		// Two active gyms within range; the inactive one is excluded.
 		expect(response.body.gyms).toHaveLength(2)
 		expect(response.body.gyms).toEqual([
 			expect.objectContaining({ title: 'TypeScrypt Gym' }),
