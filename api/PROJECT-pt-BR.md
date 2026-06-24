@@ -343,7 +343,7 @@ locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do monorepo e
 | POST   | `/auth/me/email/confirm`         |     ✅     | —                                  | self: confirmar troca de e-mail via OTP                    |
 | GET    | `/me/permissions`                |     ✅     | —                                  | telas efetivas + menu da sidebar + tela padrão             |
 | GET    | `/gyms/search`                   |     ✅     | —                                  | busca por título (só ativas; gestores: `includeInactive`)  |
-| GET    | `/gyms/nearby`                   |     ✅     | —                                  | busca por proximidade (só ativas)                          |
+| GET    | `/gyms/nearby`                   |     ✅     | —                                  | busca por proximidade (só ativas; gestores: `includeInactive`) |
 | POST   | `/gyms`                          |     ✅     | `gym.gyms` · create                | cadastrar academia                                         |
 | PATCH  | `/gyms/:gymId`                   |     ✅     | `gym.gyms` · edit                  | editar academia (título/descrição/telefone, `is_active`)   |
 | GET    | `/check-ins/history`             |     ✅     | —                                  | histórico próprio                                          |
@@ -545,11 +545,14 @@ reúne grants de ação por tela (`ProfileScreen`); um usuário recebe perfis
 - **Soft-delete de academia (`Gym.is_active`):** `CheckIn.gym_id` é uma FK
   obrigatória sem cascade, então uma academia nunca é apagada de verdade (quebraria
   o histórico). Uma academia desativada recusa check-ins (`CheckInUseCase` →
-  `InactiveGymError` → `403`) e some do browse do membro — `findManyNearby` é
-  sempre só-ativas e `searchMany` é só-ativas por padrão. O `searchMany` aceita um
-  flag `includeInactive` que o controller de busca honra **só para gestores de
-  academia** (`gym.gyms` `edit`, ADMIN ignora), então membros não veem academias
-  inativas; o `PATCH /gyms/:gymId` alterna `is_active` (desativar / reativar).
+  `InactiveGymError` → `403`) e some do browse do membro — `findManyNearby` e
+  `searchMany` são só-ativas por padrão. Cada um aceita um flag `includeInactive`
+  que os controllers de busca/nearby honram **só para gestores de academia**
+  (`gym.gyms` `edit`, ADMIN ignora) via o gate compartilhado
+  `resolveIncludeInactive`, então membros não veem academias inativas. O
+  `searchMany` também lista todas as academias quando a query é vazia — a visão
+  "ver todas" do gestor (sem geo, paginada). O `PATCH /gyms/:gymId` alterna
+  `is_active` (desativar / reativar).
 - **`is_default` / `is_system`:** o perfil `is_default` é anexado automaticamente
   a uma conta nova no `POST /users`. `is_system` marca registros do seed como
   protegidos — em um perfil, **módulo ou tela**, excluir ou editar a identidade é

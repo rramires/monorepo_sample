@@ -165,7 +165,7 @@ imediatamente** no boot se alguma variável for inválida (validação Zod em
 | `POST`   | `/auth/me/email/confirm`         | Bearer         | –                                  | Confirmar troca do próprio e-mail via OTP                   |
 | `GET`    | `/me/permissions`                | Bearer         | –                                  | Permissões efetivas: `role`, `screens`, `menu`, tela padrão |
 | `GET`    | `/gyms/search`                   | Bearer         | –                                  | Buscar academias por nome (só ativas; gestores: `includeInactive`) |
-| `GET`    | `/gyms/nearby`                   | Bearer         | –                                  | Academias próximas a uma coordenada (só ativas)             |
+| `GET`    | `/gyms/nearby`                   | Bearer         | –                                  | Academias próximas a uma coordenada (só ativas; gestores: `includeInactive`) |
 | `POST`   | `/gyms`                          | Bearer         | `gym.gyms` · create                | Cadastrar academia                                          |
 | `PATCH`  | `/gyms/:gymId`                   | Bearer         | `gym.gyms` · edit                  | Editar academia (título/descrição/telefone, `is_active`)    |
 | `GET`    | `/check-ins/history`             | Bearer         | –                                  | Histórico de check-ins paginado                             |

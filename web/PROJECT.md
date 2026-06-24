@@ -390,9 +390,10 @@ the `*-mock.ts` handlers serve `/modules`, `/screens`, `/profiles`,
   `user-edit` (admin) and the **gym edit dialog** (`edit-gym-dialog`, in-place on
   the shared Gyms page). Apply this to every deactivatable entity so the UX stays
   uniform. For gyms, an inactive gym also shows an **Inactive** badge, disables
-  Check-in, and is hidden from members; managers reveal inactive gyms in search
-  via a **Show deactivated** checkbox (passes `includeInactive`, enforced
-  server-side).
+  Check-in, and is hidden from members. Managers get the **full gym list**
+  (non-geo, paginated via an empty-query search) with two toggles: **Show
+  deactivated** reveals inactive gyms in the list (`includeInactive`, enforced
+  server-side) and **Nearby only** opts into the member's geolocation view.
 
 ### Async-seeded forms — known gotchas (admin user-edit)
 
