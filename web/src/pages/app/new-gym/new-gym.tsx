@@ -37,6 +37,7 @@ export function NewGym() {
 									<Label htmlFor='title'>Title</Label>
 									<Input
 										id='title'
+										autoFocus
 										{...pm.register('title')}
 									/>
 									{pm.errors.title && (
