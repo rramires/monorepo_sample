@@ -2,6 +2,7 @@ import { ArrowLeft, LoaderCircle } from 'lucide-react'
 import { Link } from 'react-router'
 
 import type { ScreenModel } from '@/api/screens'
+import { useSetBreadcrumb } from '@/components/breadcrumb/breadcrumb-hooks'
 import { PageTitle } from '@/components/title/page-title'
 import { type TransferColumn, TransferTable } from '@/components/transfer-table'
 import { Badge } from '@/components/ui/badge'
@@ -17,6 +18,9 @@ const ACTIONS = ['view', 'create', 'edit', 'delete'] as const
 
 export function ProfileDetail() {
 	const pm = useProfileDetailPM()
+
+	// Publish the profile name as the breadcrumb's dynamic leaf.
+	useSetBreadcrumb(pm.profile?.name)
 
 	if (pm.isLoading) {
 		return (

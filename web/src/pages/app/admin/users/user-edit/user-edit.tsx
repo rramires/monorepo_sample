@@ -1,6 +1,7 @@
 import { Controller } from 'react-hook-form'
 import { Link } from 'react-router'
 
+import { useSetBreadcrumb } from '@/components/breadcrumb/breadcrumb-hooks'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
@@ -28,6 +29,9 @@ import { UserProfilesCard } from './user-profiles-card'
 
 export function UserEdit() {
 	const pm = useUserEditPM()
+
+	// Publish the username as the breadcrumb's dynamic leaf.
+	useSetBreadcrumb(pm.user?.username)
 
 	return (
 		<>
