@@ -23,6 +23,8 @@ describe('Breadcrumbs', () => {
 
 		expect(screen.getByText('Gyms')).toHaveAttribute('aria-current', 'page')
 		expect(container.querySelector('a')).toBeNull()
+		// A lone crumb is muted (it just repeats the page title below it).
+		expect(screen.getByText('Gyms')).toHaveClass('text-muted-foreground')
 	})
 
 	it('links the section and marks the leaf as current on a nested route', () => {
@@ -37,10 +39,10 @@ describe('Breadcrumbs', () => {
 			'href',
 			'/gyms',
 		)
-		expect(screen.getByText('New gym')).toHaveAttribute(
-			'aria-current',
-			'page',
-		)
+		const leaf = screen.getByText('New gym')
+		expect(leaf).toHaveAttribute('aria-current', 'page')
+		// The leaf of a multi-crumb trail keeps the foreground (not muted).
+		expect(leaf).not.toHaveClass('text-muted-foreground')
 	})
 
 	it('falls back to the section noun while a dynamic entity loads', () => {
