@@ -6,54 +6,55 @@ never copies). Architecture: [`PROJECT.md`](./PROJECT.md).
 
 ## Resume prompt (cole numa sessão nova, após compactar)
 
-> Leia `PLAN.md` + `HANDOFF.md` + `CLAUDE.md` na raiz do monorepo `monorepo_sample`
-> e **continue o pacote de follow-ups do access-control a partir da G5** (G0–G4 já
-> estão prontas, mergeadas e **pushadas** no `master`). Monorepo: `api/`
-> (Fastify+Prisma+MySQL) + `web/` (React+Vite+MSW) + `packages/contracts/`
-> (`@root/contracts`, Zod). `PLAN.md` (na raiz, gitignored) tem o detalhe.
+> Leia `HANDOFF.md` + `CLAUDE.md` na raiz do monorepo `monorepo_sample` e continue
+> a partir de _Current state_. O **pacote de follow-ups do access-control (G0–G6)
+> está 100% concluído, mergeado e pushado** no `master` — nada em andamento.
+> Monorepo: `api/` (Fastify+Prisma+MySQL) + `web/` (React+Vite+MSW) +
+> `packages/contracts/` (`@root/contracts`, Zod).
 >
-> Ordem restante: **G5** — grants module filter (web-only). Numa branch nova
-> `feat/grants-module-filter` off `master`: (1) `chore(web)` adiciona `cmdk` (única
-> dep nova) + um **MultiSelect enxuto próprio** (radix Popover já é dep + Badge já
-> existe + Command/`cmdk`) → chips/badges com X; NÃO usar o pacote
-> `shadcn-multi-select-component`. (2) `feat(web)` na página de grants
-> (`profile-detail.tsx`): enriquecer as linhas de screen com `module_key`/
-> `module_name`, adicionar o **filtro de módulo em chips ACIMA da TransferTable**
-> (ela fica genérica/intocada; o Search dela continua só sobre as linhas já
-> presentes) ligado ao lado Available, e uma **coluna de módulo nos DOIS lados**
-> (Available + Granted — decidido). TransferTable é reusada por
-> `user-profiles-card.tsx`, então NÃO alterá-la. (3) `docs(web)` README/PROJECT
-> EN+PT. → **G6** docs-only direto no `master`: fechar o gráfico §4.1 do
-> `api/PROJECT.md` (passos 10–13, ver `backlog-plan-package` item 2) + sweep final
-> EN+PT.
+> Não há trabalho ativo. Itens de **backlog** (NÃO começar sem o usuário fechar
+> escopo): (1) invariante "exatamente 1 profile `is_default`" — bloquear desligar
+> o último default / no máx. um (backend profiles use-case + web profile-detail);
+> (2) sign-in keyboard UX (autofocus no 1º campo; o link Forgot rouba um tab).
 >
 > Doutrina: 1 branch local por grupo off `master`; **commit por fase** após gate
 > verde; **antes de cada commit**: `pnpm -C <app> lint:fix && pnpm -C <app> format`;
-> gates — web `lint && build && test:run` (+`test:e2e` p/ fluxos), contracts
-> `typecheck` (api só se mexer em api); docs EN+PT (4 arquivos por app). **PARE no
-> fim de cada grupo** pro usuário testar no browser, autorizar o merge
-> (`git merge --no-ff`) e **pushar (só o usuário pusha)**. Confirme antes de
-> qualquer irreversível. Responda em pt-BR.
+> gates — web `lint && build && test:run` (+`test:e2e`), api `lint && compile &&
+> test` (+`test:e2e`, MySQL via `compose:up`), contracts `typecheck`; docs EN+PT
+> (4 arquivos por app). **PARE no fim de cada grupo** pro usuário testar, autorizar
+> o merge (`git merge --no-ff`) e **pushar (só o usuário pusha)**. Confirme antes
+> de qualquer irreversível. Responda em pt-BR.
 
 ## Current state
 
-- **Branch:** `master` — clean, **em sync com `origin/master`** (commit `5eac7a0`,
-  2026-06-24). Nada pendente de push.
-- **Done + merged + pushed (this package):** **G0** (web e2e scripts → `test:e2e`),
-  **G1** (`is_system` em Module+Screen: delete/rename-key → 409; screen trava
-  module+path; campos read-only nos edit dialogs), **G2** (`useConfirmDeactivate` +
-  `ConfirmDialog` controlado; retrofit user-edit), **G3** (gym soft-delete
-  `Gym.is_active`: check-in inativa → 403; membro vê só ativas; gerente lista
-  completa não-geo + toggles Nearby/Show-deactivated + paginador page-size 8),
-  **G4** (breadcrumb no header `components/breadcrumb/` — trilha estática + folha
-  dinâmica via `useSetBreadcrumb`, crumb-solo cinza; sidebar ativo por segmento
-  `isItemActive`; **`PageHeader`** reusável `text-xl` adotado em todas as páginas).
-- **In flight:** nada. Próximo = **G5** (branch `feat/grants-module-filter`).
-- **Next step:** branch off `master` → G5 fase 1 (`cmdk` + MultiSelect).
-- **Backlog (anotado):** sign-in keyboard UX; invariante "exatamente 1 profile
-  `is_default`" (ver `backlog-plan-package` item 8). PLAN.md tem G5–G6 detalhados.
+- **Branch:** `master` — clean. Last commit `99a12a6`
+  (`docs(api): close §4.1 ... steps 10-13`), 2026-06-24. **If `master` is ahead of
+  `origin`, the user still needs to push.**
+- **Done + merged + pushed — access-control follow-up package COMPLETE (G0–G6):**
+  - **G0** web e2e scripts → `test:e2e`. **G1** `is_system` on Module+Screen
+    (delete/key-rename → 409; screen locks module+path; read-only edit fields).
+    **G2** reusable confirm-on-deactivate (`useConfirmDeactivate` + controlled
+    `ConfirmDialog`) + user-edit retrofit. **G3** gym soft-delete
+    (`Gym.is_active`; check-in inactive → 403; member active-only; manager full
+    non-geo list + Nearby/Show-deactivated toggles + pager page-size 8).
+  - **G4** header breadcrumb (`components/breadcrumb/`; static trail + dynamic
+    leaf via `useSetBreadcrumb`; lone top-level crumb muted) + sidebar active
+    segment-match (`isItemActive`) + shared **`PageHeader`** (`text-xl`) on all
+    pages.
+  - **G5** grants module filter — lean **`MultiSelect`** (`ui/multi-select.tsx` =
+    radix Popover + `ui/command.tsx`/cmdk + Badge) above the untouched
+    `TransferTable`, wired to the Available side; **Module column on both sides**;
+    rows enriched with `moduleKey`/`moduleName` (`ScreenRow` in
+    `use-profile-detail-pm.ts`). Empty filter = no filter; granted screens always
+    kept so Granted never loses rows.
+  - **G6** closed `api/PROJECT.md` §4.1 request-lifecycle graph (steps 10–13) +
+    final EN+PT doc sweep (no drift).
+- **In flight:** nothing.
+- **Backlog (not started; don't begin without the user closing scope):** exactly-
+  one-`is_default`-profile invariant; sign-in keyboard UX. `PLAN.md` (local,
+  gitignored) is now stale — may be `rm`-ed.
 - **Demo (mock + seed):** users `admin` / `manager` / `support` / `johndoe`,
-  senha `Password1!`. Mock seed tem 24 gyms (2 inativas) p/ ver paginação.
+  senha `Password1!`. Mock seed has 24 gyms (2 inactive) to show pagination.
 
 ## Working rules (pointer + guardrails)
 
@@ -73,7 +74,7 @@ safety belt (do not violate):
 
 Claude harness memory (same machine only):
 `~/.claude/projects/-home-user--Dev-samples-monorepo-sample/memory/` — see
-`MEMORY.md` (esp. `backlog-plan-package` for full package detail + remaining G5–G6,
-`project-state`, `feedback-run-format-before-commit`, `tutorials-frozen-narrative`,
-`autonomous-phase-execution`). A cache — `PLAN.md` + this file are source of truth
-for state.
+`MEMORY.md` (esp. `backlog-plan-package` for the full delivered package +
+remaining backlog, `project-state`, `feedback-run-format-before-commit`,
+`tutorials-frozen-narrative`, `autonomous-phase-execution`). A cache — this file
+is the source of truth for state.
