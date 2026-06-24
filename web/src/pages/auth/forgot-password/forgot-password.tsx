@@ -47,6 +47,7 @@ export function ForgotPassword() {
 											<Input
 												id='email'
 												type='email'
+												autoFocus
 												placeholder='m@example.com'
 												{...pm.register('email')}
 											/>
@@ -90,6 +91,7 @@ export function ForgotPassword() {
 												name='code'
 												render={({ field }) => (
 													<InputOTP
+														autoFocus
 														maxLength={6}
 														value={
 															field.value ?? ''

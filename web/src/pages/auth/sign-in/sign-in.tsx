@@ -40,6 +40,7 @@ export function SignIn() {
 									<Input
 										id='identifier'
 										type='text'
+										autoFocus
 										placeholder='you@example.com or username'
 										{...pm.register('identifier')}
 									/>
@@ -51,17 +52,7 @@ export function SignIn() {
 								</div>
 
 								<div className='grid gap-2'>
-									<div className='flex items-center'>
-										<Label htmlFor='password'>
-											Password
-										</Label>
-										<Link
-											to='/forgot-password'
-											className='ml-auto text-sm underline-offset-4 hover:underline'
-										>
-											Forgot your password?
-										</Link>
-									</div>
+									<Label htmlFor='password'>Password</Label>
 									<Input
 										id='password'
 										type='password'
@@ -81,6 +72,16 @@ export function SignIn() {
 								>
 									Sign in
 								</Button>
+
+								{/* After the primary action in tab order: a
+								    keyboard login is identifier → password →
+								    Sign in → Forgot. */}
+								<Link
+									to='/forgot-password'
+									className='text-muted-foreground text-center text-sm underline-offset-4 hover:underline'
+								>
+									Forgot your password?
+								</Link>
 							</div>
 						</form>
 					</CardContent>
