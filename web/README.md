@@ -186,26 +186,26 @@ index `/` resolves to the user's landing
 screen via `LandingRoute`, and each screen is gated by
 `RequireScreen screen='<key>' [action]` (the same `can()` the menu uses).
 
-| Path                          | Guard                     | Page               | Notes                                                         |
-| ----------------------------- | ------------------------- | ------------------ | ------------------------------------------------------------- |
-| `/`                           | Protected                 | LandingRoute       | Resolves to the user's landing screen (dashboard/first)       |
-| `/gyms`                       | `gym.gyms`                | Gyms               | Nearby (geolocation) + search by name                         |
-| `/check-ins`                  | `gym.check-in`            | CheckIns           | History; ADMIN sees **Validate**                              |
-| `/account`                    | Protected                 | Account            | Edit username · change email · pick landing screen            |
-| `/gyms/new`                   | `gym.gyms` (create)       | NewGym             | Create a gym                                                  |
-| `/admin/users`                | `access-control.users`    | AdminUsers         | Paginated users table                                         |
-| `/admin/users/:userId`        | `access-control.users`    | UserEdit           | Edit username/email/role/`is_verified`/`is_active` + profiles |
-| `/admin/modules`              | `access-control.modules`  | AdminModules       | Modules CRUD                                                  |
-| `/admin/screens`              | `access-control.screens`  | AdminScreens       | Screens CRUD (per module)                                     |
-| `/admin/profiles`             | `access-control.profiles` | AdminProfiles      | Profiles CRUD                                                 |
-| `/admin/profiles/:profileId`  | `access-control.profiles` | ProfileDetail      | Grants editor (TransferTable) + default screen                |
-| `/sign-in`                    | public (auth)             | SignIn             |                                                               |
-| `/register`                   | public                    | Register           |                                                               |
-| `/forgot-password`            | public (auth)             | ForgotPassword     |                                                               |
-| `/users/reset-password`       | public (auth)             | ResetPassword      | Token via `?token=` or email + OTP                            |
-| `/users/verify-email`         | public (auth)             | VerifyEmail        | Link landing (`?token=`) + OTP                                |
-| `/users/confirm-email-change` | public (auth)             | ConfirmEmailChange | Email-change link landing                                     |
-| `*`                           | —                         | NotFound           | 404                                                           |
+| Path                          | Guard                     | Page               | Notes                                                                 |
+| ----------------------------- | ------------------------- | ------------------ | --------------------------------------------------------------------- |
+| `/`                           | Protected                 | LandingRoute       | Resolves to the user's landing screen (dashboard/first)               |
+| `/gyms`                       | `gym.gyms`                | Gyms               | Nearby (geolocation) + search by name                                 |
+| `/check-ins`                  | `gym.check-in`            | CheckIns           | History; ADMIN sees **Validate**                                      |
+| `/account`                    | Protected                 | Account            | Edit username · change email · pick landing screen                    |
+| `/gyms/new`                   | `gym.gyms` (create)       | NewGym             | Create a gym                                                          |
+| `/admin/users`                | `access-control.users`    | AdminUsers         | Paginated users table                                                 |
+| `/admin/users/:userId`        | `access-control.users`    | UserEdit           | Edit username/email/role/`is_verified`/`is_active` + profiles         |
+| `/admin/modules`              | `access-control.modules`  | AdminModules       | Modules CRUD                                                          |
+| `/admin/screens`              | `access-control.screens`  | AdminScreens       | Screens CRUD (per module)                                             |
+| `/admin/profiles`             | `access-control.profiles` | AdminProfiles      | Profiles CRUD                                                         |
+| `/admin/profiles/:profileId`  | `access-control.profiles` | ProfileDetail      | Grants editor (TransferTable) + module filter/column + default screen |
+| `/sign-in`                    | public (auth)             | SignIn             |                                                                       |
+| `/register`                   | public                    | Register           |                                                                       |
+| `/forgot-password`            | public (auth)             | ForgotPassword     |                                                                       |
+| `/users/reset-password`       | public (auth)             | ResetPassword      | Token via `?token=` or email + OTP                                    |
+| `/users/verify-email`         | public (auth)             | VerifyEmail        | Link landing (`?token=`) + OTP                                        |
+| `/users/confirm-email-change` | public (auth)             | ConfirmEmailChange | Email-change link landing                                             |
+| `*`                           | —                         | NotFound           | 404                                                                   |
 
 The API contract these pages consume (routes, roles, error shapes) is documented
 in [`solid_api_sample`'s README](../api/README.md). Each page's
@@ -267,10 +267,11 @@ pnpm dev:test    # http://localhost:5001
    the table reflects it. Editing **yourself** shows a read-only role badge.
    Toggle a member's **Active** switch off and confirm they can no longer sign in.
    Move a profile in the user's **profiles** card and Save.
-6. **Admin → Profiles** → open a profile → in the **grants editor** drag (or use
-   `>>`/`<<`) screens between Available and Assigned, tick view/create/edit/delete,
-   pick the profile's **Default** screen → Save. **Modules** and **Screens** offer
-   the same CRUD for the catalog.
+6. **Admin → Profiles** → open a profile → in the **grants editor** narrow the
+   **Available** list with the **module** chips filter, drag (or use `>>`/`<<`)
+   screens between Available and Granted (each row shows its **Module**), tick
+   view/create/edit/delete, pick the profile's **Default** screen → Save.
+   **Modules** and **Screens** offer the same CRUD for the catalog.
 7. Sign out and sign in as **`johndoe`**, **`manager`**, **`support`** in turn —
    each sees a **different sidebar** built from its profile's grants; admin sees
    every section. Visiting a screen you lack renders **Forbidden** in place.
