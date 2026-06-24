@@ -2,6 +2,7 @@ import { ArrowLeft, LoaderCircle } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { useSetBreadcrumb } from '@/components/breadcrumb/breadcrumb-hooks'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { PageHeader } from '@/components/page-header'
 import { PageTitle } from '@/components/title/page-title'
 import { type TransferColumn, TransferTable } from '@/components/transfer-table'
@@ -171,13 +172,17 @@ export function ProfileDetail() {
 						<div>
 							<Label>Default profile</Label>
 							<p className='text-muted-foreground text-xs'>
-								Auto-attached to users on registration.
+								{pm.profile.isDefault
+									? 'This is the default profile. Enable Default on another profile to move it.'
+									: 'Auto-attached to users on registration.'}
 							</p>
 						</div>
 						<Switch
 							checked={pm.isDefault}
 							onCheckedChange={pm.setIsDefault}
-							disabled={!pm.canEdit}
+							// The current default can't be switched off (it would
+							// leave zero); promote another profile instead.
+							disabled={!pm.canEdit || pm.profile.isDefault}
 						/>
 					</div>
 				</div>
@@ -224,6 +229,13 @@ export function ProfileDetail() {
 						}
 					/>
 				</div>
+
+				<ConfirmDialog
+					{...pm.confirmDefault}
+					title='Replace default profile'
+					description={`The current default profile is: ${pm.currentDefaultName}. Do you confirm that you want to replace it as the default?`}
+					confirmLabel='Replace'
+				/>
 			</div>
 		</>
 	)

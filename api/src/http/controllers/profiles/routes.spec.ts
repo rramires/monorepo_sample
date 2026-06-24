@@ -8,9 +8,14 @@ import { prisma } from '@/lib/prisma'
 import createAndAuthUser from '@/utils/tests/create-and-auth-user'
 
 describe('Profiles routes (e2e)', () => {
+	// Auth once (the helper uses fixed credentials, so a second call would 409
+	// on the duplicate user); both tests share the admin token.
+	let token: string
+
 	beforeAll(async () => {
 		// running app
 		await app.ready()
+		token = (await createAndAuthUser(app, true)).token
 	})
 
 	afterAll(async () => {
@@ -19,9 +24,6 @@ describe('Profiles routes (e2e)', () => {
 	})
 
 	it('should be able to create, read, edit grants, update and delete a profile', async () => {
-		// get auth user (admin bypasses requireScreen)
-		const { token } = await createAndAuthUser(app, true)
-
 		// a real module + screen to grant (unique keys per run)
 		const moduleRow = await prisma.module.create({
 			data: {
@@ -109,5 +111,45 @@ describe('Profiles routes (e2e)', () => {
 			.send()
 
 		expect(deleteResponse.statusCode).toEqual(204)
+	})
+
+	it('keeps exactly one default profile: promoting demotes the old, the last cannot be removed', async () => {
+		const makeProfile = async (is_default: boolean) => {
+			const response = await request(app.server)
+				.post('/profiles')
+				.set('Authorization', `Bearer ${token}`)
+				.send({
+					key: `profile-${randomUUID()}`,
+					name: 'Default test profile',
+					is_default,
+				})
+			expect(response.statusCode).toEqual(201)
+			return response.body.profile
+		}
+
+		// `a` becomes the default (demoting any pre-existing one); `b` doesn't.
+		const a = await makeProfile(true)
+		const b = await makeProfile(false)
+
+		// Promote `b` → the radio demotes `a`.
+		const promote = await request(app.server)
+			.patch(`/profiles/${b.id}`)
+			.set('Authorization', `Bearer ${token}`)
+			.send({ is_default: true })
+		expect(promote.statusCode).toEqual(200)
+		expect(promote.body.profile.is_default).toBe(true)
+
+		const aAfter = await request(app.server)
+			.get(`/profiles/${a.id}`)
+			.set('Authorization', `Bearer ${token}`)
+			.send()
+		expect(aAfter.body.is_default).toBe(false)
+
+		// Turning the current default off is rejected (would leave zero).
+		const removeLast = await request(app.server)
+			.patch(`/profiles/${b.id}`)
+			.set('Authorization', `Bearer ${token}`)
+			.send({ is_default: false })
+		expect(removeLast.statusCode).toEqual(409)
 	})
 })

@@ -87,6 +87,14 @@ export class InMemoryProfilesRepository implements IProfilesRepository {
 		return profile
 	}
 
+	async clearDefaultExcept(keepId: string) {
+		for (const profile of this.items) {
+			if (profile.id !== keepId) {
+				profile.is_default = false
+			}
+		}
+	}
+
 	async delete(id: string) {
 		const index = this.items.findIndex((item) => item.id === id)
 		if (index >= 0) {

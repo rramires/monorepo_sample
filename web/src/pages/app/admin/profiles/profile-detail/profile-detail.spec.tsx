@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { Route, Routes } from 'react-router'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 
+import { getProfile } from '@/api/profiles'
+
 import { renderWithProviders } from '../../../../../../test/utils'
 import { ProfileDetail } from './profile-detail'
 
@@ -94,6 +96,25 @@ vi.mock('@/api/profiles', () => ({
 	})),
 	setProfileScreens: vi.fn(async () => {}),
 	updateProfile: vi.fn(async () => ({})),
+	// Two profiles: p1 (this page, not default) + p2 the current default.
+	getProfiles: vi.fn(async () => [
+		{
+			id: 'p1',
+			key: 'member',
+			name: 'Gym Member',
+			description: null,
+			isSystem: false,
+			isDefault: false,
+		},
+		{
+			id: 'p2',
+			key: 'manager',
+			name: 'Gym Manager',
+			description: null,
+			isSystem: false,
+			isDefault: true,
+		},
+	]),
 }))
 
 // Grant edit so the table renders fully enabled.
@@ -151,5 +172,45 @@ describe('ProfileDetail — grants module filter + column', () => {
 		expect(screen.getByText('Gym Dashboard')).toBeInTheDocument()
 		// …but the granted access-control screen stays on the Granted side.
 		expect(screen.getByText('Manage Modules')).toBeInTheDocument()
+	})
+})
+
+describe('ProfileDetail — single-default invariant', () => {
+	it('confirms replacing the current default when promoting this profile', async () => {
+		const user = userEvent.setup()
+		renderDetail()
+
+		await screen.findByText('Gym Dashboard')
+
+		// Turn this (non-default) profile into the default, then save.
+		await user.click(screen.getByRole('switch'))
+		await user.click(screen.getByRole('button', { name: 'Save changes' }))
+
+		// The confirm dialog names the current default profile.
+		expect(
+			await screen.findByText(
+				/The current default profile is: Gym Manager/,
+			),
+		).toBeInTheDocument()
+	})
+
+	it('disables the Default switch when this profile is already the default', async () => {
+		vi.mocked(getProfile).mockResolvedValueOnce({
+			id: 'p1',
+			key: 'member',
+			name: 'Gym Member',
+			description: null,
+			isSystem: false,
+			isDefault: true,
+			screens: [],
+		})
+		renderDetail()
+
+		await screen.findByText('Gym Dashboard')
+
+		expect(screen.getByRole('switch')).toBeDisabled()
+		expect(
+			screen.getByText(/This is the default profile/),
+		).toBeInTheDocument()
 	})
 })

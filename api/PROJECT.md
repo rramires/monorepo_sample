@@ -571,7 +571,11 @@ action grants (`ProfileScreen`); a user is assigned profiles (`UserProfile`).
   "browse all" view (non-geo, paginated). `PATCH /gyms/:gymId` toggles
   `is_active` to deactivate / reactivate.
 - **`is_default` / `is_system`:** the `is_default` profile is auto-attached to a
-  new account on `POST /users`. `is_system` marks seeded records as protected —
+  new account on `POST /users`. **Exactly one** profile is the default at any
+  time: setting a profile default (on create or update) demotes every other one
+  (radio, via `clearDefaultExcept`), and turning the **current** default off is a
+  `409` (`DefaultProfileRequiredError`) — to move it, promote another profile.
+  `is_system` marks seeded records as protected —
   on a profile, **module, or screen**, deleting it or editing its identity is a
   `409` (the `key`; for a screen also its `module` and `path`); name/description/
   order — and a profile's grants — stay editable. The seed marks all three
@@ -581,8 +585,9 @@ action grants (`ProfileScreen`); a user is assigned profiles (`UserProfile`).
 - **CRUD error mapping** (controllers, via `instanceof`): `ResourceNotFoundError`
   → `404`; deleting a module that still has screens → `409`
   (`ModuleHasScreensError`); editing/deleting a system profile/module/screen →
-  `409` (`SystemProfileError` / `SystemModuleError` / `SystemScreenError`); on
-  `PATCH /users/:userId`, demoting/deactivating oneself → `400`
+  `409` (`SystemProfileError` / `SystemModuleError` / `SystemScreenError`);
+  turning the only default profile off → `409` (`DefaultProfileRequiredError`);
+  on `PATCH /users/:userId`, demoting/deactivating oneself → `400`
   (`CannotChangeOwnRoleError` / `CannotDeactivateSelfError`).
   Creates return `201`; the `PUT` grant/profile replacements return `200`.
 - **Seam:** `IPermissionsRepository` has both a Prisma and an in-memory

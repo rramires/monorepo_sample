@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 
 import { getModules } from '@/api/modules'
 import {
 	getProfile,
+	getProfiles,
 	type GrantModel,
 	setProfileScreens,
 	updateProfile,
@@ -48,6 +49,12 @@ export function useProfileDetailPM() {
 	const { data: modules = [] } = useQuery({
 		queryKey: ['modules'],
 		queryFn: () => getModules(),
+	})
+	// The other profiles — used to name the current default in the confirm
+	// dialog when this profile is being promoted.
+	const { data: profiles = [] } = useQuery({
+		queryKey: ['profiles'],
+		queryFn: () => getProfiles(),
 	})
 
 	const [name, setName] = useState('')
@@ -196,6 +203,41 @@ export function useProfileDetailPM() {
 		},
 	})
 
+	// Confirm-on-promote: making a non-default profile the default replaces the
+	// current one, so name it and ask first. The radio (demote others) and the
+	// block on removing the last default are enforced server-side; this is the
+	// heads-up before that happens.
+	const [confirmDefaultOpen, setConfirmDefaultOpen] = useState(false)
+	const pendingSave = useRef<(() => void) | null>(null)
+
+	const currentDefault = profiles.find(
+		(p) => p.isDefault && p.id !== profileId,
+	)
+	const isPromotingDefault = !!profile && !profile.isDefault && isDefault
+
+	function requestSave() {
+		if (isPromotingDefault && currentDefault) {
+			pendingSave.current = () => save.mutate()
+			setConfirmDefaultOpen(true)
+		} else {
+			save.mutate()
+		}
+	}
+
+	// Closing the dialog (Cancel, Esc, backdrop) drops the pending save.
+	function onConfirmDefaultOpenChange(next: boolean) {
+		setConfirmDefaultOpen(next)
+		if (!next) {
+			pendingSave.current = null
+		}
+	}
+
+	function confirmReplaceDefault() {
+		const run = pendingSave.current
+		pendingSave.current = null
+		run?.()
+	}
+
 	return {
 		isLoading: profileQuery.isLoading,
 		notFound: profileQuery.isError,
@@ -217,7 +259,13 @@ export function useProfileDetailPM() {
 		handleAssignedChange,
 		toggleAction,
 		canEdit: can('access-control.profiles', 'edit'),
-		save: () => save.mutate(),
+		save: requestSave,
 		isSaving: save.isPending,
+		currentDefaultName: currentDefault?.name ?? null,
+		confirmDefault: {
+			open: confirmDefaultOpen,
+			onOpenChange: onConfirmDefaultOpenChange,
+			onConfirm: confirmReplaceDefault,
+		},
 	}
 }

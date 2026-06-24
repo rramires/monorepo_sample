@@ -152,52 +152,52 @@ imediatamente** no boot se alguma variável for inválida (validação Zod em
 > `requireScreen` (`ADMIN` sempre ignora). `—` significa só autenticação (ou
 > público quando Auth é `–`).
 
-| Método   | Rota                             | Auth           | Guard (tela · ação)                | Descrição                                                   |
-| -------- | -------------------------------- | -------------- | ---------------------------------- | ----------------------------------------------------------- |
-| `GET`    | `/hello`                         | –              | –                                  | Healthcheck                                                 |
-| `POST`   | `/users`                         | –              | –                                  | Cadastrar usuário (com rate limit)                          |
-| `POST`   | `/auth/login`                    | –              | –                                  | Login → access token + cookie de refresh (rate limit)       |
-| `PATCH`  | `/auth/refresh`                  | refresh cookie | –                                  | Rotacionar o access token                                   |
-| `GET`    | `/auth/me`                       | Bearer         | –                                  | Perfil do usuário autenticado                               |
-| `POST`   | `/auth/logout`                   | Bearer         | –                                  | Revogar o token atual (denylist)                            |
-| `PATCH`  | `/auth/me`                       | Bearer         | –                                  | Editar o próprio username / definir `default_screen_key`    |
-| `POST`   | `/auth/me/email`                 | Bearer         | –                                  | Solicitar troca do próprio e-mail (confirma no novo)        |
-| `POST`   | `/auth/me/email/confirm`         | Bearer         | –                                  | Confirmar troca do próprio e-mail via OTP                   |
-| `GET`    | `/me/permissions`                | Bearer         | –                                  | Permissões efetivas: `role`, `screens`, `menu`, tela padrão |
-| `GET`    | `/gyms/search`                   | Bearer         | –                                  | Buscar academias por nome (só ativas; gestores: `includeInactive`) |
-| `GET`    | `/gyms/nearby`                   | Bearer         | –                                  | Academias próximas a uma coordenada (só ativas; gestores: `includeInactive`) |
-| `POST`   | `/gyms`                          | Bearer         | `gym.gyms` · create                | Cadastrar academia                                          |
-| `PATCH`  | `/gyms/:gymId`                   | Bearer         | `gym.gyms` · edit                  | Editar academia (título/descrição/telefone, `is_active`)    |
-| `GET`    | `/check-ins/history`             | Bearer         | –                                  | Histórico de check-ins paginado                             |
-| `GET`    | `/check-ins/metrics`             | Bearer         | –                                  | Total de check-ins                                          |
+| Método   | Rota                             | Auth           | Guard (tela · ação)                | Descrição                                                                        |
+| -------- | -------------------------------- | -------------- | ---------------------------------- | -------------------------------------------------------------------------------- |
+| `GET`    | `/hello`                         | –              | –                                  | Healthcheck                                                                      |
+| `POST`   | `/users`                         | –              | –                                  | Cadastrar usuário (com rate limit)                                               |
+| `POST`   | `/auth/login`                    | –              | –                                  | Login → access token + cookie de refresh (rate limit)                            |
+| `PATCH`  | `/auth/refresh`                  | refresh cookie | –                                  | Rotacionar o access token                                                        |
+| `GET`    | `/auth/me`                       | Bearer         | –                                  | Perfil do usuário autenticado                                                    |
+| `POST`   | `/auth/logout`                   | Bearer         | –                                  | Revogar o token atual (denylist)                                                 |
+| `PATCH`  | `/auth/me`                       | Bearer         | –                                  | Editar o próprio username / definir `default_screen_key`                         |
+| `POST`   | `/auth/me/email`                 | Bearer         | –                                  | Solicitar troca do próprio e-mail (confirma no novo)                             |
+| `POST`   | `/auth/me/email/confirm`         | Bearer         | –                                  | Confirmar troca do próprio e-mail via OTP                                        |
+| `GET`    | `/me/permissions`                | Bearer         | –                                  | Permissões efetivas: `role`, `screens`, `menu`, tela padrão                      |
+| `GET`    | `/gyms/search`                   | Bearer         | –                                  | Buscar academias por nome (só ativas; gestores: `includeInactive`)               |
+| `GET`    | `/gyms/nearby`                   | Bearer         | –                                  | Academias próximas a uma coordenada (só ativas; gestores: `includeInactive`)     |
+| `POST`   | `/gyms`                          | Bearer         | `gym.gyms` · create                | Cadastrar academia                                                               |
+| `PATCH`  | `/gyms/:gymId`                   | Bearer         | `gym.gyms` · edit                  | Editar academia (título/descrição/telefone, `is_active`)                         |
+| `GET`    | `/check-ins/history`             | Bearer         | –                                  | Histórico de check-ins paginado                                                  |
+| `GET`    | `/check-ins/metrics`             | Bearer         | –                                  | Total de check-ins                                                               |
 | `POST`   | `/gyms/:gymId/check-ins`         | Bearer         | –                                  | Fazer check-in (`400` longe demais · `403` academia inativa · `409` já fez hoje) |
-| `PATCH`  | `/check-ins/:checkInId/validate` | Bearer         | `gym.validations` · create         | Validar check-in (`409` fora da janela de 20 min)           |
-| `POST`   | `/users/send-verification`       | Bearer         | –                                  | Enviar e-mail de verificação (link + OTP)                   |
-| `GET`    | `/users/verify-email`            | –              | –                                  | Verificar e-mail via link token (`?token=`)                 |
-| `POST`   | `/users/verify-email/otp`        | Bearer         | –                                  | Verificar e-mail via código OTP                             |
-| `GET`    | `/users/confirm-email-change`    | –              | –                                  | Confirmar troca de e-mail via link token (`?token=`)        |
-| `POST`   | `/users/resend-verification`     | Bearer         | –                                  | Reenviar e-mail de verificação                              |
-| `POST`   | `/users/forgot-password`         | –              | –                                  | Solicitar reset; sempre `202` (rate limit)                  |
-| `POST`   | `/users/reset-password`          | –              | –                                  | Resetar via link token ou email + OTP (rate limit)          |
-| `GET`    | `/users`                         | Bearer         | `access-control.users` · view      | Listar usuários (paginado, 20/página)                       |
-| `GET`    | `/users/:userId`                 | Bearer         | `access-control.users` · view      | Buscar um usuário por id                                    |
-| `PATCH`  | `/users/:userId`                 | Bearer         | `access-control.users` · edit      | Editar usuário (username/email/role/is_verified/is_active)  |
-| `GET`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · view      | Listar os perfis atribuídos a um usuário                    |
-| `PUT`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · edit      | Substituir as atribuições de perfil de um usuário           |
-| `GET`    | `/modules`                       | Bearer         | `access-control.modules` · view    | Listar módulos                                              |
-| `POST`   | `/modules`                       | Bearer         | `access-control.modules` · create  | Criar um módulo                                             |
-| `PATCH`  | `/modules/:id`                   | Bearer         | `access-control.modules` · edit    | Editar um módulo (`409` ao renomear a key de um módulo de sistema) |
-| `DELETE` | `/modules/:id`                   | Bearer         | `access-control.modules` · delete  | Excluir um módulo (`409` se ainda tiver telas ou for de sistema) |
-| `GET`    | `/screens`                       | Bearer         | `access-control.screens` · view    | Listar telas                                                |
-| `POST`   | `/screens`                       | Bearer         | `access-control.screens` · create  | Criar uma tela                                              |
-| `PATCH`  | `/screens/:id`                   | Bearer         | `access-control.screens` · edit    | Editar uma tela (`409` ao mudar key/módulo/path de uma de sistema) |
-| `DELETE` | `/screens/:id`                   | Bearer         | `access-control.screens` · delete  | Excluir uma tela (`409` em tela de sistema)                |
-| `GET`    | `/profiles`                      | Bearer         | `access-control.profiles` · view   | Listar perfis                                               |
-| `GET`    | `/profiles/:id`                  | Bearer         | `access-control.profiles` · view   | Buscar um perfil com seus grants                            |
-| `POST`   | `/profiles`                      | Bearer         | `access-control.profiles` · create | Criar um perfil                                             |
-| `PATCH`  | `/profiles/:id`                  | Bearer         | `access-control.profiles` · edit   | Editar um perfil (`409` em perfil de sistema)               |
-| `DELETE` | `/profiles/:id`                  | Bearer         | `access-control.profiles` · delete | Excluir um perfil (`409` em perfil de sistema)              |
-| `PUT`    | `/profiles/:id/screens`          | Bearer         | `access-control.profiles` · edit   | Substituir os grants de tela de um perfil                   |
+| `PATCH`  | `/check-ins/:checkInId/validate` | Bearer         | `gym.validations` · create         | Validar check-in (`409` fora da janela de 20 min)                                |
+| `POST`   | `/users/send-verification`       | Bearer         | –                                  | Enviar e-mail de verificação (link + OTP)                                        |
+| `GET`    | `/users/verify-email`            | –              | –                                  | Verificar e-mail via link token (`?token=`)                                      |
+| `POST`   | `/users/verify-email/otp`        | Bearer         | –                                  | Verificar e-mail via código OTP                                                  |
+| `GET`    | `/users/confirm-email-change`    | –              | –                                  | Confirmar troca de e-mail via link token (`?token=`)                             |
+| `POST`   | `/users/resend-verification`     | Bearer         | –                                  | Reenviar e-mail de verificação                                                   |
+| `POST`   | `/users/forgot-password`         | –              | –                                  | Solicitar reset; sempre `202` (rate limit)                                       |
+| `POST`   | `/users/reset-password`          | –              | –                                  | Resetar via link token ou email + OTP (rate limit)                               |
+| `GET`    | `/users`                         | Bearer         | `access-control.users` · view      | Listar usuários (paginado, 20/página)                                            |
+| `GET`    | `/users/:userId`                 | Bearer         | `access-control.users` · view      | Buscar um usuário por id                                                         |
+| `PATCH`  | `/users/:userId`                 | Bearer         | `access-control.users` · edit      | Editar usuário (username/email/role/is_verified/is_active)                       |
+| `GET`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · view      | Listar os perfis atribuídos a um usuário                                         |
+| `PUT`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · edit      | Substituir as atribuições de perfil de um usuário                                |
+| `GET`    | `/modules`                       | Bearer         | `access-control.modules` · view    | Listar módulos                                                                   |
+| `POST`   | `/modules`                       | Bearer         | `access-control.modules` · create  | Criar um módulo                                                                  |
+| `PATCH`  | `/modules/:id`                   | Bearer         | `access-control.modules` · edit    | Editar um módulo (`409` ao renomear a key de um módulo de sistema)               |
+| `DELETE` | `/modules/:id`                   | Bearer         | `access-control.modules` · delete  | Excluir um módulo (`409` se ainda tiver telas ou for de sistema)                 |
+| `GET`    | `/screens`                       | Bearer         | `access-control.screens` · view    | Listar telas                                                                     |
+| `POST`   | `/screens`                       | Bearer         | `access-control.screens` · create  | Criar uma tela                                                                   |
+| `PATCH`  | `/screens/:id`                   | Bearer         | `access-control.screens` · edit    | Editar uma tela (`409` ao mudar key/módulo/path de uma de sistema)               |
+| `DELETE` | `/screens/:id`                   | Bearer         | `access-control.screens` · delete  | Excluir uma tela (`409` em tela de sistema)                                      |
+| `GET`    | `/profiles`                      | Bearer         | `access-control.profiles` · view   | Listar perfis                                                                    |
+| `GET`    | `/profiles/:id`                  | Bearer         | `access-control.profiles` · view   | Buscar um perfil com seus grants                                                 |
+| `POST`   | `/profiles`                      | Bearer         | `access-control.profiles` · create | Criar um perfil                                                                  |
+| `PATCH`  | `/profiles/:id`                  | Bearer         | `access-control.profiles` · edit   | Editar um perfil (`409` em perfil de sistema)                                    |
+| `DELETE` | `/profiles/:id`                  | Bearer         | `access-control.profiles` · delete | Excluir um perfil (`409` em perfil de sistema)                                   |
+| `PUT`    | `/profiles/:id/screens`          | Bearer         | `access-control.profiles` · edit   | Substituir os grants de tela de um perfil                                        |
 
 > O JWT carrega um claim `role`, mas a **autorização lê o papel (e os grants de
 > tela) do banco** (por id do usuário), não do token. Uma promoção/rebaixamento,
@@ -368,7 +368,8 @@ mesma `ADMIN_PASSWORD`:
 | `support` | `support`     | gerenciar perfis (total), editar usuários, ver telas               |
 
 O perfil `gym-member` é o `is_default` — é anexado automaticamente a toda conta
-nova criada via `POST /users`.
+nova criada via `POST /users`. Exatamente um perfil é o default: marcar outro
+como default rebaixa este, e desligar o único default é rejeitado com `409`.
 
 Smoke test (DB limpa, `pnpm seeddb` executado):
 
