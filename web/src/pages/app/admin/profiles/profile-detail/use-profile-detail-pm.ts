@@ -1,19 +1,27 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 
+import { getModules } from '@/api/modules'
 import {
 	getProfile,
 	type GrantModel,
 	setProfileScreens,
 	updateProfile,
 } from '@/api/profiles'
-import { getScreens } from '@/api/screens'
+import { getScreens, type ScreenModel } from '@/api/screens'
 import { usePermissions } from '@/hooks/use-permissions'
 
 type Actions = Pick<GrantModel, 'view' | 'create' | 'edit' | 'delete'>
+
+// A screen row enriched with its module's key/name, so the grants table can
+// show a module column and filter by module without a second lookup per row.
+export interface ScreenRow extends ScreenModel {
+	moduleKey: string
+	moduleName: string
+}
 
 const VIEW_DEFAULT: Actions = {
 	view: true,
@@ -37,6 +45,10 @@ export function useProfileDetailPM() {
 		queryKey: ['screens'],
 		queryFn: () => getScreens(),
 	})
+	const { data: modules = [] } = useQuery({
+		queryKey: ['modules'],
+		queryFn: () => getModules(),
+	})
 
 	const [name, setName] = useState('')
 	const [description, setDescription] = useState('')
@@ -45,6 +57,49 @@ export function useProfileDetailPM() {
 	const [grants, setGrants] = useState<Record<string, Actions>>({})
 	// The profile's default landing screen (≤1). Acts like a radio.
 	const [defaultScreenId, setDefaultScreenId] = useState<string | null>(null)
+	// Module ids chosen in the chips filter; empty = no filter (show all).
+	const [moduleFilter, setModuleFilter] = useState<string[]>([])
+
+	// Module lookup + chip options (stable order).
+	const modulesById = useMemo(
+		() => new Map(modules.map((m) => [m.id, m])),
+		[modules],
+	)
+	const moduleOptions = useMemo(
+		() =>
+			[...modules]
+				.sort((a, b) => a.order - b.order)
+				.map((m) => ({ value: m.id, label: m.name })),
+		[modules],
+	)
+
+	// Screens carry only a moduleId; join the module name/key for the column.
+	const screenRows = useMemo<ScreenRow[]>(
+		() =>
+			screens.map((s) => {
+				const m = modulesById.get(s.moduleId)
+				return {
+					...s,
+					moduleKey: m?.key ?? '',
+					moduleName: m?.name ?? '—',
+				}
+			}),
+		[screens, modulesById],
+	)
+
+	// The module filter narrows only the Available side: always keep already-
+	// granted screens in the universe so the Granted side stays complete (the
+	// TransferTable drops assigned rows from Available on its own).
+	const visibleScreens = useMemo(() => {
+		if (moduleFilter.length === 0) {
+			return screenRows
+		}
+		const mods = new Set(moduleFilter)
+		const assigned = new Set(assignedIds)
+		return screenRows.filter(
+			(s) => mods.has(s.moduleId) || assigned.has(s.id),
+		)
+	}, [screenRows, moduleFilter, assignedIds])
 
 	// Seed local edit state from the loaded profile (runs when the profile
 	// arrives or the id changes).
@@ -145,7 +200,10 @@ export function useProfileDetailPM() {
 		isLoading: profileQuery.isLoading,
 		notFound: profileQuery.isError,
 		profile,
-		screens,
+		screens: visibleScreens,
+		moduleOptions,
+		moduleFilter,
+		setModuleFilter,
 		name,
 		setName,
 		description,

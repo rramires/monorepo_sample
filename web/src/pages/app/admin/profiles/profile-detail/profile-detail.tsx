@@ -1,7 +1,6 @@
 import { ArrowLeft, LoaderCircle } from 'lucide-react'
 import { Link } from 'react-router'
 
-import type { ScreenModel } from '@/api/screens'
 import { useSetBreadcrumb } from '@/components/breadcrumb/breadcrumb-hooks'
 import { PageHeader } from '@/components/page-header'
 import { PageTitle } from '@/components/title/page-title'
@@ -11,9 +10,10 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { MultiSelect } from '@/components/ui/multi-select'
 import { Switch } from '@/components/ui/switch'
 
-import { useProfileDetailPM } from './use-profile-detail-pm'
+import { type ScreenRow, useProfileDetailPM } from './use-profile-detail-pm'
 
 const ACTIONS = ['view', 'create', 'edit', 'delete'] as const
 
@@ -47,7 +47,7 @@ export function ProfileDetail() {
 		)
 	}
 
-	const nameColumn: TransferColumn<ScreenModel> = {
+	const nameColumn: TransferColumn<ScreenRow> = {
 		key: 'name',
 		header: 'Screen',
 		cell: (s) => (
@@ -58,13 +58,29 @@ export function ProfileDetail() {
 		),
 	}
 
-	const assignedColumns: TransferColumn<ScreenModel>[] = [
+	const moduleColumn: TransferColumn<ScreenRow> = {
+		key: 'module',
+		header: 'Module',
+		cell: (s) => (
+			<span className='text-muted-foreground text-sm'>
+				{s.moduleName}
+			</span>
+		),
+	}
+
+	const availableColumns: TransferColumn<ScreenRow>[] = [
 		nameColumn,
+		moduleColumn,
+	]
+
+	const assignedColumns: TransferColumn<ScreenRow>[] = [
+		nameColumn,
+		moduleColumn,
 		...ACTIONS.map((action) => ({
 			key: action,
 			header: action[0].toUpperCase() + action.slice(1),
 			className: 'text-center',
-			cell: (s: ScreenModel) => (
+			cell: (s: ScreenRow) => (
 				<Checkbox
 					checked={pm.grants[s.id]?.[action] ?? false}
 					onCheckedChange={() => pm.toggleAction(s.id, action)}
@@ -77,7 +93,7 @@ export function ProfileDetail() {
 			key: 'default',
 			header: 'Default',
 			className: 'text-center',
-			cell: (s: ScreenModel) => (
+			cell: (s: ScreenRow) => (
 				<Checkbox
 					checked={pm.defaultScreenId === s.id}
 					onCheckedChange={() => pm.setDefault(s.id)}
@@ -162,19 +178,36 @@ export function ProfileDetail() {
 					<p className='text-muted-foreground text-sm'>
 						Move screens to "Granted" and pick the allowed actions.
 					</p>
+
+					<div className='flex flex-col gap-1.5 sm:max-w-xs'>
+						<Label className='text-muted-foreground text-xs'>
+							Filter available by module
+						</Label>
+						<MultiSelect
+							options={pm.moduleOptions}
+							selected={pm.moduleFilter}
+							onChange={pm.setModuleFilter}
+							placeholder='All modules'
+							searchPlaceholder='Search modules…'
+							emptyText='No modules.'
+						/>
+					</div>
+
 					<TransferTable
 						items={pm.screens}
 						getRowId={(s) => s.id}
 						assignedIds={pm.assignedIds}
 						onAssignedChange={pm.handleAssignedChange}
-						availableColumns={[nameColumn]}
+						availableColumns={availableColumns}
 						assignedColumns={assignedColumns}
 						labels={{
 							available: 'Available screens',
 							assigned: 'Granted',
 						}}
 						searchable
-						getSearchText={(s) => `${s.name} ${s.key}`}
+						getSearchText={(s) =>
+							`${s.name} ${s.key} ${s.moduleName}`
+						}
 					/>
 				</div>
 			</div>
