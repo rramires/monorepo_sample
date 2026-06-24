@@ -62,5 +62,41 @@ describe('Screens routes (e2e)', () => {
 			.send()
 
 		expect(deleteResponse.statusCode).toEqual(204)
+
+		// ── system screen protection ──────────────────────────────────────────
+		// Seed a system screen directly (the API never sets is_system).
+		const systemScreen = await prisma.screen.create({
+			data: {
+				module_id: module.id,
+				key: 'access-control.profiles',
+				name: 'Profiles',
+				order: 0,
+				is_system: true,
+			},
+		})
+
+		// renaming its key is blocked (409)
+		const sysRenameResponse = await request(app.server)
+			.patch(`/screens/${systemScreen.id}`)
+			.set('Authorization', `Bearer ${token}`)
+			.send({ key: 'renamed' })
+
+		expect(sysRenameResponse.statusCode).toEqual(409)
+
+		// a non-key edit still works (200)
+		const sysEditResponse = await request(app.server)
+			.patch(`/screens/${systemScreen.id}`)
+			.set('Authorization', `Bearer ${token}`)
+			.send({ name: 'Profiles (label)' })
+
+		expect(sysEditResponse.statusCode).toEqual(200)
+
+		// deleting it is blocked (409)
+		const sysDeleteResponse = await request(app.server)
+			.delete(`/screens/${systemScreen.id}`)
+			.set('Authorization', `Bearer ${token}`)
+			.send()
+
+		expect(sysDeleteResponse.statusCode).toEqual(409)
 	})
 })
