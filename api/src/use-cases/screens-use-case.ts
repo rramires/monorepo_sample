@@ -26,13 +26,20 @@ export class ScreensUseCase {
 			throw new ResourceNotFoundError()
 		}
 
-		// A system screen keeps its other fields editable but its key is locked.
-		if (
-			existing.is_system &&
-			body.key !== undefined &&
-			body.key !== existing.key
-		) {
-			throw new SystemScreenError()
+		// A system screen's identity is locked — its key, module and path are
+		// wiring the app depends on (the requireScreen key, the sidebar group,
+		// the route the menu links to). Only name/description/order stay editable.
+		if (existing.is_system) {
+			const changesKey =
+				body.key !== undefined && body.key !== existing.key
+			const changesModule =
+				body.module_id !== undefined &&
+				body.module_id !== existing.module_id
+			const changesPath =
+				body.path !== undefined && body.path !== existing.path
+			if (changesKey || changesModule || changesPath) {
+				throw new SystemScreenError()
+			}
 		}
 
 		const screen = await this.screensRepository.update(id, body)

@@ -75,19 +75,25 @@ describe('Screens routes (e2e)', () => {
 			},
 		})
 
-		// renaming its key is blocked (409)
-		const sysRenameResponse = await request(app.server)
-			.patch(`/screens/${systemScreen.id}`)
-			.set('Authorization', `Bearer ${token}`)
-			.send({ key: 'renamed' })
+		// changing its identity (key, module or path) is blocked (409)
+		for (const change of [
+			{ key: 'renamed' },
+			{ module_id: 'some-other-module' },
+			{ path: '/somewhere-else' },
+		]) {
+			const blocked = await request(app.server)
+				.patch(`/screens/${systemScreen.id}`)
+				.set('Authorization', `Bearer ${token}`)
+				.send(change)
 
-		expect(sysRenameResponse.statusCode).toEqual(409)
+			expect(blocked.statusCode).toEqual(409)
+		}
 
-		// a non-key edit still works (200)
+		// a name/order edit still works (200)
 		const sysEditResponse = await request(app.server)
 			.patch(`/screens/${systemScreen.id}`)
 			.set('Authorization', `Bearer ${token}`)
-			.send({ name: 'Profiles (label)' })
+			.send({ name: 'Profiles (label)', order: 9 })
 
 		expect(sysEditResponse.statusCode).toEqual(200)
 

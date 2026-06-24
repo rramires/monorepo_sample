@@ -48,21 +48,32 @@ describe('Screens Use Case — system protection', () => {
 		expect(screensRepository.items).toHaveLength(1)
 	})
 
-	it('blocks renaming the key of a system screen', async () => {
+	it('blocks changing the identity of a system screen (key, module, path)', async () => {
 		seedSystemScreen()
 
 		await expect(
 			sut.update('sys-screen', { key: 'renamed' }),
 		).rejects.toBeInstanceOf(SystemScreenError)
+		await expect(
+			sut.update('sys-screen', { module_id: 'mod-2' }),
+		).rejects.toBeInstanceOf(SystemScreenError)
+		await expect(
+			sut.update('sys-screen', { path: '/somewhere-else' }),
+		).rejects.toBeInstanceOf(SystemScreenError)
 	})
 
-	it('still allows non-key edits on a system screen', async () => {
+	it('still allows name/description/order edits on a system screen', async () => {
 		seedSystemScreen()
 
-		const screen = await sut.update('sys-screen', { name: 'Renamed Label' })
+		const screen = await sut.update('sys-screen', {
+			name: 'Renamed Label',
+			order: 9,
+		})
 
 		expect(screen.name).toEqual('Renamed Label')
+		expect(screen.order).toEqual(9)
 		expect(screen.key).toEqual('access-control.profiles')
+		expect(screen.path).toEqual('/admin/profiles')
 	})
 
 	it('still allows deleting and renaming a non-system screen', async () => {
