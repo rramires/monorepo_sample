@@ -464,7 +464,7 @@ replicar (o `TUTORIAL_10` tem o relato completo):
 - O `webServer` sobe `pnpm dev:test` (MSW ativo no mode `test`) sozinho e reaproveita
   um já rodando localmente. Então o **e2e roda inteiramente contra o mock
   determinístico** — sem backend, sem flakiness de rede.
-- `pree2e` libera a porta 5001 antes; `pnpm e2e:ui` roda headed/câmera-lenta.
+- `pretest:e2e` libera a porta 5001 antes; `pnpm test:e2e:ui` roda headed/câmera-lenta.
 
 ### 9.3 O ponto cego (por que o smoke manual ainda importa)
 
@@ -509,7 +509,7 @@ Para adicionar uma tela apoiada por um novo endpoint (ex.: "plans"):
    `RoleRoute` se for só de admin); adicione uma entrada na sidebar se preciso.
 6. **Testes:** `plans.spec.tsx` (unit, `renderWithProviders`) e um fluxo e2e
    `test/plans.spec.ts` contra o mock.
-7. **Verifique:** `pnpm lint && pnpm build && pnpm test:run && pnpm e2e`, depois um
+7. **Verifique:** `pnpm lint && pnpm build && pnpm test:run && pnpm test:e2e`, depois um
    smoke manual no navegador (§9.3).
 
 > **Estado transversal?** Se muitas telas precisam dele, adicione um Context com o

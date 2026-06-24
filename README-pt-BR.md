@@ -65,6 +65,6 @@ Rode no app que você tocou antes de commitar:
 
 ```sh
 pnpm -C api  lint && pnpm -C api  compile  && pnpm -C api  test      # + test:e2e
-pnpm -C web  lint && pnpm -C web  build    && pnpm -C web  test:run  # + e2e
+pnpm -C web  lint && pnpm -C web  build    && pnpm -C web  test:run  # + test:e2e
 pnpm -C packages/contracts typecheck
 ```

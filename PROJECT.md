@@ -112,7 +112,7 @@ Gate before every commit (on the touched app):
 | App | Gate |
 |-----|------|
 | `api` | `pnpm -C api lint && pnpm -C api compile && pnpm -C api test` (+ `test:e2e` for HTTP) |
-| `web` | `pnpm -C web lint && pnpm -C web build && pnpm -C web test:run` (+ `e2e` for flows) |
+| `web` | `pnpm -C web lint && pnpm -C web build && pnpm -C web test:run` (+ `test:e2e` for flows) |
 | `contracts` | `pnpm -C packages/contracts typecheck` |
 
 Process doctrine (branch/commit/merge discipline) lives in

@@ -131,8 +131,8 @@ e o método `PATCH` (por isso o backend define `methods` explicitamente).
 | `pnpm test`          | Testes unit/componente (Vitest, watch)                      |
 | `pnpm test:run`      | Testes unit/componente uma vez (modo CI)                    |
 | `pnpm test:coverage` | Testes unit + relatório de cobertura V8                     |
-| `pnpm e2e`           | Suíte e2e Playwright (sobe `dev:test` na `:5001` sozinha)   |
-| `pnpm e2e:ui`        | Playwright em modo UI (câmera lenta)                        |
+| `pnpm test:e2e`      | Suíte e2e Playwright (sobe `dev:test` na `:5001` sozinha)   |
+| `pnpm test:e2e:ui`   | Playwright em modo UI (câmera lenta)                        |
 | `pnpm lint`          | ESLint (flat config)                                        |
 | `pnpm lint:fix`      | ESLint com `--fix`                                          |
 | `pnpm check`         | Prettier check (`src`)                                      |
@@ -223,7 +223,7 @@ O handler de mock de cada página em `src/api/mocks/` o espelha.
   componente/PM/lib ficam **ao lado do código** (`src/**/*.spec.{ts,tsx}`). Um
   `renderWithProviders` compartilhado (`test/utils.tsx`) envolve a unidade num
   `MemoryRouter` + um `QueryClient` sem retry.
-- **`pnpm e2e`** — Playwright (Chromium). Specs em `test/*.spec.ts`. A config sobe
+- **`pnpm test:e2e`** — Playwright (Chromium). Specs em `test/*.spec.ts`. A config sobe
   `pnpm dev:test` na `:5001` sozinha (MSW ativo), então o e2e roda contra o mock
   determinístico — sem backend, sem flakiness.
 
@@ -239,7 +239,7 @@ O handler de mock de cada página em `src/api/mocks/` o espelha.
 pnpm lint        # ESLint, sem erros
 pnpm build       # type-check (tsc -b) + build de produção
 pnpm test:run    # suíte unit/componente
-pnpm e2e         # e2e Playwright (sobe o servidor de mock sozinho)
+pnpm test:e2e    # e2e Playwright (sobe o servidor de mock sozinho)
 ```
 
 ### Smoke manual (modo mock)
