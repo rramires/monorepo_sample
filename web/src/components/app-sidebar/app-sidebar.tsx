@@ -15,19 +15,12 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 	SidebarRail,
-	useSidebar,
 } from '@/components/ui/sidebar'
 
 import { useAppSidebarPM } from './use-app-sidebar-pm'
 
 export function AppSidebar() {
 	const pm = useAppSidebarPM()
-	const { setOpenMobile } = useSidebar()
-
-	// On mobile the sidebar is an overlay Sheet — navigating should dismiss it
-	// so the chosen screen is visible (no-op on tablet/desktop). Runs in the
-	// click handler, not an effect, to stay react-hooks/set-state-in-effect clean.
-	const closeMobile = () => setOpenMobile(false)
 
 	return (
 		<Sidebar collapsible='icon'>
@@ -55,7 +48,7 @@ export function AppSidebar() {
 										>
 											<Link
 												to={item.to}
-												onClick={closeMobile}
+												onClick={pm.closeMobile}
 											>
 												<item.icon />
 												<span>{item.label}</span>
@@ -98,7 +91,7 @@ export function AppSidebar() {
 								to='/account'
 								aria-label='Account'
 								title='Account'
-								onClick={closeMobile}
+								onClick={pm.closeMobile}
 							>
 								<UserRoundPen />
 							</Link>
