@@ -362,12 +362,12 @@ username `transform`) stay local. See the monorepo
 | PUT    | `/users/:userId/profiles`        |     ✅     | `access-control.users` · edit      | replace a user's profile assignments                    |
 | GET    | `/modules`                       |     ✅     | `access-control.modules` · view    | list modules                                            |
 | POST   | `/modules`                       |     ✅     | `access-control.modules` · create  | create a module                                         |
-| PATCH  | `/modules/:id`                   |     ✅     | `access-control.modules` · edit    | edit a module                                           |
-| DELETE | `/modules/:id`                   |     ✅     | `access-control.modules` · delete  | delete a module (`409` if it still has screens)         |
+| PATCH  | `/modules/:id`                   |     ✅     | `access-control.modules` · edit    | edit a module (`409` renaming a system module's key)    |
+| DELETE | `/modules/:id`                   |     ✅     | `access-control.modules` · delete  | delete a module (`409` if it has screens or is system)  |
 | GET    | `/screens`                       |     ✅     | `access-control.screens` · view    | list screens                                            |
 | POST   | `/screens`                       |     ✅     | `access-control.screens` · create  | create a screen                                         |
-| PATCH  | `/screens/:id`                   |     ✅     | `access-control.screens` · edit    | edit a screen                                           |
-| DELETE | `/screens/:id`                   |     ✅     | `access-control.screens` · delete  | delete a screen                                         |
+| PATCH  | `/screens/:id`                   |     ✅     | `access-control.screens` · edit    | edit a screen (`409` changing a system screen's key/module/path) |
+| DELETE | `/screens/:id`                   |     ✅     | `access-control.screens` · delete  | delete a screen (`409` on a system screen)              |
 | GET    | `/profiles`                      |     ✅     | `access-control.profiles` · view   | list profiles                                           |
 | GET    | `/profiles/:id`                  |     ✅     | `access-control.profiles` · view   | fetch a profile with its grants                         |
 | POST   | `/profiles`                      |     ✅     | `access-control.profiles` · create | create a profile                                        |
@@ -545,15 +545,20 @@ action grants (`ProfileScreen`); a user is assigned profiles (`UserProfile`).
   account — a fired user is cut off immediately, not when the token expires. Login
   is also refused: `AuthenticateUseCase` throws `AccountInactiveError` →
   `403 { "message": "Account is inactive." }`.
-- **`is_default` / `is_system` profiles:** the `is_default` profile is
-  auto-attached to a new account on `POST /users`. `is_system` profiles are seeded
-  and protected — editing the key or deleting one is a `409`
-  (`SystemProfileError`); their grants stay editable.
+- **`is_default` / `is_system`:** the `is_default` profile is auto-attached to a
+  new account on `POST /users`. `is_system` marks seeded records as protected —
+  on a profile, **module, or screen**, deleting it or editing its identity is a
+  `409` (the `key`; for a screen also its `module` and `path`); name/description/
+  order — and a profile's grants — stay editable. The seed marks all three
+  profiles and the
+  access-control module + its 4 screens as system; the gym module/screens stay
+  deletable demo content.
 - **CRUD error mapping** (controllers, via `instanceof`): `ResourceNotFoundError`
   → `404`; deleting a module that still has screens → `409`
-  (`ModuleHasScreensError`); editing/deleting a system profile → `409`
-  (`SystemProfileError`); on `PATCH /users/:userId`, demoting/deactivating
-  oneself → `400` (`CannotChangeOwnRoleError` / `CannotDeactivateSelfError`).
+  (`ModuleHasScreensError`); editing/deleting a system profile/module/screen →
+  `409` (`SystemProfileError` / `SystemModuleError` / `SystemScreenError`); on
+  `PATCH /users/:userId`, demoting/deactivating oneself → `400`
+  (`CannotChangeOwnRoleError` / `CannotDeactivateSelfError`).
   Creates return `201`; the `PUT` grant/profile replacements return `200`.
 - **Seam:** `IPermissionsRepository` has both a Prisma and an in-memory
   implementation, so the permission logic is unit-tested with no database.
@@ -640,11 +645,14 @@ Column lengths are pinned via Prisma `@db.VarChar(n)` so each matches its Zod
 The screen-grant model behind §5.7 — global (no tenant; a cloning project adds a
 `company_id` to `Profile`/`Module`):
 
-- `Module` (`id` uuid, **unique `key`**, `name`, `description?`, `order`) 1—N
-  `Screen` (table `modules`). Groups screens for the sidebar.
+- `Module` (`id` uuid, **unique `key`**, `name`, `description?`, `order`,
+  `is_system` bool) 1—N `Screen` (table `modules`). Groups screens for the
+  sidebar. `is_system` protects the seeded access-control module (no delete / key
+  rename).
 - `Screen` (`id` uuid, **unique `key`**, `name`, `path?` (the route the menu links
-  to; `null` = not navigable), `description?`, `order`, `module_id` FK
-  `onDelete: Cascade`) 1—N `ProfileScreen` (table `screens`).
+  to; `null` = not navigable), `description?`, `order`, `is_system` bool,
+  `module_id` FK `onDelete: Cascade`) 1—N `ProfileScreen` (table `screens`).
+  `is_system` protects the seeded access-control screens.
 - `Profile` (`id` uuid, **unique `key`**, `name`, `description?`, `is_system`
   bool, `is_default` bool, `created_at`) (table `profiles`). `is_system` protects
   seeded profiles (no delete / key rename); `is_default` is auto-attached to new

@@ -35,8 +35,9 @@ de segurança, camada de dados, CI/CD e observabilidade) consulte:
   `menu` para a sidebar e a tela inicial padrão resolvida. Desativar um usuário
   (`is_active=false`) o corta na próxima requisição. O CRUD admin de
   módulos/telas/perfis/usuários mais a atribuição de perfis fica atrás das telas
-  `access-control.*`; perfis `is_system` do seed são protegidos e o perfil
-  `is_default` é anexado automaticamente no cadastro.
+  `access-control.*`; o catálogo de access-control do seed (seu módulo + telas)
+  e os perfis `is_system` são protegidos contra exclusão/renomeação de key, e o
+  perfil `is_default` é anexado automaticamente no cadastro.
 - **Revogação e rotação de token** — logout revoga tanto o access quanto o
   refresh token; refresh tokens são de uso único (rotacionados a cada refresh)
   via denylist híbrida (memória + banco) por `jti`.
@@ -185,12 +186,12 @@ imediatamente** no boot se alguma variável for inválida (validação Zod em
 | `PUT`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · edit      | Substituir as atribuições de perfil de um usuário           |
 | `GET`    | `/modules`                       | Bearer         | `access-control.modules` · view    | Listar módulos                                              |
 | `POST`   | `/modules`                       | Bearer         | `access-control.modules` · create  | Criar um módulo                                             |
-| `PATCH`  | `/modules/:id`                   | Bearer         | `access-control.modules` · edit    | Editar um módulo                                            |
-| `DELETE` | `/modules/:id`                   | Bearer         | `access-control.modules` · delete  | Excluir um módulo (`409` se ainda tiver telas)              |
+| `PATCH`  | `/modules/:id`                   | Bearer         | `access-control.modules` · edit    | Editar um módulo (`409` ao renomear a key de um módulo de sistema) |
+| `DELETE` | `/modules/:id`                   | Bearer         | `access-control.modules` · delete  | Excluir um módulo (`409` se ainda tiver telas ou for de sistema) |
 | `GET`    | `/screens`                       | Bearer         | `access-control.screens` · view    | Listar telas                                                |
 | `POST`   | `/screens`                       | Bearer         | `access-control.screens` · create  | Criar uma tela                                              |
-| `PATCH`  | `/screens/:id`                   | Bearer         | `access-control.screens` · edit    | Editar uma tela                                             |
-| `DELETE` | `/screens/:id`                   | Bearer         | `access-control.screens` · delete  | Excluir uma tela                                            |
+| `PATCH`  | `/screens/:id`                   | Bearer         | `access-control.screens` · edit    | Editar uma tela (`409` ao mudar key/módulo/path de uma de sistema) |
+| `DELETE` | `/screens/:id`                   | Bearer         | `access-control.screens` · delete  | Excluir uma tela (`409` em tela de sistema)                |
 | `GET`    | `/profiles`                      | Bearer         | `access-control.profiles` · view   | Listar perfis                                               |
 | `GET`    | `/profiles/:id`                  | Bearer         | `access-control.profiles` · view   | Buscar um perfil com seus grants                            |
 | `POST`   | `/profiles`                      | Bearer         | `access-control.profiles` · create | Criar um perfil                                             |

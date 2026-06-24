@@ -30,23 +30,25 @@ async function seedAdminRole() {
 }
 
 // ─── Access-control catalog + demo data (mirrors the web MSW seed) ───────────
+// is_system protects the access-control catalog from web-UI deletion / key
+// rename; the gym module and its screens stay deletable demo content.
 const MODULES = [
-	{ key: 'access-control', name: 'Access Control', order: 0 },
-	{ key: 'gym', name: 'Gym', order: 1 },
+	{ key: 'access-control', name: 'Access Control', order: 0, is_system: true },
+	{ key: 'gym', name: 'Gym', order: 1, is_system: false },
 ]
 
 const SCREENS = [
-	// access-control
-	{ key: 'access-control.modules', name: 'Manage Modules', module: 'access-control', path: '/admin/modules', order: 0 },
-	{ key: 'access-control.screens', name: 'Manage Screens', module: 'access-control', path: '/admin/screens', order: 1 },
-	{ key: 'access-control.profiles', name: 'Manage Profiles', module: 'access-control', path: '/admin/profiles', order: 2 },
-	{ key: 'access-control.users', name: 'Manage Users', module: 'access-control', path: '/admin/users', order: 3 },
-	// gym
-	{ key: 'gym.dashboard', name: 'Dashboard', module: 'gym', path: '/', order: 0 },
-	{ key: 'gym.gyms', name: 'Gyms', module: 'gym', path: '/gyms', order: 1 },
-	{ key: 'gym.check-in', name: 'Check-in', module: 'gym', path: '/check-ins', order: 2 },
-	{ key: 'gym.history', name: 'Check-in History', module: 'gym', path: '/history', order: 3 },
-	{ key: 'gym.validations', name: 'Validate Check-ins', module: 'gym', path: '/validations', order: 4 },
+	// access-control (system — protected)
+	{ key: 'access-control.modules', name: 'Manage Modules', module: 'access-control', path: '/admin/modules', order: 0, is_system: true },
+	{ key: 'access-control.screens', name: 'Manage Screens', module: 'access-control', path: '/admin/screens', order: 1, is_system: true },
+	{ key: 'access-control.profiles', name: 'Manage Profiles', module: 'access-control', path: '/admin/profiles', order: 2, is_system: true },
+	{ key: 'access-control.users', name: 'Manage Users', module: 'access-control', path: '/admin/users', order: 3, is_system: true },
+	// gym (demo content — deletable)
+	{ key: 'gym.dashboard', name: 'Dashboard', module: 'gym', path: '/', order: 0, is_system: false },
+	{ key: 'gym.gyms', name: 'Gyms', module: 'gym', path: '/gyms', order: 1, is_system: false },
+	{ key: 'gym.check-in', name: 'Check-in', module: 'gym', path: '/check-ins', order: 2, is_system: false },
+	{ key: 'gym.history', name: 'Check-in History', module: 'gym', path: '/history', order: 3, is_system: false },
+	{ key: 'gym.validations', name: 'Validate Check-ins', module: 'gym', path: '/validations', order: 4, is_system: false },
 ]
 
 const PROFILES = [
@@ -104,7 +106,7 @@ async function seedAccessControl() {
 	for (const m of MODULES) {
 		const row = await prisma.module.upsert({
 			where: { key: m.key },
-			update: { name: m.name, order: m.order },
+			update: { name: m.name, order: m.order, is_system: m.is_system },
 			create: m,
 		})
 		moduleId.set(m.key, row.id)
@@ -119,6 +121,7 @@ async function seedAccessControl() {
 				name: s.name,
 				path: s.path,
 				order: s.order,
+				is_system: s.is_system,
 				module_id: moduleId.get(s.module)!,
 			},
 			create: {
@@ -126,6 +129,7 @@ async function seedAccessControl() {
 				name: s.name,
 				path: s.path,
 				order: s.order,
+				is_system: s.is_system,
 				module_id: moduleId.get(s.module)!,
 			},
 		})

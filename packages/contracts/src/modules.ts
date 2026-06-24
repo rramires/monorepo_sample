@@ -8,6 +8,9 @@ export const moduleSchema = z.object({
 	name: z.string().min(1),
 	description: z.string().nullish(),
 	order: z.number().int(),
+	// Seeded system modules are protected (no delete / no key rename); never
+	// client-settable, so it stays out of the create/update bodies below.
+	is_system: z.boolean(),
 })
 export type Module = z.infer<typeof moduleSchema>
 

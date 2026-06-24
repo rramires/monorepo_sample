@@ -40,6 +40,8 @@ export function ModuleDialog({
 	const queryClient = useQueryClient()
 	const [open, setOpen] = useState(false)
 	const editing = !!module
+	// A system module's key is locked; the backend rejects a rename with 409.
+	const locked = editing && !!module?.isSystem
 
 	const {
 		register,
@@ -92,6 +94,12 @@ export function ModuleDialog({
 					<DialogDescription>
 						A module groups related screens (e.g. "gym").
 					</DialogDescription>
+					{locked && (
+						<p className='text-muted-foreground text-xs'>
+							System module — the key is locked; name, description
+							and order can change.
+						</p>
+					)}
 				</DialogHeader>
 
 				<form
@@ -100,7 +108,16 @@ export function ModuleDialog({
 				>
 					<div className='flex flex-col gap-4'>
 						<Field label='Key' error={errors.key?.message}>
-							<Input {...register('key')} placeholder='gym' />
+							<Input
+								{...register('key')}
+								placeholder='gym'
+								readOnly={locked}
+								className={
+									locked
+										? 'cursor-not-allowed opacity-60'
+										: undefined
+								}
+							/>
 						</Field>
 						<Field label='Name' error={errors.name?.message}>
 							<Input {...register('name')} placeholder='Gym' />

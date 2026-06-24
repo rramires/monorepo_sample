@@ -309,8 +309,10 @@ Beyond the coarse `role`, the app has a **hybrid RBAC** model: a fixed role
 (`ADMIN` bypasses everything, `USER` follows grants) plus dynamic **Profiles**
 that bundle **per-screen grants** (`view`/`create`/`edit`/`delete`). **Modules**
 group **Screens**; a profile carries `is_default` (auto-attached to a user on
-register) and `is_system` (protected — its key can't change and it can't be
-deleted). A user may hold several profiles; their grants **merge** (OR).
+register), and profiles, modules and screens carry `is_system` (protected — the
+key can't change and it can't be deleted). The seed marks the access-control
+module + its screens (and all three profiles) as system. A user may hold several
+profiles; their grants **merge** (OR).
 
 - **`usePermissions()` / `can()`** (`hooks/use-permissions.ts`) — loads
   `GET /me/permissions` as **server state** (TanStack Query, keyed by user id, so
@@ -337,6 +339,9 @@ deleted). A user may hold several profiles; their grants **merge** (OR).
   `access-control.*` screen key:
     - **Modules** (`/admin/modules`) and **Screens** (`/admin/screens`) — CRUD the
       catalog (dialogs for create/edit; deleting a screen cascades its grants).
+      System rows show a **System** badge and hide Delete; the edit dialog makes
+      a system record's identity read-only (the `key`, and a screen's `module` /
+      `path`) — the backend also returns `409`.
     - **Profiles** (`/admin/profiles`) — CRUD profiles (with `is_default`/`is_system`
       badges); **ProfileDetail** (`/admin/profiles/:profileId`) edits one profile
       and its grants via the **`TransferTable`** — the assigned side has per-action

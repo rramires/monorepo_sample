@@ -41,6 +41,7 @@ export type ScreenMinAggregateOutputType = {
   path: string | null
   description: string | null
   order: number | null
+  is_system: boolean | null
   module_id: string | null
 }
 
@@ -51,6 +52,7 @@ export type ScreenMaxAggregateOutputType = {
   path: string | null
   description: string | null
   order: number | null
+  is_system: boolean | null
   module_id: string | null
 }
 
@@ -61,6 +63,7 @@ export type ScreenCountAggregateOutputType = {
   path: number
   description: number
   order: number
+  is_system: number
   module_id: number
   _all: number
 }
@@ -81,6 +84,7 @@ export type ScreenMinAggregateInputType = {
   path?: true
   description?: true
   order?: true
+  is_system?: true
   module_id?: true
 }
 
@@ -91,6 +95,7 @@ export type ScreenMaxAggregateInputType = {
   path?: true
   description?: true
   order?: true
+  is_system?: true
   module_id?: true
 }
 
@@ -101,6 +106,7 @@ export type ScreenCountAggregateInputType = {
   path?: true
   description?: true
   order?: true
+  is_system?: true
   module_id?: true
   _all?: true
 }
@@ -198,6 +204,7 @@ export type ScreenGroupByOutputType = {
   path: string | null
   description: string | null
   order: number
+  is_system: boolean
   module_id: string
   _count: ScreenCountAggregateOutputType | null
   _avg: ScreenAvgAggregateOutputType | null
@@ -231,6 +238,7 @@ export type ScreenWhereInput = {
   path?: Prisma.StringNullableFilter<"Screen"> | string | null
   description?: Prisma.StringNullableFilter<"Screen"> | string | null
   order?: Prisma.IntFilter<"Screen"> | number
+  is_system?: Prisma.BoolFilter<"Screen"> | boolean
   module_id?: Prisma.StringFilter<"Screen"> | string
   module?: Prisma.XOR<Prisma.ModuleScalarRelationFilter, Prisma.ModuleWhereInput>
   grants?: Prisma.ProfileScreenListRelationFilter
@@ -243,6 +251,7 @@ export type ScreenOrderByWithRelationInput = {
   path?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   order?: Prisma.SortOrder
+  is_system?: Prisma.SortOrder
   module_id?: Prisma.SortOrder
   module?: Prisma.ModuleOrderByWithRelationInput
   grants?: Prisma.ProfileScreenOrderByRelationAggregateInput
@@ -259,6 +268,7 @@ export type ScreenWhereUniqueInput = Prisma.AtLeast<{
   path?: Prisma.StringNullableFilter<"Screen"> | string | null
   description?: Prisma.StringNullableFilter<"Screen"> | string | null
   order?: Prisma.IntFilter<"Screen"> | number
+  is_system?: Prisma.BoolFilter<"Screen"> | boolean
   module_id?: Prisma.StringFilter<"Screen"> | string
   module?: Prisma.XOR<Prisma.ModuleScalarRelationFilter, Prisma.ModuleWhereInput>
   grants?: Prisma.ProfileScreenListRelationFilter
@@ -271,6 +281,7 @@ export type ScreenOrderByWithAggregationInput = {
   path?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   order?: Prisma.SortOrder
+  is_system?: Prisma.SortOrder
   module_id?: Prisma.SortOrder
   _count?: Prisma.ScreenCountOrderByAggregateInput
   _avg?: Prisma.ScreenAvgOrderByAggregateInput
@@ -289,6 +300,7 @@ export type ScreenScalarWhereWithAggregatesInput = {
   path?: Prisma.StringNullableWithAggregatesFilter<"Screen"> | string | null
   description?: Prisma.StringNullableWithAggregatesFilter<"Screen"> | string | null
   order?: Prisma.IntWithAggregatesFilter<"Screen"> | number
+  is_system?: Prisma.BoolWithAggregatesFilter<"Screen"> | boolean
   module_id?: Prisma.StringWithAggregatesFilter<"Screen"> | string
 }
 
@@ -299,6 +311,7 @@ export type ScreenCreateInput = {
   path?: string | null
   description?: string | null
   order?: number
+  is_system?: boolean
   module: Prisma.ModuleCreateNestedOneWithoutScreensInput
   grants?: Prisma.ProfileScreenCreateNestedManyWithoutScreenInput
 }
@@ -310,6 +323,7 @@ export type ScreenUncheckedCreateInput = {
   path?: string | null
   description?: string | null
   order?: number
+  is_system?: boolean
   module_id: string
   grants?: Prisma.ProfileScreenUncheckedCreateNestedManyWithoutScreenInput
 }
@@ -321,6 +335,7 @@ export type ScreenUpdateInput = {
   path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   module?: Prisma.ModuleUpdateOneRequiredWithoutScreensNestedInput
   grants?: Prisma.ProfileScreenUpdateManyWithoutScreenNestedInput
 }
@@ -332,6 +347,7 @@ export type ScreenUncheckedUpdateInput = {
   path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   module_id?: Prisma.StringFieldUpdateOperationsInput | string
   grants?: Prisma.ProfileScreenUncheckedUpdateManyWithoutScreenNestedInput
 }
@@ -343,6 +359,7 @@ export type ScreenCreateManyInput = {
   path?: string | null
   description?: string | null
   order?: number
+  is_system?: boolean
   module_id: string
 }
 
@@ -353,6 +370,7 @@ export type ScreenUpdateManyMutationInput = {
   path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ScreenUncheckedUpdateManyInput = {
@@ -362,6 +380,7 @@ export type ScreenUncheckedUpdateManyInput = {
   path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   module_id?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -388,6 +407,7 @@ export type ScreenCountOrderByAggregateInput = {
   path?: Prisma.SortOrder
   description?: Prisma.SortOrder
   order?: Prisma.SortOrder
+  is_system?: Prisma.SortOrder
   module_id?: Prisma.SortOrder
 }
 
@@ -402,6 +422,7 @@ export type ScreenMaxOrderByAggregateInput = {
   path?: Prisma.SortOrder
   description?: Prisma.SortOrder
   order?: Prisma.SortOrder
+  is_system?: Prisma.SortOrder
   module_id?: Prisma.SortOrder
 }
 
@@ -412,6 +433,7 @@ export type ScreenMinOrderByAggregateInput = {
   path?: Prisma.SortOrder
   description?: Prisma.SortOrder
   order?: Prisma.SortOrder
+  is_system?: Prisma.SortOrder
   module_id?: Prisma.SortOrder
 }
 
@@ -487,6 +509,7 @@ export type ScreenCreateWithoutModuleInput = {
   path?: string | null
   description?: string | null
   order?: number
+  is_system?: boolean
   grants?: Prisma.ProfileScreenCreateNestedManyWithoutScreenInput
 }
 
@@ -497,6 +520,7 @@ export type ScreenUncheckedCreateWithoutModuleInput = {
   path?: string | null
   description?: string | null
   order?: number
+  is_system?: boolean
   grants?: Prisma.ProfileScreenUncheckedCreateNestedManyWithoutScreenInput
 }
 
@@ -536,6 +560,7 @@ export type ScreenScalarWhereInput = {
   path?: Prisma.StringNullableFilter<"Screen"> | string | null
   description?: Prisma.StringNullableFilter<"Screen"> | string | null
   order?: Prisma.IntFilter<"Screen"> | number
+  is_system?: Prisma.BoolFilter<"Screen"> | boolean
   module_id?: Prisma.StringFilter<"Screen"> | string
 }
 
@@ -546,6 +571,7 @@ export type ScreenCreateWithoutGrantsInput = {
   path?: string | null
   description?: string | null
   order?: number
+  is_system?: boolean
   module: Prisma.ModuleCreateNestedOneWithoutScreensInput
 }
 
@@ -556,6 +582,7 @@ export type ScreenUncheckedCreateWithoutGrantsInput = {
   path?: string | null
   description?: string | null
   order?: number
+  is_system?: boolean
   module_id: string
 }
 
@@ -582,6 +609,7 @@ export type ScreenUpdateWithoutGrantsInput = {
   path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   module?: Prisma.ModuleUpdateOneRequiredWithoutScreensNestedInput
 }
 
@@ -592,6 +620,7 @@ export type ScreenUncheckedUpdateWithoutGrantsInput = {
   path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   module_id?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -602,6 +631,7 @@ export type ScreenCreateManyModuleInput = {
   path?: string | null
   description?: string | null
   order?: number
+  is_system?: boolean
 }
 
 export type ScreenUpdateWithoutModuleInput = {
@@ -611,6 +641,7 @@ export type ScreenUpdateWithoutModuleInput = {
   path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   grants?: Prisma.ProfileScreenUpdateManyWithoutScreenNestedInput
 }
 
@@ -621,6 +652,7 @@ export type ScreenUncheckedUpdateWithoutModuleInput = {
   path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   grants?: Prisma.ProfileScreenUncheckedUpdateManyWithoutScreenNestedInput
 }
 
@@ -631,6 +663,7 @@ export type ScreenUncheckedUpdateManyWithoutModuleInput = {
   path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 
@@ -671,6 +704,7 @@ export type ScreenSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   path?: boolean
   description?: boolean
   order?: boolean
+  is_system?: boolean
   module_id?: boolean
   module?: boolean | Prisma.ModuleDefaultArgs<ExtArgs>
   grants?: boolean | Prisma.Screen$grantsArgs<ExtArgs>
@@ -686,10 +720,11 @@ export type ScreenSelectScalar = {
   path?: boolean
   description?: boolean
   order?: boolean
+  is_system?: boolean
   module_id?: boolean
 }
 
-export type ScreenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "key" | "name" | "path" | "description" | "order" | "module_id", ExtArgs["result"]["screen"]>
+export type ScreenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "key" | "name" | "path" | "description" | "order" | "is_system" | "module_id", ExtArgs["result"]["screen"]>
 export type ScreenInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   module?: boolean | Prisma.ModuleDefaultArgs<ExtArgs>
   grants?: boolean | Prisma.Screen$grantsArgs<ExtArgs>
@@ -709,6 +744,7 @@ export type $ScreenPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     path: string | null
     description: string | null
     order: number
+    is_system: boolean
     module_id: string
   }, ExtArgs["result"]["screen"]>
   composites: {}
@@ -1087,6 +1123,7 @@ export interface ScreenFieldRefs {
   readonly path: Prisma.FieldRef<"Screen", 'String'>
   readonly description: Prisma.FieldRef<"Screen", 'String'>
   readonly order: Prisma.FieldRef<"Screen", 'Int'>
+  readonly is_system: Prisma.FieldRef<"Screen", 'Boolean'>
   readonly module_id: Prisma.FieldRef<"Screen", 'String'>
 }
     

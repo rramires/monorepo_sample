@@ -10,6 +10,9 @@ export const screenSchema = z.object({
 	path: z.string().nullish(),
 	description: z.string().nullish(),
 	order: z.number().int(),
+	// Seeded system screens are protected (no delete / no key rename); never
+	// client-settable, so it stays out of the create/update bodies below.
+	is_system: z.boolean(),
 })
 export type Screen = z.infer<typeof screenSchema>
 

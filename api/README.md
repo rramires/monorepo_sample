@@ -35,8 +35,9 @@ layer, CI/CD and operational concerns) see:
   sidebar `menu` catalog and the resolved default landing screen. Deactivating a
   user (`is_active=false`) cuts them off on their next request. Admin CRUD for
   modules/screens/profiles/users plus profile assignment lives behind the
-  `access-control.*` screens; seeded `is_system` profiles are protected and the
-  `is_default` profile auto-attaches on registration.
+  `access-control.*` screens; the seeded access-control catalog (its module +
+  screens) and `is_system` profiles are protected from deletion/key rename, and
+  the `is_default` profile auto-attaches on registration.
 - **Token revocation & rotation** — logout revokes both the access and the
   refresh token; refresh tokens are single-use (rotated on every refresh) via a
   hybrid (in-memory + database) `jti` denylist.
@@ -183,12 +184,12 @@ boot if any variable is invalid (Zod validation in `src/env`).
 | `PUT`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · edit      | Replace a user's profile assignments                               |
 | `GET`    | `/modules`                       | Bearer         | `access-control.modules` · view    | List modules                                                       |
 | `POST`   | `/modules`                       | Bearer         | `access-control.modules` · create  | Create a module                                                    |
-| `PATCH`  | `/modules/:id`                   | Bearer         | `access-control.modules` · edit    | Edit a module                                                      |
-| `DELETE` | `/modules/:id`                   | Bearer         | `access-control.modules` · delete  | Delete a module (`409` if it still has screens)                    |
+| `PATCH`  | `/modules/:id`                   | Bearer         | `access-control.modules` · edit    | Edit a module (`409` renaming a system module's key)              |
+| `DELETE` | `/modules/:id`                   | Bearer         | `access-control.modules` · delete  | Delete a module (`409` if it still has screens or is a system module) |
 | `GET`    | `/screens`                       | Bearer         | `access-control.screens` · view    | List screens                                                       |
 | `POST`   | `/screens`                       | Bearer         | `access-control.screens` · create  | Create a screen                                                    |
-| `PATCH`  | `/screens/:id`                   | Bearer         | `access-control.screens` · edit    | Edit a screen                                                      |
-| `DELETE` | `/screens/:id`                   | Bearer         | `access-control.screens` · delete  | Delete a screen                                                    |
+| `PATCH`  | `/screens/:id`                   | Bearer         | `access-control.screens` · edit    | Edit a screen (`409` changing a system screen's key/module/path) |
+| `DELETE` | `/screens/:id`                   | Bearer         | `access-control.screens` · delete  | Delete a screen (`409` on a system screen)                        |
 | `GET`    | `/profiles`                      | Bearer         | `access-control.profiles` · view   | List profiles                                                      |
 | `GET`    | `/profiles/:id`                  | Bearer         | `access-control.profiles` · view   | Fetch a profile with its grants                                    |
 | `POST`   | `/profiles`                      | Bearer         | `access-control.profiles` · create | Create a profile                                                   |

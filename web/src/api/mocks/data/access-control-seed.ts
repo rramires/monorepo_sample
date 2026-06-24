@@ -14,6 +14,8 @@ export const modules: Module[] = [
 		name: 'Access Control',
 		description: 'Manage modules, screens, profiles and user access.',
 		order: 0,
+		// System catalog — protected from web-UI deletion / key rename.
+		is_system: true,
 	},
 	{
 		id: 'mod-gym',
@@ -21,12 +23,13 @@ export const modules: Module[] = [
 		name: 'Gym',
 		description: 'The gym domain (dashboard, gyms, check-ins).',
 		order: 1,
+		is_system: false,
 	},
 ]
 
 // ── Screens ──────────────────────────────────────────────────────────────────
 export const screens: Screen[] = [
-	// access-control
+	// access-control (system — protected)
 	{
 		id: 'scr-ac-modules',
 		module_id: 'mod-access-control',
@@ -34,6 +37,7 @@ export const screens: Screen[] = [
 		name: 'Manage Modules',
 		path: '/admin/modules',
 		order: 0,
+		is_system: true,
 	},
 	{
 		id: 'scr-ac-screens',
@@ -42,6 +46,7 @@ export const screens: Screen[] = [
 		name: 'Manage Screens',
 		path: '/admin/screens',
 		order: 1,
+		is_system: true,
 	},
 	{
 		id: 'scr-ac-profiles',
@@ -50,6 +55,7 @@ export const screens: Screen[] = [
 		name: 'Manage Profiles',
 		path: '/admin/profiles',
 		order: 2,
+		is_system: true,
 	},
 	{
 		id: 'scr-ac-users',
@@ -58,8 +64,9 @@ export const screens: Screen[] = [
 		name: 'Manage Users',
 		path: '/admin/users',
 		order: 3,
+		is_system: true,
 	},
-	// gym
+	// gym (demo content — deletable)
 	{
 		id: 'scr-gym-dashboard',
 		module_id: 'mod-gym',
@@ -67,6 +74,7 @@ export const screens: Screen[] = [
 		name: 'Dashboard',
 		path: '/',
 		order: 0,
+		is_system: false,
 	},
 	{
 		id: 'scr-gym-gyms',
@@ -75,6 +83,7 @@ export const screens: Screen[] = [
 		name: 'Gyms',
 		path: '/gyms',
 		order: 1,
+		is_system: false,
 	},
 	{
 		id: 'scr-gym-checkin',
@@ -83,6 +92,7 @@ export const screens: Screen[] = [
 		name: 'Check-in',
 		path: '/check-ins',
 		order: 2,
+		is_system: false,
 	},
 	{
 		id: 'scr-gym-history',
@@ -91,6 +101,7 @@ export const screens: Screen[] = [
 		name: 'Check-in History',
 		path: '/history',
 		order: 3,
+		is_system: false,
 	},
 	{
 		id: 'scr-gym-validations',
@@ -99,6 +110,7 @@ export const screens: Screen[] = [
 		name: 'Validate Check-ins',
 		path: '/validations',
 		order: 4,
+		is_system: false,
 	},
 ]
 

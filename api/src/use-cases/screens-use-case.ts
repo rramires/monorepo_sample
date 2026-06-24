@@ -4,6 +4,7 @@ import { Screen } from '@/prisma-client'
 import { IScreensRepository } from '@/repositories/i-screens-repository'
 
 import { ResourceNotFoundError } from './errors/resource-not-found-error'
+import { SystemScreenError } from './errors/system-screen-error'
 
 export class ScreensUseCase {
 	constructor(private screensRepository: IScreensRepository) {}
@@ -24,6 +25,23 @@ export class ScreensUseCase {
 		if (!existing) {
 			throw new ResourceNotFoundError()
 		}
+
+		// A system screen's identity is locked — its key, module and path are
+		// wiring the app depends on (the requireScreen key, the sidebar group,
+		// the route the menu links to). Only name/description/order stay editable.
+		if (existing.is_system) {
+			const changesKey =
+				body.key !== undefined && body.key !== existing.key
+			const changesModule =
+				body.module_id !== undefined &&
+				body.module_id !== existing.module_id
+			const changesPath =
+				body.path !== undefined && body.path !== existing.path
+			if (changesKey || changesModule || changesPath) {
+				throw new SystemScreenError()
+			}
+		}
+
 		const screen = await this.screensRepository.update(id, body)
 		return screen
 	}
@@ -33,6 +51,11 @@ export class ScreensUseCase {
 		if (!existing) {
 			throw new ResourceNotFoundError()
 		}
+
+		if (existing.is_system) {
+			throw new SystemScreenError()
+		}
+
 		// Deleting a screen cascades its grants at the DB level — no extra guard.
 		await this.screensRepository.delete(id)
 	}

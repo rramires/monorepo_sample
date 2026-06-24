@@ -29,6 +29,8 @@ export class InMemoryScreensRepository implements IScreensRepository {
 			path: data.path ?? null,
 			description: data.description ?? null,
 			order: data.order ?? 0,
+			// is_system is never client-settable; created screens are always false.
+			is_system: false,
 		}
 		this.items.push(screen)
 

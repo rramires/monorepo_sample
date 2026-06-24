@@ -2,6 +2,7 @@ import request from 'supertest'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { app } from '@/app'
+import { prisma } from '@/lib/prisma'
 import createAndAuthUser from '@/utils/tests/create-and-auth-user'
 
 describe('Modules routes (e2e)', () => {
@@ -59,5 +60,40 @@ describe('Modules routes (e2e)', () => {
 			.send()
 
 		expect(deleteResponse.statusCode).toEqual(204)
+
+		// ── system module protection ──────────────────────────────────────────
+		// Seed a system module directly (the API never sets is_system).
+		const systemModule = await prisma.module.create({
+			data: {
+				key: 'access-control',
+				name: 'Access Control',
+				order: 0,
+				is_system: true,
+			},
+		})
+
+		// renaming its key is blocked (409)
+		const sysRenameResponse = await request(app.server)
+			.patch(`/modules/${systemModule.id}`)
+			.set('Authorization', `Bearer ${token}`)
+			.send({ key: 'renamed' })
+
+		expect(sysRenameResponse.statusCode).toEqual(409)
+
+		// a non-key edit still works (200)
+		const sysEditResponse = await request(app.server)
+			.patch(`/modules/${systemModule.id}`)
+			.set('Authorization', `Bearer ${token}`)
+			.send({ name: 'Access Control (label)' })
+
+		expect(sysEditResponse.statusCode).toEqual(200)
+
+		// deleting it is blocked (409)
+		const sysDeleteResponse = await request(app.server)
+			.delete(`/modules/${systemModule.id}`)
+			.set('Authorization', `Bearer ${token}`)
+			.send()
+
+		expect(sysDeleteResponse.statusCode).toEqual(409)
 	})
 })

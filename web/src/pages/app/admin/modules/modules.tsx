@@ -2,6 +2,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { PageTitle } from '@/components/title/page-title'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
 	Table,
@@ -64,8 +65,13 @@ export function AdminModules() {
 										<TableCell className='font-mono text-xs'>
 											{module.key}
 										</TableCell>
-										<TableCell className='font-medium'>
+										<TableCell className='space-x-1 font-medium'>
 											{module.name}
+											{module.isSystem && (
+												<Badge variant='outline'>
+													System
+												</Badge>
+											)}
 										</TableCell>
 										<TableCell>{module.order}</TableCell>
 										<TableCell className='text-muted-foreground'>
@@ -85,26 +91,27 @@ export function AdminModules() {
 													}
 												/>
 											)}
-											{pm.canDelete && (
-												<ConfirmDialog
-													title='Delete module'
-													description={`Delete "${module.name}"? Screens must be removed first.`}
-													confirmLabel='Delete'
-													onConfirm={() =>
-														pm.deleteModule(
-															module.id,
-														)
-													}
-													trigger={
-														<Button
-															variant='outline'
-															size='sm'
-														>
-															<Trash2 />
-														</Button>
-													}
-												/>
-											)}
+											{pm.canDelete &&
+												!module.isSystem && (
+													<ConfirmDialog
+														title='Delete module'
+														description={`Delete "${module.name}"? Screens must be removed first.`}
+														confirmLabel='Delete'
+														onConfirm={() =>
+															pm.deleteModule(
+																module.id,
+															)
+														}
+														trigger={
+															<Button
+																variant='outline'
+																size='sm'
+															>
+																<Trash2 />
+															</Button>
+														}
+													/>
+												)}
 										</TableCell>
 									</TableRow>
 								))}

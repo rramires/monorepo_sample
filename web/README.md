@@ -51,7 +51,9 @@ Vitest · Playwright
 - **Hybrid access control (RBAC)** — a fixed role (`ADMIN` bypasses everything,
   `USER` follows grants) plus dynamic **Profiles** that bundle per-screen grants
   (view/create/edit/delete). **Modules** group **Screens**; profiles carry
-  `is_default` (auto-attached on register) and `is_system` (protected). The
+  `is_default` (auto-attached on register), and profiles, modules and screens
+  carry `is_system` — the seeded access-control catalog is protected from
+  deletion/key rename (a System badge + no Delete in the admin tables). The
   **sidebar is data-driven** — it builds its sections from
   `GET /me/permissions`'s `menu`, so each user sees only the screens they may
   view. Admin screens under `/admin` manage modules, screens, profiles (with a

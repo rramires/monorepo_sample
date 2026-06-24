@@ -33,7 +33,8 @@ export const createModuleMock = http.post('/modules', async ({ request }) => {
 		)
 	}
 
-	const module: Module = { id: nextId(), ...parsed.data }
+	// is_system is never client-settable; created modules are always false.
+	const module: Module = { id: nextId(), ...parsed.data, is_system: false }
 	modules.push(module)
 	return HttpResponse.json({ module }, { status: 201 })
 })
@@ -62,6 +63,18 @@ export const updateModuleMock = http.patch<{ id: string }>(
 			)
 		}
 
+		// A system module's key is protected; everything else stays editable.
+		if (
+			module.is_system &&
+			parsed.data.key !== undefined &&
+			parsed.data.key !== module.key
+		) {
+			return HttpResponse.json(
+				{ message: 'A system module key cannot be changed.' },
+				{ status: 409 },
+			)
+		}
+
 		Object.assign(module, parsed.data)
 		return HttpResponse.json({ module })
 	},
@@ -80,6 +93,14 @@ export const deleteModuleMock = http.delete<{ id: string }>(
 			return HttpResponse.json(
 				{ message: 'Resource not found.' },
 				{ status: 404 },
+			)
+		}
+
+		// System modules are protected from deletion.
+		if (modules[index].is_system) {
+			return HttpResponse.json(
+				{ message: 'A system module cannot be deleted.' },
+				{ status: 409 },
 			)
 		}
 
