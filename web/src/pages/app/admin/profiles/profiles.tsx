@@ -2,6 +2,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { PageHeader } from '@/components/page-header'
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -24,14 +25,11 @@ export function AdminProfiles() {
 		<>
 			<PageTitle title='Manage Profiles' />
 
-			<div className='flex flex-1 flex-col gap-4 p-8'>
-				<div className='flex items-start justify-between gap-4'>
-					<div>
-						<h1 className='text-2xl font-bold'>Profiles</h1>
-						<p className='text-muted-foreground text-sm'>
-							A profile bundles screen grants assigned to users.
-						</p>
-					</div>
+			<div className='flex flex-1 flex-col gap-3 px-8 pt-5 pb-8'>
+				<PageHeader
+					title='Profiles'
+					description='A profile bundles screen grants assigned to users.'
+				>
 					{pm.canCreate && (
 						<ProfileDialog
 							trigger={
@@ -42,7 +40,7 @@ export function AdminProfiles() {
 							}
 						/>
 					)}
-				</div>
+				</PageHeader>
 
 				{pm.isLoading ? (
 					<p className='text-muted-foreground text-sm'>Loading…</p>

@@ -1,6 +1,7 @@
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { PageHeader } from '@/components/page-header'
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -23,14 +24,11 @@ export function AdminScreens() {
 		<>
 			<PageTitle title='Manage Screens' />
 
-			<div className='flex flex-1 flex-col gap-4 p-8'>
-				<div className='flex items-start justify-between gap-4'>
-					<div>
-						<h1 className='text-2xl font-bold'>Screens</h1>
-						<p className='text-muted-foreground text-sm'>
-							Screens are what access grants attach to.
-						</p>
-					</div>
+			<div className='flex flex-1 flex-col gap-3 px-8 pt-5 pb-8'>
+				<PageHeader
+					title='Screens'
+					description='Screens are what access grants attach to.'
+				>
 					{pm.canCreate && (
 						<ScreenDialog
 							modules={pm.modules}
@@ -42,7 +40,7 @@ export function AdminScreens() {
 							}
 						/>
 					)}
-				</div>
+				</PageHeader>
 
 				{pm.isLoading ? (
 					<p className='text-muted-foreground text-sm'>Loading…</p>

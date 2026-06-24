@@ -1,5 +1,6 @@
 import { CircleCheck, Clock, LoaderCircle } from 'lucide-react'
 
+import { PageHeader } from '@/components/page-header'
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -13,13 +14,11 @@ export function CheckIns() {
 		<>
 			<PageTitle title='Check-ins' />
 
-			<div className='flex flex-1 flex-col gap-6 p-8'>
-				<div>
-					<h2 className='text-2xl font-medium'>Check-ins</h2>
-					<p className='text-muted-foreground text-sm'>
-						Your recent gym check-ins.
-					</p>
-				</div>
+			<div className='flex flex-1 flex-col gap-3 px-8 pt-5 pb-8'>
+				<PageHeader
+					title='Check-ins'
+					description='Your recent gym check-ins.'
+				/>
 
 				{pm.status === 'loading' && (
 					<div className='text-muted-foreground flex items-center gap-2 text-sm'>
