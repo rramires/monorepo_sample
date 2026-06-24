@@ -86,7 +86,8 @@ test('admin deactivates a gym (confirm) and reveals it with Show deactivated', a
 	await signIn(page, 'admin')
 
 	await page.getByRole('link', { name: 'Gyms' }).click()
-	await expect(page.getByText('Iron Temple')).toBeVisible()
+	// Managers land on the full (non-geo) list by default — Iron Temple is there.
+	await expect(page.getByText('Iron Temple', { exact: true })).toBeVisible()
 
 	// Edit the first card and turn Active off.
 	await page.getByRole('button', { name: 'Edit' }).first().click()
@@ -99,14 +100,13 @@ test('admin deactivates a gym (confirm) and reveals it with Show deactivated', a
 	await page.getByRole('button', { name: 'Deactivate' }).click()
 
 	await expect(page.getByText('Gym "Iron Temple" updated.')).toBeVisible()
-	// It leaves the active (nearby) list (exact match excludes the toast text).
+	// It leaves the active list (exact match excludes the toast text).
 	await expect(page.getByText('Iron Temple', { exact: true })).toBeHidden()
 
-	// A manager can reveal it again via "Show deactivated" + search.
-	await page.getByRole('checkbox').check()
-	await page.getByPlaceholder('Search gyms by name…').fill('Iron')
+	// "Show deactivated" reveals it right in the list — no search needed.
+	await page.getByRole('checkbox', { name: 'Show deactivated' }).check()
 	await expect(page.getByText('Iron Temple', { exact: true })).toBeVisible()
-	await expect(page.getByText('Inactive')).toBeVisible()
+	await expect(page.getByText('Inactive').first()).toBeVisible()
 
 	await waitForUIInspection(page)
 })

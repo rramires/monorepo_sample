@@ -45,15 +45,26 @@ export function Gyms() {
 						className='max-w-md'
 					/>
 					{pm.canManage && (
-						<Label className='text-muted-foreground flex items-center gap-2 text-sm font-normal'>
-							<Checkbox
-								checked={pm.showDeactivated}
-								onCheckedChange={(value) =>
-									pm.setShowDeactivated(value === true)
-								}
-							/>
-							Show deactivated (search)
-						</Label>
+						<>
+							<Label className='text-muted-foreground flex items-center gap-2 text-sm font-normal'>
+								<Checkbox
+									checked={pm.nearbyMode}
+									onCheckedChange={(value) =>
+										pm.setNearbyMode(value === true)
+									}
+								/>
+								Nearby only
+							</Label>
+							<Label className='text-muted-foreground flex items-center gap-2 text-sm font-normal'>
+								<Checkbox
+									checked={pm.showDeactivated}
+									onCheckedChange={(value) =>
+										pm.setShowDeactivated(value === true)
+									}
+								/>
+								Show deactivated
+							</Label>
+						</>
 					)}
 				</div>
 
@@ -81,7 +92,9 @@ export function Gyms() {
 					<p className='text-muted-foreground text-sm'>
 						{pm.searching
 							? 'No gyms match your search.'
-							: 'No gyms found near you.'}
+							: pm.canManage && !pm.nearbyMode
+								? 'No gyms yet.'
+								: 'No gyms found near you.'}
 					</p>
 				)}
 
@@ -93,7 +106,7 @@ export function Gyms() {
 					</div>
 				)}
 
-				{pm.searching && (pm.hasPrevPage || pm.hasNextPage) && (
+				{(pm.hasPrevPage || pm.hasNextPage) && (
 					<div className='flex items-center gap-2'>
 						<Button
 							variant='outline'
