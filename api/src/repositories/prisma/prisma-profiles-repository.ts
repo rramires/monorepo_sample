@@ -82,6 +82,14 @@ export class PrismaProfilesRepository implements IProfilesRepository {
 		})
 	}
 
+	async clearDefaultExcept(keepId: string) {
+		// Demote every other default in one statement (single-default invariant).
+		await prisma.profile.updateMany({
+			where: { id: { not: keepId }, is_default: true },
+			data: { is_default: false },
+		})
+	}
+
 	async setScreens(id: string, grants: GrantRow[]) {
 		// Replace the whole grant set atomically: wipe then re-insert.
 		await prisma.$transaction([

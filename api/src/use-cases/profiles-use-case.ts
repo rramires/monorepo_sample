@@ -6,6 +6,7 @@ import {
 	IProfilesRepository,
 } from '@/repositories/i-profiles-repository'
 
+import { DefaultProfileRequiredError } from './errors/default-profile-required-error'
 import { ResourceNotFoundError } from './errors/resource-not-found-error'
 import { SystemProfileError } from './errors/system-profile-error'
 
@@ -32,6 +33,10 @@ export class ProfilesUseCase {
 			description: body.description,
 			is_default: body.is_default,
 		})
+		// Single-default invariant: a new default demotes every other profile.
+		if (body.is_default) {
+			await this.profilesRepository.clearDefaultExcept(profile.id)
+		}
 		return profile
 	}
 
@@ -50,7 +55,17 @@ export class ProfilesUseCase {
 			throw new SystemProfileError()
 		}
 
+		// Single-default invariant: never leave zero defaults. Turning the
+		// current default off is rejected — to move it, enable another profile
+		// (which demotes this one). Turning a profile on demotes the rest.
+		if (body.is_default === false && existing.is_default) {
+			throw new DefaultProfileRequiredError()
+		}
+
 		const profile = await this.profilesRepository.update(id, body)
+		if (body.is_default === true) {
+			await this.profilesRepository.clearDefaultExcept(id)
+		}
 		return profile
 	}
 

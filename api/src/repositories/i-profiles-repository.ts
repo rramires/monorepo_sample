@@ -33,4 +33,7 @@ export interface IProfilesRepository {
 	update(id: string, data: IProfileUpdateInput): Promise<Profile>
 	delete(id: string): Promise<void>
 	setScreens(id: string, grants: GrantRow[]): Promise<void>
+	/** Clear `is_default` on every profile except `keepId` (enforces the
+	 * single-default invariant — the radio behaviour). */
+	clearDefaultExcept(keepId: string): Promise<void>
 }
