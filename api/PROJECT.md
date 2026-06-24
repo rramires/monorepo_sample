@@ -176,6 +176,21 @@ Example: **`POST /auth/login`** (login) and **`POST /gyms/:gymId/check-ins`** (p
      • ZodError              → 400 + issues (trimmed in production; full in dev)
      • Framework error       → its own statusCode (429 rate-limit, 413 body-limit, 400 bad JSON, 503 under-pressure)
      • Unhandled error       → 500 (request.log.error in dev; reportError() in prod)
+        │
+10. Serialization (Fastify):
+     • reply.status(code).send(payload) → body serialized to JSON
+       (fast-json-stringify when the route has a response schema, else JSON.stringify)
+        │
+11. Outgoing plugin effects (the same registered plugins, on the way out):
+     • @fastify/helmet      → security headers on the response
+     • @fastify/cors        → access-control-allow-* headers
+     • @fastify/rate-limit  → x-ratelimit-* headers
+     • @fastify/cookie      → Set-Cookie: refreshToken (login only; httpOnly+secure+sameSite)
+        │
+12. Fastify writes the response (status line + headers + body) to the socket
+        │
+13. HTTP client receives → status, headers, JSON body (access token in body);
+    the cookie jar stores refreshToken               ⟲ back to step 1
 ```
 
 ### 4.2 Detailed example — `POST /auth/login` (public)
@@ -328,52 +343,52 @@ username `transform`) stay local. See the monorepo
 > The **Guard** column is the `requireScreen` screen + action (`ADMIN` bypasses);
 > `—` means authentication only. The full screen-grant model is §5.7.
 
-| Method | Route                            | Auth (JWT) | Guard (screen · action)            | Notes                                                   |
-| ------ | -------------------------------- | :--------: | ---------------------------------- | ------------------------------------------------------- |
-| GET    | `/hello`                         |     ❌     | —                                  | health/test                                             |
-| POST   | `/users`                         |     ❌     | —                                  | registration (public)                                   |
-| POST   | `/auth/login`                    |     ❌     | —                                  | login                                                   |
-| PATCH  | `/auth/refresh`                  |   cookie   | —                                  | token rotation                                          |
-| GET    | `/auth/me`                       |     ✅     | —                                  | own profile                                             |
-| POST   | `/auth/logout`                   |     ✅     | —                                  | revokes current token (denylist) + clears cookie        |
-| PATCH  | `/auth/me`                       |     ✅     | —                                  | self: edit own username / set `default_screen_key`      |
-| POST   | `/auth/me/email`                 |     ✅     | —                                  | self: request email change (confirm to new addr)        |
-| POST   | `/auth/me/email/confirm`         |     ✅     | —                                  | self: confirm email change via OTP                      |
-| GET    | `/me/permissions`                |     ✅     | —                                  | effective screens + sidebar menu + default screen       |
-| GET    | `/gyms/search`                   |     ✅     | —                                  | search by title (active only; managers: `includeInactive`) |
-| GET    | `/gyms/nearby`                   |     ✅     | —                                  | search by proximity (active only; managers: `includeInactive`) |
-| POST   | `/gyms`                          |     ✅     | `gym.gyms` · create                | create a gym                                            |
-| PATCH  | `/gyms/:gymId`                   |     ✅     | `gym.gyms` · edit                  | edit a gym (title/description/phone, `is_active`)       |
-| GET    | `/check-ins/history`             |     ✅     | —                                  | own history                                             |
-| GET    | `/check-ins/metrics`             |     ✅     | —                                  | own total                                               |
-| POST   | `/gyms/:gymId/check-ins`         |     ✅     | —                                  | check in (verified email if flag on; `403` if gym inactive) |
-| PATCH  | `/check-ins/:checkInId/validate` |     ✅     | `gym.validations` · create         | validate check-in                                       |
-| POST   | `/users/send-verification`       |     ✅     | —                                  | send verification email (link + OTP)                    |
-| GET    | `/users/verify-email`            |     ❌     | —                                  | verify email via link token (`?token=`)                 |
-| POST   | `/users/verify-email/otp`        |     ✅     | —                                  | verify email via OTP code                               |
-| POST   | `/users/resend-verification`     |     ✅     | —                                  | resend verification email                               |
-| POST   | `/users/forgot-password`         |     ❌     | —                                  | request reset; always `202` (anti-enumeration)          |
-| POST   | `/users/reset-password`          |     ❌     | —                                  | reset via link token or email + OTP                     |
-| GET    | `/users/confirm-email-change`    |     ❌     | —                                  | confirm email change via link token (`?token=`)         |
-| GET    | `/users`                         |     ✅     | `access-control.users` · view      | list users (paginated, 20/page)                         |
-| GET    | `/users/:userId`                 |     ✅     | `access-control.users` · view      | fetch a single user by id (PublicUser)                  |
-| PATCH  | `/users/:userId`                 |     ✅     | `access-control.users` · edit      | edit a user (username/email/role/is_verified/is_active) |
-| GET    | `/users/:userId/profiles`        |     ✅     | `access-control.users` · view      | list a user's assigned profiles                         |
-| PUT    | `/users/:userId/profiles`        |     ✅     | `access-control.users` · edit      | replace a user's profile assignments                    |
-| GET    | `/modules`                       |     ✅     | `access-control.modules` · view    | list modules                                            |
-| POST   | `/modules`                       |     ✅     | `access-control.modules` · create  | create a module                                         |
-| PATCH  | `/modules/:id`                   |     ✅     | `access-control.modules` · edit    | edit a module (`409` renaming a system module's key)    |
-| DELETE | `/modules/:id`                   |     ✅     | `access-control.modules` · delete  | delete a module (`409` if it has screens or is system)  |
-| GET    | `/screens`                       |     ✅     | `access-control.screens` · view    | list screens                                            |
-| POST   | `/screens`                       |     ✅     | `access-control.screens` · create  | create a screen                                         |
+| Method | Route                            | Auth (JWT) | Guard (screen · action)            | Notes                                                            |
+| ------ | -------------------------------- | :--------: | ---------------------------------- | ---------------------------------------------------------------- |
+| GET    | `/hello`                         |     ❌     | —                                  | health/test                                                      |
+| POST   | `/users`                         |     ❌     | —                                  | registration (public)                                            |
+| POST   | `/auth/login`                    |     ❌     | —                                  | login                                                            |
+| PATCH  | `/auth/refresh`                  |   cookie   | —                                  | token rotation                                                   |
+| GET    | `/auth/me`                       |     ✅     | —                                  | own profile                                                      |
+| POST   | `/auth/logout`                   |     ✅     | —                                  | revokes current token (denylist) + clears cookie                 |
+| PATCH  | `/auth/me`                       |     ✅     | —                                  | self: edit own username / set `default_screen_key`               |
+| POST   | `/auth/me/email`                 |     ✅     | —                                  | self: request email change (confirm to new addr)                 |
+| POST   | `/auth/me/email/confirm`         |     ✅     | —                                  | self: confirm email change via OTP                               |
+| GET    | `/me/permissions`                |     ✅     | —                                  | effective screens + sidebar menu + default screen                |
+| GET    | `/gyms/search`                   |     ✅     | —                                  | search by title (active only; managers: `includeInactive`)       |
+| GET    | `/gyms/nearby`                   |     ✅     | —                                  | search by proximity (active only; managers: `includeInactive`)   |
+| POST   | `/gyms`                          |     ✅     | `gym.gyms` · create                | create a gym                                                     |
+| PATCH  | `/gyms/:gymId`                   |     ✅     | `gym.gyms` · edit                  | edit a gym (title/description/phone, `is_active`)                |
+| GET    | `/check-ins/history`             |     ✅     | —                                  | own history                                                      |
+| GET    | `/check-ins/metrics`             |     ✅     | —                                  | own total                                                        |
+| POST   | `/gyms/:gymId/check-ins`         |     ✅     | —                                  | check in (verified email if flag on; `403` if gym inactive)      |
+| PATCH  | `/check-ins/:checkInId/validate` |     ✅     | `gym.validations` · create         | validate check-in                                                |
+| POST   | `/users/send-verification`       |     ✅     | —                                  | send verification email (link + OTP)                             |
+| GET    | `/users/verify-email`            |     ❌     | —                                  | verify email via link token (`?token=`)                          |
+| POST   | `/users/verify-email/otp`        |     ✅     | —                                  | verify email via OTP code                                        |
+| POST   | `/users/resend-verification`     |     ✅     | —                                  | resend verification email                                        |
+| POST   | `/users/forgot-password`         |     ❌     | —                                  | request reset; always `202` (anti-enumeration)                   |
+| POST   | `/users/reset-password`          |     ❌     | —                                  | reset via link token or email + OTP                              |
+| GET    | `/users/confirm-email-change`    |     ❌     | —                                  | confirm email change via link token (`?token=`)                  |
+| GET    | `/users`                         |     ✅     | `access-control.users` · view      | list users (paginated, 20/page)                                  |
+| GET    | `/users/:userId`                 |     ✅     | `access-control.users` · view      | fetch a single user by id (PublicUser)                           |
+| PATCH  | `/users/:userId`                 |     ✅     | `access-control.users` · edit      | edit a user (username/email/role/is_verified/is_active)          |
+| GET    | `/users/:userId/profiles`        |     ✅     | `access-control.users` · view      | list a user's assigned profiles                                  |
+| PUT    | `/users/:userId/profiles`        |     ✅     | `access-control.users` · edit      | replace a user's profile assignments                             |
+| GET    | `/modules`                       |     ✅     | `access-control.modules` · view    | list modules                                                     |
+| POST   | `/modules`                       |     ✅     | `access-control.modules` · create  | create a module                                                  |
+| PATCH  | `/modules/:id`                   |     ✅     | `access-control.modules` · edit    | edit a module (`409` renaming a system module's key)             |
+| DELETE | `/modules/:id`                   |     ✅     | `access-control.modules` · delete  | delete a module (`409` if it has screens or is system)           |
+| GET    | `/screens`                       |     ✅     | `access-control.screens` · view    | list screens                                                     |
+| POST   | `/screens`                       |     ✅     | `access-control.screens` · create  | create a screen                                                  |
 | PATCH  | `/screens/:id`                   |     ✅     | `access-control.screens` · edit    | edit a screen (`409` changing a system screen's key/module/path) |
-| DELETE | `/screens/:id`                   |     ✅     | `access-control.screens` · delete  | delete a screen (`409` on a system screen)              |
-| GET    | `/profiles`                      |     ✅     | `access-control.profiles` · view   | list profiles                                           |
-| GET    | `/profiles/:id`                  |     ✅     | `access-control.profiles` · view   | fetch a profile with its grants                         |
-| POST   | `/profiles`                      |     ✅     | `access-control.profiles` · create | create a profile                                        |
-| PATCH  | `/profiles/:id`                  |     ✅     | `access-control.profiles` · edit   | edit a profile (`409` on a system profile)              |
-| DELETE | `/profiles/:id`                  |     ✅     | `access-control.profiles` · delete | delete a profile (`409` on a system profile)            |
-| PUT    | `/profiles/:id/screens`          |     ✅     | `access-control.profiles` · edit   | replace a profile's screen grants                       |
+| DELETE | `/screens/:id`                   |     ✅     | `access-control.screens` · delete  | delete a screen (`409` on a system screen)                       |
+| GET    | `/profiles`                      |     ✅     | `access-control.profiles` · view   | list profiles                                                    |
+| GET    | `/profiles/:id`                  |     ✅     | `access-control.profiles` · view   | fetch a profile with its grants                                  |
+| POST   | `/profiles`                      |     ✅     | `access-control.profiles` · create | create a profile                                                 |
+| PATCH  | `/profiles/:id`                  |     ✅     | `access-control.profiles` · edit   | edit a profile (`409` on a system profile)                       |
+| DELETE | `/profiles/:id`                  |     ✅     | `access-control.profiles` · delete | delete a profile (`409` on a system profile)                     |
+| PUT    | `/profiles/:id/screens`          |     ✅     | `access-control.profiles` · edit   | replace a profile's screen grants                                |
 
 > Pattern to protect a group: `app.addHook('onRequest', verifyJwtMiddleware)`
 > at the start of the routes function. To gate a route on a screen grant: add
