@@ -374,7 +374,12 @@ profiles; seus grants **se mesclam** (OR).
       seu module para mostrar uma coluna **Module** nos dois lados, e um
       **`MultiSelect`** em chips acima da tabela filtra o lado **Available** por
       module (screens já concedidas sempre permanecem, então o lado Granted nunca
-      perde linhas); a busca da tabela também casa com o nome do module.
+      perde linhas); a busca da tabela também casa com o nome do module. O switch
+      **Default profile** garante o invariante de default único: fica
+      **desabilitado quando o profile já é o default** (promova outro para movê-lo),
+      e promover um profile não-default abre um confirm dialog nomeando o default
+      atual antes de salvar (o backend rebaixa o antigo e rejeita desligar o último
+      default com `409`).
     - **Users** (`/admin/users`) — tabela paginada; **UserEdit**
       (`/admin/users/:userId`) edita username/email/role/`is_verified` mais um
       switch **Active** (`is_active`; auto-desativação bloqueada) e um card de

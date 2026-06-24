@@ -370,7 +370,11 @@ profiles; their grants **merge** (OR).
       to show a **Module** column on both sides, and a chips **`MultiSelect`** above
       the table filters the **Available** side by module (already-granted screens
       always stay, so the Granted side never loses rows); the table search also
-      matches the module name.
+      matches the module name. The **Default profile** switch enforces the
+      single-default invariant: it is **disabled when this profile is already the
+      default** (promote another to move it), and promoting a non-default profile
+      opens a confirm dialog naming the current default before saving (the backend
+      demotes the old one and rejects turning the last default off with `409`).
     - **Users** (`/admin/users`) — paginated table; **UserEdit**
       (`/admin/users/:userId`) edits username/email/role/`is_verified` plus an
       **Active** switch (`is_active`; self-deactivation blocked) and a **profiles**

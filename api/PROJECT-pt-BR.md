@@ -569,7 +569,11 @@ reúne grants de ação por tela (`ProfileScreen`); um usuário recebe perfis
   "ver todas" do gestor (sem geo, paginada). O `PATCH /gyms/:gymId` alterna
   `is_active` (desativar / reativar).
 - **`is_default` / `is_system`:** o perfil `is_default` é anexado automaticamente
-  a uma conta nova no `POST /users`. `is_system` marca registros do seed como
+  a uma conta nova no `POST /users`. **Exatamente um** perfil é o default a cada
+  momento: marcar um perfil como default (no create ou update) rebaixa todos os
+  outros (rádio, via `clearDefaultExcept`), e desligar o default **atual** é `409`
+  (`DefaultProfileRequiredError`) — para movê-lo, promova outro perfil.
+  `is_system` marca registros do seed como
   protegidos — em um perfil, **módulo ou tela**, excluir ou editar a identidade é
   `409` (a `key`; numa tela também `module` e `path`); name/description/order — e
   os grants de um perfil — seguem editáveis. O seed marca os três perfis e o módulo
@@ -578,7 +582,8 @@ reúne grants de ação por tela (`ProfileScreen`); um usuário recebe perfis
 - **Mapeamento de erros do CRUD** (controllers, via `instanceof`):
   `ResourceNotFoundError` → `404`; excluir um módulo que ainda tem telas → `409`
   (`ModuleHasScreensError`); editar/excluir um perfil/módulo/tela de sistema →
-  `409` (`SystemProfileError` / `SystemModuleError` / `SystemScreenError`); no
+  `409` (`SystemProfileError` / `SystemModuleError` / `SystemScreenError`);
+  desligar o único perfil default → `409` (`DefaultProfileRequiredError`); no
   `PATCH /users/:userId`, rebaixar/desativar a si mesmo → `400`
   (`CannotChangeOwnRoleError` / `CannotDeactivateSelfError`).
   Creates retornam `201`; os `PUT` de grants/perfis retornam `200`.

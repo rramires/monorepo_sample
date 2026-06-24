@@ -150,52 +150,52 @@ boot if any variable is invalid (Zod validation in `src/env`).
 > `requireScreen` (`ADMIN` always bypasses). `—` means authentication only (or
 > public when Auth is `–`).
 
-| Method   | Route                            | Auth           | Guard (screen · action)            | Description                                                        |
-| -------- | -------------------------------- | -------------- | ---------------------------------- | ------------------------------------------------------------------ |
-| `GET`    | `/hello`                         | –              | –                                  | Healthcheck                                                        |
-| `POST`   | `/users`                         | –              | –                                  | Register a user (rate-limited)                                     |
-| `POST`   | `/auth/login`                    | –              | –                                  | Login → access token + refresh cookie (rate-limited)               |
-| `PATCH`  | `/auth/refresh`                  | refresh cookie | –                                  | Rotate the access token                                            |
-| `GET`    | `/auth/me`                       | Bearer         | –                                  | Authenticated user profile                                         |
-| `POST`   | `/auth/logout`                   | Bearer         | –                                  | Revoke the current token (denylist)                                |
-| `PATCH`  | `/auth/me`                       | Bearer         | –                                  | Edit own username / set `default_screen_key`                       |
-| `POST`   | `/auth/me/email`                 | Bearer         | –                                  | Request own email change (confirmation to new email)               |
-| `POST`   | `/auth/me/email/confirm`         | Bearer         | –                                  | Confirm own email change via OTP                                   |
-| `GET`    | `/me/permissions`                | Bearer         | –                                  | Effective permissions: `role`, `screens`, `menu`, default screen   |
-| `GET`    | `/gyms/search`                   | Bearer         | –                                  | Search gyms by title (active only; managers may pass `includeInactive`) |
-| `GET`    | `/gyms/nearby`                   | Bearer         | –                                  | Gyms near a coordinate (active only; managers may pass `includeInactive`) |
-| `POST`   | `/gyms`                          | Bearer         | `gym.gyms` · create                | Create a gym                                                       |
-| `PATCH`  | `/gyms/:gymId`                   | Bearer         | `gym.gyms` · edit                  | Edit a gym (title/description/phone, `is_active`)                  |
-| `GET`    | `/check-ins/history`             | Bearer         | –                                  | Paginated check-in history                                         |
-| `GET`    | `/check-ins/metrics`             | Bearer         | –                                  | Total check-ins count                                              |
+| Method   | Route                            | Auth           | Guard (screen · action)            | Description                                                                             |
+| -------- | -------------------------------- | -------------- | ---------------------------------- | --------------------------------------------------------------------------------------- |
+| `GET`    | `/hello`                         | –              | –                                  | Healthcheck                                                                             |
+| `POST`   | `/users`                         | –              | –                                  | Register a user (rate-limited)                                                          |
+| `POST`   | `/auth/login`                    | –              | –                                  | Login → access token + refresh cookie (rate-limited)                                    |
+| `PATCH`  | `/auth/refresh`                  | refresh cookie | –                                  | Rotate the access token                                                                 |
+| `GET`    | `/auth/me`                       | Bearer         | –                                  | Authenticated user profile                                                              |
+| `POST`   | `/auth/logout`                   | Bearer         | –                                  | Revoke the current token (denylist)                                                     |
+| `PATCH`  | `/auth/me`                       | Bearer         | –                                  | Edit own username / set `default_screen_key`                                            |
+| `POST`   | `/auth/me/email`                 | Bearer         | –                                  | Request own email change (confirmation to new email)                                    |
+| `POST`   | `/auth/me/email/confirm`         | Bearer         | –                                  | Confirm own email change via OTP                                                        |
+| `GET`    | `/me/permissions`                | Bearer         | –                                  | Effective permissions: `role`, `screens`, `menu`, default screen                        |
+| `GET`    | `/gyms/search`                   | Bearer         | –                                  | Search gyms by title (active only; managers may pass `includeInactive`)                 |
+| `GET`    | `/gyms/nearby`                   | Bearer         | –                                  | Gyms near a coordinate (active only; managers may pass `includeInactive`)               |
+| `POST`   | `/gyms`                          | Bearer         | `gym.gyms` · create                | Create a gym                                                                            |
+| `PATCH`  | `/gyms/:gymId`                   | Bearer         | `gym.gyms` · edit                  | Edit a gym (title/description/phone, `is_active`)                                       |
+| `GET`    | `/check-ins/history`             | Bearer         | –                                  | Paginated check-in history                                                              |
+| `GET`    | `/check-ins/metrics`             | Bearer         | –                                  | Total check-ins count                                                                   |
 | `POST`   | `/gyms/:gymId/check-ins`         | Bearer         | –                                  | Create a check-in (`400` too far · `403` inactive gym · `409` already checked in today) |
-| `PATCH`  | `/check-ins/:checkInId/validate` | Bearer         | `gym.validations` · create         | Validate a check-in (`409` past the 20-min window)                 |
-| `POST`   | `/users/send-verification`       | Bearer         | –                                  | Send verification email (link + OTP)                               |
-| `GET`    | `/users/verify-email`            | –              | –                                  | Verify email via link token (`?token=`)                            |
-| `POST`   | `/users/verify-email/otp`        | Bearer         | –                                  | Verify email via OTP code                                          |
-| `GET`    | `/users/confirm-email-change`    | –              | –                                  | Confirm an email change via link token (`?token=`)                 |
-| `POST`   | `/users/resend-verification`     | Bearer         | –                                  | Resend verification email                                          |
-| `POST`   | `/users/forgot-password`         | –              | –                                  | Request a reset; always `202` (rate-limited)                       |
-| `POST`   | `/users/reset-password`          | –              | –                                  | Reset via link token or email + OTP (rate-limited)                 |
-| `GET`    | `/users`                         | Bearer         | `access-control.users` · view      | List users (paginated, 20/page)                                    |
-| `GET`    | `/users/:userId`                 | Bearer         | `access-control.users` · view      | Fetch a single user by id                                          |
-| `PATCH`  | `/users/:userId`                 | Bearer         | `access-control.users` · edit      | Edit a user (username/email/role/is_verified/is_active)            |
-| `GET`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · view      | List the profiles assigned to a user                               |
-| `PUT`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · edit      | Replace a user's profile assignments                               |
-| `GET`    | `/modules`                       | Bearer         | `access-control.modules` · view    | List modules                                                       |
-| `POST`   | `/modules`                       | Bearer         | `access-control.modules` · create  | Create a module                                                    |
-| `PATCH`  | `/modules/:id`                   | Bearer         | `access-control.modules` · edit    | Edit a module (`409` renaming a system module's key)              |
-| `DELETE` | `/modules/:id`                   | Bearer         | `access-control.modules` · delete  | Delete a module (`409` if it still has screens or is a system module) |
-| `GET`    | `/screens`                       | Bearer         | `access-control.screens` · view    | List screens                                                       |
-| `POST`   | `/screens`                       | Bearer         | `access-control.screens` · create  | Create a screen                                                    |
-| `PATCH`  | `/screens/:id`                   | Bearer         | `access-control.screens` · edit    | Edit a screen (`409` changing a system screen's key/module/path) |
-| `DELETE` | `/screens/:id`                   | Bearer         | `access-control.screens` · delete  | Delete a screen (`409` on a system screen)                        |
-| `GET`    | `/profiles`                      | Bearer         | `access-control.profiles` · view   | List profiles                                                      |
-| `GET`    | `/profiles/:id`                  | Bearer         | `access-control.profiles` · view   | Fetch a profile with its grants                                    |
-| `POST`   | `/profiles`                      | Bearer         | `access-control.profiles` · create | Create a profile                                                   |
-| `PATCH`  | `/profiles/:id`                  | Bearer         | `access-control.profiles` · edit   | Edit a profile (`409` on a system profile)                         |
-| `DELETE` | `/profiles/:id`                  | Bearer         | `access-control.profiles` · delete | Delete a profile (`409` on a system profile)                       |
-| `PUT`    | `/profiles/:id/screens`          | Bearer         | `access-control.profiles` · edit   | Replace a profile's screen grants                                  |
+| `PATCH`  | `/check-ins/:checkInId/validate` | Bearer         | `gym.validations` · create         | Validate a check-in (`409` past the 20-min window)                                      |
+| `POST`   | `/users/send-verification`       | Bearer         | –                                  | Send verification email (link + OTP)                                                    |
+| `GET`    | `/users/verify-email`            | –              | –                                  | Verify email via link token (`?token=`)                                                 |
+| `POST`   | `/users/verify-email/otp`        | Bearer         | –                                  | Verify email via OTP code                                                               |
+| `GET`    | `/users/confirm-email-change`    | –              | –                                  | Confirm an email change via link token (`?token=`)                                      |
+| `POST`   | `/users/resend-verification`     | Bearer         | –                                  | Resend verification email                                                               |
+| `POST`   | `/users/forgot-password`         | –              | –                                  | Request a reset; always `202` (rate-limited)                                            |
+| `POST`   | `/users/reset-password`          | –              | –                                  | Reset via link token or email + OTP (rate-limited)                                      |
+| `GET`    | `/users`                         | Bearer         | `access-control.users` · view      | List users (paginated, 20/page)                                                         |
+| `GET`    | `/users/:userId`                 | Bearer         | `access-control.users` · view      | Fetch a single user by id                                                               |
+| `PATCH`  | `/users/:userId`                 | Bearer         | `access-control.users` · edit      | Edit a user (username/email/role/is_verified/is_active)                                 |
+| `GET`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · view      | List the profiles assigned to a user                                                    |
+| `PUT`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · edit      | Replace a user's profile assignments                                                    |
+| `GET`    | `/modules`                       | Bearer         | `access-control.modules` · view    | List modules                                                                            |
+| `POST`   | `/modules`                       | Bearer         | `access-control.modules` · create  | Create a module                                                                         |
+| `PATCH`  | `/modules/:id`                   | Bearer         | `access-control.modules` · edit    | Edit a module (`409` renaming a system module's key)                                    |
+| `DELETE` | `/modules/:id`                   | Bearer         | `access-control.modules` · delete  | Delete a module (`409` if it still has screens or is a system module)                   |
+| `GET`    | `/screens`                       | Bearer         | `access-control.screens` · view    | List screens                                                                            |
+| `POST`   | `/screens`                       | Bearer         | `access-control.screens` · create  | Create a screen                                                                         |
+| `PATCH`  | `/screens/:id`                   | Bearer         | `access-control.screens` · edit    | Edit a screen (`409` changing a system screen's key/module/path)                        |
+| `DELETE` | `/screens/:id`                   | Bearer         | `access-control.screens` · delete  | Delete a screen (`409` on a system screen)                                              |
+| `GET`    | `/profiles`                      | Bearer         | `access-control.profiles` · view   | List profiles                                                                           |
+| `GET`    | `/profiles/:id`                  | Bearer         | `access-control.profiles` · view   | Fetch a profile with its grants                                                         |
+| `POST`   | `/profiles`                      | Bearer         | `access-control.profiles` · create | Create a profile                                                                        |
+| `PATCH`  | `/profiles/:id`                  | Bearer         | `access-control.profiles` · edit   | Edit a profile (`409` on a system profile)                                              |
+| `DELETE` | `/profiles/:id`                  | Bearer         | `access-control.profiles` · delete | Delete a profile (`409` on a system profile)                                            |
+| `PUT`    | `/profiles/:id/screens`          | Bearer         | `access-control.profiles` · edit   | Replace a profile's screen grants                                                       |
 
 > The JWT carries a `role` claim, but **authorization reads the role (and the
 > screen grants) from the database** (by user id), not from the token. A
@@ -365,7 +365,9 @@ is the same `ADMIN_PASSWORD`:
 | `support` | `support`     | manage profiles (full), edit users, view screens          |
 
 The `gym-member` profile is the `is_default` one — it is auto-attached to every
-new account created via `POST /users`.
+new account created via `POST /users`. Exactly one profile is the default:
+marking another as default demotes it, and turning the only default off is
+rejected with `409`.
 
 Smoke test (clean DB, `pnpm seeddb` run):
 
