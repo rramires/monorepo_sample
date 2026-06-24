@@ -69,4 +69,4 @@ jobs:
       # Playwright drives Chromium against the MSW mock (dev:test, :5001) — no
       # backend or DB needed; the playwright config boots the dev server itself.
       - run: pnpm -C web exec playwright install --with-deps chromium
-      - run: pnpm -C web e2e
+      - run: pnpm -C web test:e2e
