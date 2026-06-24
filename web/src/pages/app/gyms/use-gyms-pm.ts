@@ -7,7 +7,7 @@ import { usePermissions } from '@/hooks/use-permissions'
 import { type Coordinates, getCurrentPosition } from '@/lib/geolocation'
 
 const MIN_QUERY = 3
-const PAGE_SIZE = 20
+const PAGE_SIZE = 8
 
 export type GymsStatus =
 	| 'locating'
@@ -66,7 +66,10 @@ export function useGymsPM() {
 	})
 
 	const active = usingSearch ? search : nearby
-	const gyms = active.data ?? []
+	// search returns { gyms, total }; nearby returns a plain array (no paging).
+	const gyms = usingSearch ? (search.data?.gyms ?? []) : (nearby.data ?? [])
+	const total = usingSearch ? (search.data?.total ?? 0) : gyms.length
+	const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
 	let status: GymsStatus
 	if (active.isLoading) {
@@ -110,11 +113,23 @@ export function useGymsPM() {
 		setShowDeactivated,
 		nearbyMode,
 		setNearbyMode,
-		// Pagination applies to the search-backed views (search + manager list-all).
-		hasPrevPage: usingSearch && page > 1,
-		hasNextPage: usingSearch && gyms.length === PAGE_SIZE,
+		// Pager — only for the search-backed views (search + manager list-all);
+		// null in the geo (nearby) view, which isn't paginated.
+		pager: usingSearch
+			? {
+					page,
+					total,
+					totalPages,
+					from: total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1,
+					to: Math.min(page * PAGE_SIZE, total),
+					canPrev: page > 1,
+					canNext: page < totalPages,
+				}
+			: null,
 		handleQueryChange,
-		nextPage: () => setPage((current) => current + 1),
+		firstPage: () => setPage(1),
+		lastPage: () => setPage(totalPages),
+		nextPage: () => setPage((current) => Math.min(totalPages, current + 1)),
 		prevPage: () => setPage((current) => Math.max(1, current - 1)),
 	}
 }

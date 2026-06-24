@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw'
 
 import { gyms } from './gyms-data'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 8
 
 export const searchGymsMock = http.get('/gyms/search', ({ request }) => {
 	const url = new URL(request.url)
@@ -22,5 +22,5 @@ export const searchGymsMock = http.get('/gyms/search', ({ request }) => {
 	const start = (page - 1) * PAGE_SIZE
 	const paged = matches.slice(start, start + PAGE_SIZE)
 
-	return HttpResponse.json({ gyms: paged })
+	return HttpResponse.json({ gyms: paged, total: matches.length })
 })

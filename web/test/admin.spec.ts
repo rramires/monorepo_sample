@@ -110,3 +110,22 @@ test('admin deactivates a gym (confirm) and reveals it with Show deactivated', a
 
 	await waitForUIInspection(page)
 })
+
+test('admin gym list paginates (8 per page)', async ({ page }) => {
+	await signIn(page, 'admin')
+
+	await page.getByRole('link', { name: 'Gyms' }).click()
+	// 22 active gyms (24 seeded − 2 inactive), 8 per page.
+	await expect(page.getByText('1 to 8 of 22')).toBeVisible()
+
+	await page.getByRole('button', { name: 'Next page' }).click()
+	await expect(page.getByText('9 to 16 of 22')).toBeVisible()
+
+	await page.getByRole('button', { name: 'Last page' }).click()
+	await expect(page.getByText('17 to 22 of 22')).toBeVisible()
+
+	await page.getByRole('button', { name: 'First page' }).click()
+	await expect(page.getByText('1 to 8 of 22')).toBeVisible()
+
+	await waitForUIInspection(page)
+})

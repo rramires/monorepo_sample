@@ -23,6 +23,7 @@ export function normalizeGym(gym: Gym): Gym {
 
 interface SearchGymsResponse {
 	gyms: Gym[]
+	total: number
 }
 
 export interface SearchGymsParams {
@@ -32,11 +33,17 @@ export interface SearchGymsParams {
 	includeInactive?: boolean
 }
 
+export interface SearchGymsResult {
+	gyms: Gym[]
+	// Total matches across all pages — for the "X–Y of Z" pager.
+	total: number
+}
+
 export async function searchGyms({
 	query,
 	page = 1,
 	includeInactive,
-}: SearchGymsParams) {
+}: SearchGymsParams): Promise<SearchGymsResult> {
 	const response = await api.get<SearchGymsResponse>('/gyms/search', {
 		params: {
 			query,
@@ -45,5 +52,8 @@ export async function searchGyms({
 		},
 	})
 
-	return response.data.gyms.map(normalizeGym)
+	return {
+		gyms: response.data.gyms.map(normalizeGym),
+		total: response.data.total,
+	}
 }
