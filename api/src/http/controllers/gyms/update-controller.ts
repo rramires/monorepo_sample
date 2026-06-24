@@ -14,9 +14,10 @@ export async function updateController(
 	})
 	const { gymId } = paramsSchema.parse(request.params)
 
-	// Whitelist: only the three editable fields, all optional. `.strict()`
-	// rejects unknown keys (mass-assignment defense); `.refine` requires at
-	// least one field so an empty body is a 400, not a no-op 200.
+	// Whitelist: only the editable fields, all optional. `.strict()` rejects
+	// unknown keys (mass-assignment defense); `.refine` requires at least one
+	// field so an empty body is a 400, not a no-op 200. `is_active` toggles the
+	// soft-delete (deactivate / reactivate).
 	const bodySchema = z
 		.object({
 			title: z.string().min(env.MIN_TEXT_LENGTH).max(100).optional(),
@@ -26,16 +27,20 @@ export async function updateController(
 				.regex(/^\+?[\d\s().-]{7,20}$/, 'invalid phone')
 				.nullable()
 				.optional(),
+			is_active: z.boolean().optional(),
 		})
 		.strict()
 		.refine(
 			(data) =>
 				data.title !== undefined ||
 				data.description !== undefined ||
-				data.phone !== undefined,
+				data.phone !== undefined ||
+				data.is_active !== undefined,
 			{ message: 'Provide at least one field to update.' },
 		)
-	const { title, description, phone } = bodySchema.parse(request.body)
+	const { title, description, phone, is_active } = bodySchema.parse(
+		request.body,
+	)
 
 	const updateGymUseCase = makeUpdateGymUseCase()
 	try {
@@ -44,6 +49,7 @@ export async function updateController(
 			title,
 			description,
 			phone,
+			is_active,
 		})
 
 		return reply.status(200).send({

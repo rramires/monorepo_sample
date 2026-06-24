@@ -40,12 +40,14 @@ export class PrismaGymsRepository implements IGymsRepository {
 		return gym
 	}
 
-	async searchMany(query: string, page: number) {
+	async searchMany(query: string, page: number, includeInactive = false) {
 		const gyms = await prisma.gym.findMany({
 			where: {
 				title: {
 					contains: query,
 				},
+				// Members see active gyms only; managers may opt into inactive.
+				...(includeInactive ? {} : { is_active: true }),
 			},
 			take: PAGE_SIZE,
 			skip: (page - 1) * PAGE_SIZE,
@@ -54,16 +56,17 @@ export class PrismaGymsRepository implements IGymsRepository {
 	}
 
 	async findManyNearby({ latitude, longitude }: IFindManyNearbyParams) {
+		// Always active-only — nearby is the member browse path.
 		const gyms = await prisma.$queryRaw<Gym[]>(
 			Prisma.sql`
-                        SELECT * from gyms 
-                        WHERE ( 6371 * acos( cos( radians(${latitude}) ) * 
-                                cos( radians( latitude ) ) * cos( radians( longitude ) - 
-                                radians(${longitude}) ) + sin( radians(${latitude}) ) * 
+                        SELECT * from gyms
+                        WHERE is_active = true AND ( 6371 * acos( cos( radians(${latitude}) ) *
+                                cos( radians( latitude ) ) * cos( radians( longitude ) -
+                                radians(${longitude}) ) + sin( radians(${latitude}) ) *
                                 sin( radians( latitude ) ) ) ) <= ${DISTANCE_IN_KILOMETERS}
-                        ORDER BY ( 6371 * acos( cos( radians(${latitude}) ) * 
-                                cos( radians( latitude ) ) * cos( radians( longitude ) - 
-                                radians(${longitude}) ) + sin( radians(${latitude}) ) * 
+                        ORDER BY ( 6371 * acos( cos( radians(${latitude}) ) *
+                                cos( radians( latitude ) ) * cos( radians( longitude ) -
+                                radians(${longitude}) ) + sin( radians(${latitude}) ) *
                                 sin( radians( latitude ) ) ) ) ASC`,
 		)
 		return gyms

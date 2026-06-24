@@ -74,4 +74,36 @@ describe('Search Gyms Use Case', () => {
 			expect.objectContaining({ title: 'TypeScript Gym 22' }),
 		])
 	})
+
+	it('hides inactive gyms by default and includes them when asked', async () => {
+		await gymsRepository.create({
+			title: 'Active Gym',
+			description: null,
+			phone: null,
+			latitude: coordinates.lat,
+			longitude: coordinates.lon,
+		})
+		await gymsRepository.create({
+			title: 'Closed Gym',
+			description: null,
+			phone: null,
+			latitude: coordinates.lat,
+			longitude: coordinates.lon,
+			is_active: false,
+		})
+
+		// default: active only
+		const active = await sut.execute({ query: 'Gym', page: 1 })
+		expect(active.gyms).toEqual([
+			expect.objectContaining({ title: 'Active Gym' }),
+		])
+
+		// manager opt-in: include inactive
+		const all = await sut.execute({
+			query: 'Gym',
+			page: 1,
+			includeInactive: true,
+		})
+		expect(all.gyms).toHaveLength(2)
+	})
 })

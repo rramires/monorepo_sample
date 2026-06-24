@@ -56,18 +56,26 @@ export class InMemoryGymsRepository implements IGymsRepository {
 		if (data.phone !== undefined) {
 			gym.phone = data.phone
 		}
+		if (data.is_active !== undefined) {
+			gym.is_active = data.is_active
+		}
 		return gym
 	}
 
-	async searchMany(query: string, page: number) {
-		// find by title
+	async searchMany(query: string, page: number, includeInactive = false) {
+		// find by title; members see active-only, managers may include inactive
 		return this.items
 			.filter((item) => item.title.includes(query))
+			.filter((item) => includeInactive || item.is_active)
 			.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 	}
 
 	async findManyNearby(params: IFindManyNearbyParams) {
+		// Always active-only — nearby is the member browse path.
 		return this.items.filter((item) => {
+			if (!item.is_active) {
+				return false
+			}
 			const distance = getDistanceBetweenCoordinates(
 				{
 					latitude: params.latitude,

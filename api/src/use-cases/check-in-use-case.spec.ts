@@ -5,6 +5,7 @@ import { InMemoryGymsRepository } from '@/repositories/in-memory/in-memory-gyms-
 import getTestCoordinates from '@/utils/tests/get-test-coordinates'
 
 import { CheckInUseCase } from './check-in-use-case'
+import { InactiveGymError } from './errors/inactive-gym-error'
 import { MaxCheckInsReachedError } from './errors/max-check-ins-reached-error'
 import { MaxDistanceError } from './errors/max-distance-error'
 import { ResourceNotFoundError } from './errors/resource-not-found-error'
@@ -119,5 +120,26 @@ describe('Check-in Use Case', () => {
 				userLongitude: coordinates.lon,
 			}),
 		).rejects.toBeInstanceOf(ResourceNotFoundError)
+	})
+
+	it('should not be able to check in on an inactive gym', async () => {
+		await gymsRepository.create({
+			id: 'gym-inactive',
+			title: 'Closed Gym',
+			description: null,
+			phone: null,
+			latitude: coordinates.lat,
+			longitude: coordinates.lon,
+			is_active: false,
+		})
+
+		await expect(
+			sut.execute({
+				userId: 'user-01',
+				gymId: 'gym-inactive',
+				userLatitude: coordinates.lat,
+				userLongitude: coordinates.lon,
+			}),
+		).rejects.toBeInstanceOf(InactiveGymError)
 	})
 })

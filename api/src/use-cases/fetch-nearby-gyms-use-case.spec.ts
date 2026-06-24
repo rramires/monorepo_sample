@@ -64,4 +64,29 @@ describe('Fetch Gyms Nearby Use Case', () => {
 			expect.objectContaining({ title: 'JavaScript Gym' }),
 		])
 	})
+
+	it('excludes inactive gyms (member browse is active-only)', async () => {
+		await gymsRepository.create({
+			title: 'Active Gym',
+			description: null,
+			phone: null,
+			latitude: coordinates.lat,
+			longitude: coordinates.lon,
+		})
+		await gymsRepository.create({
+			title: 'Closed Gym',
+			description: null,
+			phone: null,
+			latitude: coordinates.lat,
+			longitude: coordinates.lon,
+			is_active: false,
+		})
+
+		const { gyms } = await sut.execute({
+			userLatitude: coordinates.lat,
+			userLongitude: coordinates.lon,
+		})
+
+		expect(gyms).toEqual([expect.objectContaining({ title: 'Active Gym' })])
+	})
 })
