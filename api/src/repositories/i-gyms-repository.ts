@@ -19,11 +19,14 @@ export interface IGymsRepository {
 	findById(id: string): Promise<Gym | null>
 	update(id: string, data: IGymUpdateInput): Promise<Gym>
 	// `includeInactive` is honored only for gym managers (gated at the controller);
-	// members always get active-only. `findManyNearby` is always active-only.
+	// members always get active-only (the default).
 	searchMany(
 		query: string,
 		page: number,
 		includeInactive?: boolean,
 	): Promise<Gym[]>
-	findManyNearby(params: IFindManyNearbyParams): Promise<Gym[]>
+	findManyNearby(
+		params: IFindManyNearbyParams,
+		includeInactive?: boolean,
+	): Promise<Gym[]>
 }

@@ -55,12 +55,18 @@ export class PrismaGymsRepository implements IGymsRepository {
 		return gyms
 	}
 
-	async findManyNearby({ latitude, longitude }: IFindManyNearbyParams) {
-		// Always active-only — nearby is the member browse path.
+	async findManyNearby(
+		{ latitude, longitude }: IFindManyNearbyParams,
+		includeInactive = false,
+	) {
+		// Active-only by default (member browse); managers may include inactive.
+		const activeFilter = includeInactive
+			? Prisma.empty
+			: Prisma.sql`is_active = true AND `
 		const gyms = await prisma.$queryRaw<Gym[]>(
 			Prisma.sql`
                         SELECT * from gyms
-                        WHERE is_active = true AND ( 6371 * acos( cos( radians(${latitude}) ) *
+                        WHERE ${activeFilter}( 6371 * acos( cos( radians(${latitude}) ) *
                                 cos( radians( latitude ) ) * cos( radians( longitude ) -
                                 radians(${longitude}) ) + sin( radians(${latitude}) ) *
                                 sin( radians( latitude ) ) ) ) <= ${DISTANCE_IN_KILOMETERS}

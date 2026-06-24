@@ -90,5 +90,19 @@ describe('Nearby Gyms (e2e)', () => {
 			expect.objectContaining({ title: 'TypeScrypt Gym' }),
 			expect.objectContaining({ title: 'JavaScript Gym' }),
 		])
+
+		// A manager (admin here) may include inactive gyms in nearby.
+		const withInactive = await request(app.server)
+			.get('/gyms/nearby')
+			.query({
+				latitude: coordinates.lat,
+				longitude: coordinates.lon,
+				includeInactive: 'true',
+			})
+			.set('Authorization', `Bearer ${token}`)
+			.send()
+
+		expect(withInactive.statusCode).toEqual(200)
+		expect(withInactive.body.gyms).toHaveLength(3)
 	})
 })

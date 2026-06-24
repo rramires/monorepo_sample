@@ -70,10 +70,13 @@ export class InMemoryGymsRepository implements IGymsRepository {
 			.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 	}
 
-	async findManyNearby(params: IFindManyNearbyParams) {
-		// Always active-only — nearby is the member browse path.
+	async findManyNearby(
+		params: IFindManyNearbyParams,
+		includeInactive = false,
+	) {
+		// Active-only by default (member browse); managers may include inactive.
 		return this.items.filter((item) => {
-			if (!item.is_active) {
+			if (!includeInactive && !item.is_active) {
 				return false
 			}
 			const distance = getDistanceBetweenCoordinates(

@@ -75,6 +75,27 @@ describe('Search Gyms Use Case', () => {
 		])
 	})
 
+	it('lists all gyms when the query is empty (the manager browse-all view)', async () => {
+		await gymsRepository.create({
+			title: 'Alpha Gym',
+			description: null,
+			phone: null,
+			latitude: coordinates.lat,
+			longitude: coordinates.lon,
+		})
+		await gymsRepository.create({
+			title: 'Beta Gym',
+			description: null,
+			phone: null,
+			latitude: coordinates.lat,
+			longitude: coordinates.lon,
+		})
+
+		const { gyms } = await sut.execute({ query: '', page: 1 })
+
+		expect(gyms).toHaveLength(2)
+	})
+
 	it('hides inactive gyms by default and includes them when asked', async () => {
 		await gymsRepository.create({
 			title: 'Active Gym',
