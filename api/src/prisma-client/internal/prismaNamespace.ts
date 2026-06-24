@@ -1339,7 +1339,8 @@ export const GymScalarFieldEnum = {
   description: 'description',
   phone: 'phone',
   latitude: 'latitude',
-  longitude: 'longitude'
+  longitude: 'longitude',
+  is_active: 'is_active'
 } as const
 
 export type GymScalarFieldEnum = (typeof GymScalarFieldEnum)[keyof typeof GymScalarFieldEnum]

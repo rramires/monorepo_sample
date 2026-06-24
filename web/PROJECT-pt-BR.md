@@ -390,8 +390,14 @@ token↔user; os handlers `*-mock.ts` servem `/modules`, `/screens`, `/profiles`
   OFF**, o `useConfirmDeactivate` (`hooks/use-confirm-deactivate.ts`) abre um
   `ConfirmDialog` controlado **antes** de gravar; reativar ou qualquer outra
   edição salva direto. O PM chama `guardSave({ wasActive, willBeActive, save })`
-  no `onSubmit` e espalha `dialogProps` no dialog (`user-edit` é a referência).
-  Aplique a toda entidade desativável pra manter a UX uniforme.
+  no `onSubmit` e espalha `dialogProps` no dialog. Dois consumidores: `user-edit`
+  (admin) e o **dialog de edição de academia** (`edit-gym-dialog`, in-place na
+  própria página Gyms). Aplique a toda entidade desativável pra manter a UX
+  uniforme. Para academias, uma inativa também mostra um badge **Inactive**,
+  desabilita o Check-in e some para o membro. Gestores veem a **lista completa**
+  (sem geo, paginada via search com query vazia) com dois toggles: **Show
+  deactivated** revela as inativas na lista (`includeInactive`, validado no
+  servidor) e **Nearby only** entra na visão por geolocalização do membro.
 
 ### Formulários semeados de forma assíncrona — gotchas conhecidos (user-edit do admin)
 

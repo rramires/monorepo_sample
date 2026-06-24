@@ -4,6 +4,8 @@ import { IGymsRepository } from '@/repositories/i-gyms-repository'
 interface FetchNearbyGymsUseCaseRequest {
 	userLatitude: number
 	userLongitude: number
+	// Managers only (gated at the controller); members default to active-only.
+	includeInactive?: boolean
 }
 
 interface FetchNearbyGymsCaseResponse {
@@ -16,12 +18,16 @@ export class FetchNearbyGymsUseCase {
 	async execute({
 		userLatitude,
 		userLongitude,
+		includeInactive = false,
 	}: FetchNearbyGymsUseCaseRequest): Promise<FetchNearbyGymsCaseResponse> {
 		// find
-		const gyms = await this.gymsRepository.findManyNearby({
-			latitude: userLatitude,
-			longitude: userLongitude,
-		})
+		const gyms = await this.gymsRepository.findManyNearby(
+			{
+				latitude: userLatitude,
+				longitude: userLongitude,
+			},
+			includeInactive,
+		)
 		return {
 			gyms,
 		}

@@ -129,4 +129,39 @@ describe('Check-in (e2e)', () => {
 		expect(second.statusCode).toEqual(409)
 		expect(second.body.message).toEqual('Max check-ins reached.')
 	})
+
+	it('should return 403 when the gym is inactive', async () => {
+		const token = await createAdmin(
+			'inactive-gym@example.com',
+			'inactivegym',
+		)
+
+		const { coordinates } = getTestCoordinates()
+
+		const responseGym = await request(app.server)
+			.post('/gyms')
+			.set('Authorization', `Bearer ${token}`)
+			.send({
+				title: 'Closed Gym',
+				description: null,
+				phone: null,
+				latitude: coordinates.lat,
+				longitude: coordinates.lon,
+			})
+		const { id: gymId } = responseGym.body.gym
+
+		// deactivate it
+		await request(app.server)
+			.patch(`/gyms/${gymId}`)
+			.set('Authorization', `Bearer ${token}`)
+			.send({ is_active: false })
+
+		const response = await request(app.server)
+			.post(`/gyms/${gymId}/check-ins`)
+			.set('Authorization', `Bearer ${token}`)
+			.send({ latitude: coordinates.lat, longitude: coordinates.lon })
+
+		expect(response.statusCode).toEqual(403)
+		expect(response.body.message).toEqual('Gym is inactive.')
+	})
 })

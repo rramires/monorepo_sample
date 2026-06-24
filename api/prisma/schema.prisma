@@ -145,6 +145,9 @@ model Gym {
   phone       String? @db.VarChar(20)
   latitude    Decimal
   longitude   Decimal
+  // Soft-delete: an inactive gym is hidden from members and refuses check-ins;
+  // CheckIn.gym_id is a required FK with no cascade, so history is never lost.
+  is_active   Boolean @default(true)
 
   checkIns CheckIn[]
 

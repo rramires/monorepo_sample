@@ -73,6 +73,11 @@ Vitest · Playwright
 - **Academias & check-ins** — academias próximas por geolocalização + busca por
   nome; check-in a partir do card; histórico de check-ins com **Validate** para
   ADMIN; a home é um **dashboard** com gráfico de atividade em Recharts.
+  Soft-delete de academia: o dialog de edição tem um toggle **Active** (confirm
+  ao desativar); academias inativas somem para o membro e recusam check-in.
+  Gestores veem a **lista completa** (sem geo, paginada) com um toggle **Show
+  deactivated** que revela as inativas na lista, mais um **Nearby only** pra
+  simular a visão por geolocalização do membro.
 - **Presentation Model** — toda tela com lógica é um par: `x.tsx` (view pura) +
   `use-x-pm.ts` (estado, dados, formatação). As views não carregam lógica. Cada
   par vive em **sua própria pasta de mesmo nome**, pra o PM (prefixo `use-`)

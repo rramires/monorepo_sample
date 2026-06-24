@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 
+import { InactiveGymError } from '@/use-cases/errors/inactive-gym-error'
 import { MaxCheckInsReachedError } from '@/use-cases/errors/max-check-ins-reached-error'
 import { MaxDistanceError } from '@/use-cases/errors/max-distance-error'
 import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
@@ -43,6 +44,10 @@ export async function checkInController(
 	} catch (err) {
 		if (err instanceof ResourceNotFoundError) {
 			return reply.status(404).send({ message: err.message })
+		}
+		// A deactivated gym is known but disabled → 403 (mirrors AccountInactive).
+		if (err instanceof InactiveGymError) {
+			return reply.status(403).send({ message: err.message })
 		}
 		// Expected business outcomes (not server faults): out of the gym's
 		// radius → 400; a second check-in on the same day → 409.

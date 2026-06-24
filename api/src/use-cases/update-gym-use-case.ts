@@ -8,6 +8,7 @@ interface UpdateGymUseCaseRequest {
 	title?: string
 	description?: string | null
 	phone?: string | null
+	is_active?: boolean
 }
 
 interface UpdateGymUseCaseResponse {
@@ -22,6 +23,7 @@ export class UpdateGymUseCase {
 		title,
 		description,
 		phone,
+		is_active,
 	}: UpdateGymUseCaseRequest): Promise<UpdateGymUseCaseResponse> {
 		// 404 before any write so a missing gym never reaches the repo.
 		const exists = await this.gymsRepository.findById(gymId)
@@ -33,6 +35,7 @@ export class UpdateGymUseCase {
 			title,
 			description,
 			phone,
+			is_active,
 		})
 
 		return {

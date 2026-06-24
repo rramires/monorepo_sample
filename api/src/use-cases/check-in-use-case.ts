@@ -3,6 +3,7 @@ import { ICheckInsRepository } from '@/repositories/i-check-ins-repository'
 import { IGymsRepository } from '@/repositories/i-gyms-repository'
 import { getDistanceBetweenCoordinates } from '@/utils/get-distance-between-coordinates'
 
+import { InactiveGymError } from './errors/inactive-gym-error'
 import { MaxCheckInsReachedError } from './errors/max-check-ins-reached-error'
 import { MaxDistanceError } from './errors/max-distance-error'
 import { ResourceNotFoundError } from './errors/resource-not-found-error'
@@ -35,6 +36,11 @@ export class CheckInUseCase {
 		const gym = await this.gymsRepository.findById(gymId)
 		if (!gym) {
 			throw new ResourceNotFoundError()
+		}
+
+		// A deactivated gym refuses new check-ins (existing history is kept).
+		if (!gym.is_active) {
+			throw new InactiveGymError()
 		}
 
 		const distance = getDistanceBetweenCoordinates(

@@ -78,4 +78,26 @@ describe('Update Gym Use Case', () => {
 			sut.execute({ gymId: 'non-existent', title: 'X' }),
 		).rejects.toBeInstanceOf(ResourceNotFoundError)
 	})
+
+	it('can deactivate and reactivate a gym', async () => {
+		const created = await gymsRepository.create({
+			title: 'Gym',
+			description: null,
+			phone: null,
+			latitude: 0,
+			longitude: 0,
+		})
+
+		const { gym } = await sut.execute({
+			gymId: created.id,
+			is_active: false,
+		})
+		expect(gym.is_active).toBe(false)
+
+		const { gym: reactivated } = await sut.execute({
+			gymId: created.id,
+			is_active: true,
+		})
+		expect(reactivated.is_active).toBe(true)
+	})
 })

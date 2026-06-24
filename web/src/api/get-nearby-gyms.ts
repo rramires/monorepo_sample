@@ -7,9 +7,16 @@ interface NearbyGymsResponse {
 	gyms: Gym[]
 }
 
-export async function getNearbyGyms({ latitude, longitude }: Coordinates) {
+export async function getNearbyGyms(
+	{ latitude, longitude }: Coordinates,
+	includeInactive = false,
+) {
 	const response = await api.get<NearbyGymsResponse>('/gyms/nearby', {
-		params: { latitude, longitude },
+		params: {
+			latitude,
+			longitude,
+			...(includeInactive ? { includeInactive: true } : {}),
+		},
 	})
 
 	return response.data.gyms.map(normalizeGym)

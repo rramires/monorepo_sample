@@ -1,9 +1,19 @@
-import { LoaderCircle, Plus } from 'lucide-react'
+import {
+	ChevronLeft,
+	ChevronRight,
+	ChevronsLeft,
+	ChevronsRight,
+	LoaderCircle,
+	Plus,
+} from 'lucide-react'
 import { Link } from 'react-router'
 
 import { PageTitle } from '@/components/title/page-title'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
 
 import { GymCard } from './gym-card'
 import { useGymsPM } from './use-gyms-pm'
@@ -33,14 +43,38 @@ export function Gyms() {
 					)}
 				</div>
 
-				<Input
-					placeholder='Search gyms by name…'
-					value={pm.query}
-					onChange={(event) =>
-						pm.handleQueryChange(event.target.value)
-					}
-					className='max-w-md'
-				/>
+				<div className='flex flex-wrap items-center gap-4'>
+					<Input
+						placeholder='Search gyms by name…'
+						value={pm.query}
+						onChange={(event) =>
+							pm.handleQueryChange(event.target.value)
+						}
+						className='max-w-md'
+					/>
+					{pm.canManage && (
+						<>
+							<Label className='text-muted-foreground flex items-center gap-2 text-sm font-normal'>
+								<Checkbox
+									checked={pm.nearbyMode}
+									onCheckedChange={(value) =>
+										pm.setNearbyMode(value === true)
+									}
+								/>
+								Nearby only
+							</Label>
+							<Label className='text-muted-foreground flex items-center gap-2 text-sm font-normal'>
+								<Checkbox
+									checked={pm.showDeactivated}
+									onCheckedChange={(value) =>
+										pm.setShowDeactivated(value === true)
+									}
+								/>
+								Show deactivated
+							</Label>
+						</>
+					)}
+				</div>
 
 				{pm.status === 'geo-denied' && (
 					<p className='text-muted-foreground text-sm'>
@@ -66,40 +100,66 @@ export function Gyms() {
 					<p className='text-muted-foreground text-sm'>
 						{pm.searching
 							? 'No gyms match your search.'
-							: 'No gyms found near you.'}
+							: pm.canManage && !pm.nearbyMode
+								? 'No gyms yet.'
+								: 'No gyms found near you.'}
 					</p>
 				)}
 
 				{pm.status === 'list' && (
-					<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+					<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
 						{pm.gyms.map((gym) => (
 							<GymCard key={gym.id} gym={gym} />
 						))}
 					</div>
 				)}
 
-				{pm.searching && (pm.hasPrevPage || pm.hasNextPage) && (
-					<div className='flex items-center gap-2'>
-						<Button
-							variant='outline'
-							size='sm'
-							onClick={pm.prevPage}
-							disabled={!pm.hasPrevPage}
-						>
-							Previous
-						</Button>
-						<span className='text-muted-foreground text-sm'>
-							Page {pm.page}
-						</span>
-						<Button
-							variant='outline'
-							size='sm'
-							onClick={pm.nextPage}
-							disabled={!pm.hasNextPage}
-						>
-							Next
-						</Button>
-					</div>
+				{pm.pager && pm.status === 'list' && (
+					<>
+						<Separator />
+						<div className='flex items-center justify-end gap-2'>
+							<span className='text-muted-foreground mr-2 text-sm'>
+								{pm.pager.from} to {pm.pager.to} of{' '}
+								{pm.pager.total}
+							</span>
+							<Button
+								variant='outline'
+								size='icon'
+								onClick={pm.firstPage}
+								disabled={!pm.pager.canPrev}
+								aria-label='First page'
+							>
+								<ChevronsLeft />
+							</Button>
+							<Button
+								variant='outline'
+								size='icon'
+								onClick={pm.prevPage}
+								disabled={!pm.pager.canPrev}
+								aria-label='Previous page'
+							>
+								<ChevronLeft />
+							</Button>
+							<Button
+								variant='outline'
+								size='icon'
+								onClick={pm.nextPage}
+								disabled={!pm.pager.canNext}
+								aria-label='Next page'
+							>
+								<ChevronRight />
+							</Button>
+							<Button
+								variant='outline'
+								size='icon'
+								onClick={pm.lastPage}
+								disabled={!pm.pager.canNext}
+								aria-label='Last page'
+							>
+								<ChevronsRight />
+							</Button>
+						</div>
+					</>
 				)}
 			</div>
 		</>

@@ -49,9 +49,9 @@ describe('Search Gyms Use Case', () => {
 		])
 	})
 
-	it('should be able to paginated search for gyms', async () => {
-		// mock 22 gyms
-		for (let i = 1; i <= 22; i++) {
+	it('paginates (PAGE_SIZE 8) and reports the total', async () => {
+		// mock 20 gyms
+		for (let i = 1; i <= 20; i++) {
 			await gymsRepository.create({
 				title: `TypeScript Gym ${i}`,
 				description: 'Best TS Gyn in the city',
@@ -61,17 +61,66 @@ describe('Search Gyms Use Case', () => {
 			})
 		}
 
-		// fetch
-		const { gyms } = await sut.execute({
-			query: 'TypeScript',
-			page: 2,
+		// page 1: first 8, page 3: the last 4 — total is all 20 regardless of page
+		const page1 = await sut.execute({ query: 'TypeScript', page: 1 })
+		expect(page1.gyms).toHaveLength(8)
+		expect(page1.total).toBe(20)
+
+		const page3 = await sut.execute({ query: 'TypeScript', page: 3 })
+		expect(page3.gyms).toHaveLength(4)
+		expect(page3.total).toBe(20)
+	})
+
+	it('lists all gyms when the query is empty (the manager browse-all view)', async () => {
+		await gymsRepository.create({
+			title: 'Alpha Gym',
+			description: null,
+			phone: null,
+			latitude: coordinates.lat,
+			longitude: coordinates.lon,
+		})
+		await gymsRepository.create({
+			title: 'Beta Gym',
+			description: null,
+			phone: null,
+			latitude: coordinates.lat,
+			longitude: coordinates.lon,
 		})
 
-		// check
+		const { gyms } = await sut.execute({ query: '', page: 1 })
+
 		expect(gyms).toHaveLength(2)
-		expect(gyms).toEqual([
-			expect.objectContaining({ title: 'TypeScript Gym 21' }),
-			expect.objectContaining({ title: 'TypeScript Gym 22' }),
+	})
+
+	it('hides inactive gyms by default and includes them when asked', async () => {
+		await gymsRepository.create({
+			title: 'Active Gym',
+			description: null,
+			phone: null,
+			latitude: coordinates.lat,
+			longitude: coordinates.lon,
+		})
+		await gymsRepository.create({
+			title: 'Closed Gym',
+			description: null,
+			phone: null,
+			latitude: coordinates.lat,
+			longitude: coordinates.lon,
+			is_active: false,
+		})
+
+		// default: active only
+		const active = await sut.execute({ query: 'Gym', page: 1 })
+		expect(active.gyms).toEqual([
+			expect.objectContaining({ title: 'Active Gym' }),
 		])
+
+		// manager opt-in: include inactive
+		const all = await sut.execute({
+			query: 'Gym',
+			page: 1,
+			includeInactive: true,
+		})
+		expect(all.gyms).toHaveLength(2)
 	})
 })

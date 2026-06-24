@@ -10,7 +10,7 @@ import {
 	IGymUpdateInput,
 } from '../i-gyms-repository'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 8
 const DISTANCE_IN_KILOMETERS = 10
 
 export class InMemoryGymsRepository implements IGymsRepository {
@@ -26,6 +26,7 @@ export class InMemoryGymsRepository implements IGymsRepository {
 			phone: data.phone ?? null,
 			latitude: new Prisma.Decimal(data.latitude.toString()),
 			longitude: new Prisma.Decimal(data.longitude.toString()),
+			is_active: data.is_active ?? true,
 			created_at: new Date(),
 		}
 		this.items.push(gym)
@@ -55,18 +56,39 @@ export class InMemoryGymsRepository implements IGymsRepository {
 		if (data.phone !== undefined) {
 			gym.phone = data.phone
 		}
+		if (data.is_active !== undefined) {
+			gym.is_active = data.is_active
+		}
 		return gym
 	}
 
-	async searchMany(query: string, page: number) {
-		// find by title
+	private searchMatches(query: string, includeInactive: boolean) {
+		// find by title; members see active-only, managers may include inactive
 		return this.items
 			.filter((item) => item.title.includes(query))
-			.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+			.filter((item) => includeInactive || item.is_active)
 	}
 
-	async findManyNearby(params: IFindManyNearbyParams) {
+	async searchMany(query: string, page: number, includeInactive = false) {
+		return this.searchMatches(query, includeInactive).slice(
+			(page - 1) * PAGE_SIZE,
+			page * PAGE_SIZE,
+		)
+	}
+
+	async countMany(query: string, includeInactive = false) {
+		return this.searchMatches(query, includeInactive).length
+	}
+
+	async findManyNearby(
+		params: IFindManyNearbyParams,
+		includeInactive = false,
+	) {
+		// Active-only by default (member browse); managers may include inactive.
 		return this.items.filter((item) => {
+			if (!includeInactive && !item.is_active) {
+				return false
+			}
 			const distance = getDistanceBetweenCoordinates(
 				{
 					latitude: params.latitude,

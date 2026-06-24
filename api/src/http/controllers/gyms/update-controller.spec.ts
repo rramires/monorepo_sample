@@ -93,4 +93,20 @@ describe('Update Gym (e2e)', () => {
 
 		expect(response.statusCode).toEqual(400)
 	})
+
+	it('should let an admin deactivate and reactivate a gym', async () => {
+		const off = await request(app.server)
+			.patch(`/gyms/${gymId}`)
+			.set('Authorization', `Bearer ${adminToken}`)
+			.send({ is_active: false })
+		expect(off.statusCode).toEqual(200)
+		expect(off.body.gym.is_active).toBe(false)
+
+		const on = await request(app.server)
+			.patch(`/gyms/${gymId}`)
+			.set('Authorization', `Bearer ${adminToken}`)
+			.send({ is_active: true })
+		expect(on.statusCode).toEqual(200)
+		expect(on.body.gym.is_active).toBe(true)
+	})
 })

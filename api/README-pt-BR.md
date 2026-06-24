@@ -164,13 +164,13 @@ imediatamente** no boot se alguma variável for inválida (validação Zod em
 | `POST`   | `/auth/me/email`                 | Bearer         | –                                  | Solicitar troca do próprio e-mail (confirma no novo)        |
 | `POST`   | `/auth/me/email/confirm`         | Bearer         | –                                  | Confirmar troca do próprio e-mail via OTP                   |
 | `GET`    | `/me/permissions`                | Bearer         | –                                  | Permissões efetivas: `role`, `screens`, `menu`, tela padrão |
-| `GET`    | `/gyms/search`                   | Bearer         | –                                  | Buscar academias por nome                                   |
-| `GET`    | `/gyms/nearby`                   | Bearer         | –                                  | Academias próximas a uma coordenada                         |
+| `GET`    | `/gyms/search`                   | Bearer         | –                                  | Buscar academias por nome (só ativas; gestores: `includeInactive`) |
+| `GET`    | `/gyms/nearby`                   | Bearer         | –                                  | Academias próximas a uma coordenada (só ativas; gestores: `includeInactive`) |
 | `POST`   | `/gyms`                          | Bearer         | `gym.gyms` · create                | Cadastrar academia                                          |
-| `PATCH`  | `/gyms/:gymId`                   | Bearer         | `gym.gyms` · edit                  | Editar academia (título/descrição/telefone)                 |
+| `PATCH`  | `/gyms/:gymId`                   | Bearer         | `gym.gyms` · edit                  | Editar academia (título/descrição/telefone, `is_active`)    |
 | `GET`    | `/check-ins/history`             | Bearer         | –                                  | Histórico de check-ins paginado                             |
 | `GET`    | `/check-ins/metrics`             | Bearer         | –                                  | Total de check-ins                                          |
-| `POST`   | `/gyms/:gymId/check-ins`         | Bearer         | –                                  | Fazer check-in (`400` longe demais · `409` já fez hoje)     |
+| `POST`   | `/gyms/:gymId/check-ins`         | Bearer         | –                                  | Fazer check-in (`400` longe demais · `403` academia inativa · `409` já fez hoje) |
 | `PATCH`  | `/check-ins/:checkInId/validate` | Bearer         | `gym.validations` · create         | Validar check-in (`409` fora da janela de 20 min)           |
 | `POST`   | `/users/send-verification`       | Bearer         | –                                  | Enviar e-mail de verificação (link + OTP)                   |
 | `GET`    | `/users/verify-email`            | –              | –                                  | Verificar e-mail via link token (`?token=`)                 |
