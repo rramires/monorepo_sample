@@ -157,28 +157,31 @@ export function ProfileDetail() {
 							disabled={!pm.canEdit}
 						/>
 					</div>
-				</div>
 
-				<div className='flex items-center justify-between rounded-md border p-4'>
-					<div>
-						<Label>Default profile</Label>
-						<p className='text-muted-foreground text-xs'>
-							Auto-attached to users on registration.
+					<div className='flex flex-col justify-end gap-2'>
+						<h2 className='text-lg font-medium'>Screen grants</h2>
+						<p className='text-muted-foreground text-sm'>
+							Move screens to "Granted" and pick the allowed
+							actions.
 						</p>
 					</div>
-					<Switch
-						checked={pm.isDefault}
-						onCheckedChange={pm.setIsDefault}
-						disabled={!pm.canEdit}
-					/>
+
+					<div className='flex items-center justify-between rounded-md border p-4'>
+						<div>
+							<Label>Default profile</Label>
+							<p className='text-muted-foreground text-xs'>
+								Auto-attached to users on registration.
+							</p>
+						</div>
+						<Switch
+							checked={pm.isDefault}
+							onCheckedChange={pm.setIsDefault}
+							disabled={!pm.canEdit}
+						/>
+					</div>
 				</div>
 
 				<div className='flex flex-col gap-2'>
-					<h2 className='text-lg font-medium'>Screen grants</h2>
-					<p className='text-muted-foreground text-sm'>
-						Move screens to "Granted" and pick the allowed actions.
-					</p>
-
 					<div className='flex flex-col gap-1.5 sm:max-w-xs'>
 						<Label className='text-muted-foreground text-xs'>
 							Filter available by module
