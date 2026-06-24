@@ -51,7 +51,9 @@ Vitest · Playwright
 - **Controle de acesso híbrido (RBAC)** — um papel fixo (`ADMIN` ignora tudo,
   `USER` segue os grants) mais **Profiles** dinâmicos que agrupam grants por tela
   (view/create/edit/delete). **Modules** agrupam **Screens**; os profiles carregam
-  `is_default` (anexado no registro) e `is_system` (protegido). A **sidebar é
+  `is_default` (anexado no registro), e profiles, modules e screens carregam
+  `is_system` — o catálogo de access-control do seed é protegido contra
+  exclusão/renomeação de key (badge System + sem Delete nas tabelas admin). A **sidebar é
   dirigida por dados** — monta suas seções a partir do `menu` de
   `GET /me/permissions`, então cada usuário vê só as telas que pode ver. As telas
   de admin sob `/admin` gerenciam modules, screens, profiles (com um editor de

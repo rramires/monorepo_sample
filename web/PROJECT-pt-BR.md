@@ -312,8 +312,10 @@ Além do `role` grosso, a app tem um modelo de **RBAC híbrido**: um papel fixo
 (`ADMIN` ignora tudo, `USER` segue os grants) mais **Profiles** dinâmicos que
 agrupam **grants por tela** (`view`/`create`/`edit`/`delete`). **Modules**
 agrupam **Screens**; um profile carrega `is_default` (anexado ao usuário no
-registro) e `is_system` (protegido — a key não muda e ele não pode ser apagado).
-Um usuário pode ter vários profiles; seus grants **se mesclam** (OR).
+registro), e profiles, modules e screens carregam `is_system` (protegido — a key
+não muda e não pode ser apagado). O seed marca o módulo access-control + suas
+screens (e os três profiles) como de sistema. Um usuário pode ter vários
+profiles; seus grants **se mesclam** (OR).
 
 - **`usePermissions()` / `can()`** (`hooks/use-permissions.ts`) — carrega
   `GET /me/permissions` como **estado de servidor** (TanStack Query, com chave por
@@ -341,6 +343,8 @@ Um usuário pode ter vários profiles; seus grants **se mesclam** (OR).
   por sua screen key `access-control.*`:
     - **Modules** (`/admin/modules`) e **Screens** (`/admin/screens`) — CRUD do
       catálogo (dialogs de criar/editar; apagar uma screen cascateia seus grants).
+      Linhas de sistema mostram um badge **System** e escondem o Delete (o backend
+      também retorna `409`).
     - **Profiles** (`/admin/profiles`) — CRUD de profiles (com badges
       `is_default`/`is_system`); **ProfileDetail** (`/admin/profiles/:profileId`)
       edita um profile e seus grants via a **`TransferTable`** — o lado atribuído

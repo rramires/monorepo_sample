@@ -364,12 +364,12 @@ locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do monorepo e
 | PUT    | `/users/:userId/profiles`        |     ✅     | `access-control.users` · edit      | substituir as atribuições de perfil de um usuário          |
 | GET    | `/modules`                       |     ✅     | `access-control.modules` · view    | listar módulos                                             |
 | POST   | `/modules`                       |     ✅     | `access-control.modules` · create  | criar um módulo                                            |
-| PATCH  | `/modules/:id`                   |     ✅     | `access-control.modules` · edit    | editar um módulo                                           |
-| DELETE | `/modules/:id`                   |     ✅     | `access-control.modules` · delete  | excluir um módulo (`409` se ainda tiver telas)             |
+| PATCH  | `/modules/:id`                   |     ✅     | `access-control.modules` · edit    | editar um módulo (`409` ao renomear a key de um de sistema) |
+| DELETE | `/modules/:id`                   |     ✅     | `access-control.modules` · delete  | excluir um módulo (`409` se tiver telas ou for de sistema)  |
 | GET    | `/screens`                       |     ✅     | `access-control.screens` · view    | listar telas                                               |
 | POST   | `/screens`                       |     ✅     | `access-control.screens` · create  | criar uma tela                                             |
-| PATCH  | `/screens/:id`                   |     ✅     | `access-control.screens` · edit    | editar uma tela                                            |
-| DELETE | `/screens/:id`                   |     ✅     | `access-control.screens` · delete  | excluir uma tela                                           |
+| PATCH  | `/screens/:id`                   |     ✅     | `access-control.screens` · edit    | editar uma tela (`409` ao renomear a key de uma de sistema) |
+| DELETE | `/screens/:id`                   |     ✅     | `access-control.screens` · delete  | excluir uma tela (`409` em tela de sistema)                |
 | GET    | `/profiles`                      |     ✅     | `access-control.profiles` · view   | listar perfis                                              |
 | GET    | `/profiles/:id`                  |     ✅     | `access-control.profiles` · view   | buscar um perfil com seus grants                           |
 | POST   | `/profiles`                      |     ✅     | `access-control.profiles` · create | criar um perfil                                            |
@@ -542,15 +542,18 @@ reúne grants de ação por tela (`ProfileScreen`); um usuário recebe perfis
   (`is_active=false`) — um usuário demitido é cortado na hora, não quando o token
   expira. O login também é recusado: o `AuthenticateUseCase` lança
   `AccountInactiveError` → `403 { "message": "Account is inactive." }`.
-- **Perfis `is_default` / `is_system`:** o perfil `is_default` é anexado
-  automaticamente a uma conta nova no `POST /users`. Perfis `is_system` são do
-  seed e protegidos — editar a key ou excluir um é `409` (`SystemProfileError`);
-  os grants seguem editáveis.
+- **`is_default` / `is_system`:** o perfil `is_default` é anexado automaticamente
+  a uma conta nova no `POST /users`. `is_system` marca registros do seed como
+  protegidos — em um perfil, **módulo ou tela**, editar a key ou excluir é `409`;
+  os grants de um perfil seguem editáveis. O seed marca os três perfis e o módulo
+  access-control + suas 4 telas como de sistema; o módulo/telas gym seguem
+  deletáveis (conteúdo de demo).
 - **Mapeamento de erros do CRUD** (controllers, via `instanceof`):
   `ResourceNotFoundError` → `404`; excluir um módulo que ainda tem telas → `409`
-  (`ModuleHasScreensError`); editar/excluir um perfil de sistema → `409`
-  (`SystemProfileError`); no `PATCH /users/:userId`, rebaixar/desativar a si
-  mesmo → `400` (`CannotChangeOwnRoleError` / `CannotDeactivateSelfError`).
+  (`ModuleHasScreensError`); editar/excluir um perfil/módulo/tela de sistema →
+  `409` (`SystemProfileError` / `SystemModuleError` / `SystemScreenError`); no
+  `PATCH /users/:userId`, rebaixar/desativar a si mesmo → `400`
+  (`CannotChangeOwnRoleError` / `CannotDeactivateSelfError`).
   Creates retornam `201`; os `PUT` de grants/perfis retornam `200`.
 - **Seam:** o `IPermissionsRepository` tem implementação Prisma e in-memory,
   então a lógica de permissão é testada unitariamente sem banco.
@@ -636,11 +639,13 @@ Os tamanhos de coluna são fixados com Prisma `@db.VarChar(n)` para casar com o
 O modelo de grants em nível de tela por trás da §5.7 — global (sem tenant; um
 projeto-clone adiciona um `company_id` em `Profile`/`Module`):
 
-- `Module` (`id` uuid, **`key` único**, `name`, `description?`, `order`) 1—N
-  `Screen` (tabela `modules`). Agrupa telas para a sidebar.
+- `Module` (`id` uuid, **`key` único**, `name`, `description?`, `order`,
+  `is_system` bool) 1—N `Screen` (tabela `modules`). Agrupa telas para a sidebar.
+  `is_system` protege o módulo access-control do seed (sem excluir / renomear key).
 - `Screen` (`id` uuid, **`key` único**, `name`, `path?` (a rota que o menu linka;
-  `null` = não navegável), `description?`, `order`, `module_id` FK
-  `onDelete: Cascade`) 1—N `ProfileScreen` (tabela `screens`).
+  `null` = não navegável), `description?`, `order`, `is_system` bool, `module_id`
+  FK `onDelete: Cascade`) 1—N `ProfileScreen` (tabela `screens`). `is_system`
+  protege as telas access-control do seed.
 - `Profile` (`id` uuid, **`key` único**, `name`, `description?`, `is_system`
   bool, `is_default` bool, `created_at`) (tabela `profiles`). `is_system` protege
   perfis do seed (sem excluir / renomear key); `is_default` é anexado
