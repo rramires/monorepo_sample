@@ -13,21 +13,36 @@ import {
 
 // Small confirm-then-act dialog. The action runs on confirm; the dialog closes
 // when it resolves and stays open (so the error toast is visible) if it throws.
+//
+// Two modes:
+// - **Uncontrolled** (pass a `trigger`): clicking it opens the dialog.
+// - **Controlled** (pass `open` + `onOpenChange`, no trigger needed): the caller
+//   opens it programmatically — used by the confirm-on-deactivate pattern.
 export function ConfirmDialog({
 	trigger,
 	title,
 	description,
 	confirmLabel = 'Confirm',
 	onConfirm,
+	open,
+	onOpenChange,
 }: {
-	trigger: ReactNode
+	trigger?: ReactNode
 	title: string
 	description: ReactNode
 	confirmLabel?: string
 	onConfirm: () => Promise<void> | void
+	open?: boolean
+	onOpenChange?: (open: boolean) => void
 }) {
-	const [open, setOpen] = useState(false)
+	const [internalOpen, setInternalOpen] = useState(false)
 	const [busy, setBusy] = useState(false)
+
+	const isControlled = open !== undefined
+	const actualOpen = isControlled ? open : internalOpen
+	const setOpen = isControlled
+		? (onOpenChange ?? (() => {}))
+		: setInternalOpen
 
 	async function handleConfirm() {
 		setBusy(true)
@@ -42,8 +57,8 @@ export function ConfirmDialog({
 	}
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>{trigger}</DialogTrigger>
+		<Dialog open={actualOpen} onOpenChange={setOpen}>
+			{trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
 			<DialogContent className='sm:max-w-md'>
 				<DialogHeader>
 					<DialogTitle>{title}</DialogTitle>

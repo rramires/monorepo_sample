@@ -351,7 +351,9 @@ profiles; their grants **merge** (OR).
       (`/admin/users/:userId`) edits username/email/role/`is_verified` plus an
       **Active** switch (`is_active`; self-deactivation blocked) and a **profiles**
       card (a `TransferTable` assigning profiles; admins show a read-only note).
-      Deactivating a user blocks login and cuts access on the next request.
+      Deactivating a user blocks login and cuts access on the next request;
+      saving with Active turned off prompts a confirm dialog first (the
+      confirm-on-deactivate pattern below).
 - **Per-user default landing screen** (`pages/app/account/landing-card.tsx`) —
   lets a user pick which of _their_ screens to land on after sign-in; "Automatic"
   clears the override (`default_screen_key: null` via `PATCH /auth/me`), falling
@@ -378,6 +380,14 @@ the `*-mock.ts` handlers serve `/modules`, `/screens`, `/profiles`,
 - **Submit:** `handleSubmit(onSubmit)`; `onSubmit` runs the mutation, toasts
   success/error, navigates.
 - **React 19 typing:** use `React.SubmitEvent` (not the deprecated `FormEvent`).
+- **Deactivation (soft-delete) = confirm-on-save toggle.** When an entity supports
+  soft-delete, its active state is an **Active `Switch` inside the edit form** (not
+  a separate Delete-style button). On submit, if Active went **ON → OFF**,
+  `useConfirmDeactivate` (`hooks/use-confirm-deactivate.ts`) opens a controlled
+  `ConfirmDialog` **before** committing; reactivating or any other edit saves
+  straight through. The PM calls `guardSave({ wasActive, willBeActive, save })`
+  from `onSubmit` and spreads `dialogProps` onto the dialog (`user-edit` is the
+  reference). Apply this to every deactivatable entity so the UX stays uniform.
 
 ### Async-seeded forms — known gotchas (admin user-edit)
 

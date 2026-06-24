@@ -356,7 +356,8 @@ profiles; seus grants **se mesclam** (OR).
       switch **Active** (`is_active`; auto-desativação bloqueada) e um card de
       **profiles** (uma `TransferTable` atribuindo profiles; para admins mostra uma
       nota somente-leitura). Desativar um usuário bloqueia o login e corta o acesso
-      na próxima requisição.
+      na próxima requisição; salvar com Active desligado abre antes um dialog de
+      confirmação (o padrão confirm-on-deactivate abaixo).
 - **Tela de destino padrão por usuário** (`pages/app/account/landing-card.tsx`) —
   deixa o usuário escolher em qual das _suas_ telas cair após o login; "Automatic"
   limpa o override (`default_screen_key: null` via `PATCH /auth/me`), voltando ao
@@ -383,6 +384,14 @@ token↔user; os handlers `*-mock.ts` servem `/modules`, `/screens`, `/profiles`
 - **Submit:** `handleSubmit(onSubmit)`; `onSubmit` roda a mutation, dá toast de
   sucesso/erro, navega.
 - **Tipagem React 19:** use `React.SubmitEvent` (não o `FormEvent` depreciado).
+- **Desativação (soft-delete) = toggle com confirm no save.** Quando uma entidade
+  suporta soft-delete, o estado ativo é um **`Switch` Active dentro do form de
+  edição** (não um botão separado tipo Delete). No submit, se Active foi **ON →
+  OFF**, o `useConfirmDeactivate` (`hooks/use-confirm-deactivate.ts`) abre um
+  `ConfirmDialog` controlado **antes** de gravar; reativar ou qualquer outra
+  edição salva direto. O PM chama `guardSave({ wasActive, willBeActive, save })`
+  no `onSubmit` e espalha `dialogProps` no dialog (`user-edit` é a referência).
+  Aplique a toda entidade desativável pra manter a UX uniforme.
 
 ### Formulários semeados de forma assíncrona — gotchas conhecidos (user-edit do admin)
 

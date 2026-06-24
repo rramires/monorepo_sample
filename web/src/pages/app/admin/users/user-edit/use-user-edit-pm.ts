@@ -10,6 +10,7 @@ import { z } from 'zod'
 import { getUser } from '@/api/get-user'
 import { updateUser, type UpdateUserBody } from '@/api/update-user'
 import { useAuth } from '@/components/auth/auth-hooks'
+import { useConfirmDeactivate } from '@/hooks/use-confirm-deactivate'
 
 const usernamePattern = /^[a-zA-Z0-9_]+$/
 
@@ -31,6 +32,7 @@ export function useUserEditPM() {
 	const auth = useAuth()
 	const navigate = useNavigate()
 	const queryClient = useQueryClient()
+	const deactivate = useConfirmDeactivate()
 
 	// Fetch the user by id so the page stands alone (refresh / direct link).
 	const {
@@ -129,7 +131,13 @@ export function useUserEditPM() {
 			return
 		}
 
-		update.mutate(body)
+		// Confirm-on-deactivate: prompt before saving when Active goes ON -> OFF;
+		// any other edit saves straight through.
+		deactivate.guardSave({
+			wasActive: user.is_active,
+			willBeActive: data.is_active,
+			save: () => update.mutate(body),
+		})
 	}
 
 	return {
@@ -145,5 +153,7 @@ export function useUserEditPM() {
 		isSaving: update.isPending,
 		handleSubmit: handleSubmit(onSubmit),
 		cancel: () => navigate('/admin/users'),
+		// Controlled <ConfirmDialog> props for the confirm-on-deactivate prompt.
+		confirmDeactivate: deactivate.dialogProps,
 	}
 }
