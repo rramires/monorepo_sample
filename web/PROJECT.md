@@ -345,7 +345,16 @@ profiles; their grants **merge** (OR).
   publish the loaded entity's name as the dynamic leaf via `useSetBreadcrumb`
   (cleared on unmount so it can't leak onto the next route). It's a context trio
   (`breadcrumb-context`/`-provider`/`-hooks`) like `title/`; page body
-  titles/descriptions are unchanged.
+  titles/descriptions are unchanged. A **lone crumb** (a top-level page) is
+  **muted** — it only repeats the page title below it, and using the same grey as
+  parent links means the crumb doesn't flicker color when you drill into a
+  sub-page and it becomes the link.
+- **`PageHeader`** (`components/page-header.tsx`) — the shared page header every
+  page uses: a compact (logo-sized `text-xl`) title + muted description on the
+  left, an optional `leading` slot (back button) and right-aligned actions
+  bottom-aligned to the description (`items-end`). Centralizes title sizing and
+  header spacing so the pages stay uniform. Card-form pages (user-edit, account,
+  new-gym) keep their own card heading.
 - **Admin screens** (`pages/app/admin/`) — each a view + PM pair, gated by its
   `access-control.*` screen key:
     - **Modules** (`/admin/modules`) and **Screens** (`/admin/screens`) — CRUD the
