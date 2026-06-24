@@ -13,6 +13,7 @@ export interface ModuleModel {
 	name: string
 	description: string | null
 	order: number
+	isSystem: boolean
 }
 
 const listSchema = z.object({ modules: z.array(moduleSchema) })
@@ -25,6 +26,7 @@ function toModel(m: z.infer<typeof moduleSchema>): ModuleModel {
 		name: m.name,
 		description: m.description ?? null,
 		order: m.order,
+		isSystem: m.is_system,
 	}
 }
 

@@ -2,6 +2,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { PageTitle } from '@/components/title/page-title'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
 	Table,
@@ -68,8 +69,13 @@ export function AdminScreens() {
 										<TableCell className='font-mono text-xs'>
 											{screen.key}
 										</TableCell>
-										<TableCell className='font-medium'>
+										<TableCell className='space-x-1 font-medium'>
 											{screen.name}
+											{screen.isSystem && (
+												<Badge variant='outline'>
+													System
+												</Badge>
+											)}
 										</TableCell>
 										<TableCell className='text-muted-foreground font-mono text-xs'>
 											{screen.path}
@@ -89,26 +95,27 @@ export function AdminScreens() {
 													}
 												/>
 											)}
-											{pm.canDelete && (
-												<ConfirmDialog
-													title='Delete screen'
-													description={`Delete "${screen.name}"? Its grants are removed too.`}
-													confirmLabel='Delete'
-													onConfirm={() =>
-														pm.deleteScreen(
-															screen.id,
-														)
-													}
-													trigger={
-														<Button
-															variant='outline'
-															size='sm'
-														>
-															<Trash2 />
-														</Button>
-													}
-												/>
-											)}
+											{pm.canDelete &&
+												!screen.isSystem && (
+													<ConfirmDialog
+														title='Delete screen'
+														description={`Delete "${screen.name}"? Its grants are removed too.`}
+														confirmLabel='Delete'
+														onConfirm={() =>
+															pm.deleteScreen(
+																screen.id,
+															)
+														}
+														trigger={
+															<Button
+																variant='outline'
+																size='sm'
+															>
+																<Trash2 />
+															</Button>
+														}
+													/>
+												)}
 										</TableCell>
 									</TableRow>
 								))}

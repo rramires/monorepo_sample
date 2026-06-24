@@ -23,6 +23,45 @@ test('admin navigates the access-control screens', async ({ page }) => {
 	await waitForUIInspection(page)
 })
 
+test('system modules and screens show a badge and hide Delete', async ({
+	page,
+}) => {
+	await signIn(page, 'admin')
+
+	// Modules: the access-control row is a system row (badge, Edit only — no
+	// Delete); the gym row is deletable (Edit + Delete).
+	await page.getByRole('link', { name: 'Modules', exact: true }).click()
+	await expect(page).toHaveURL('/admin/modules')
+
+	const systemModuleRow = page
+		.getByRole('row')
+		.filter({ hasText: 'access-control' })
+	await expect(systemModuleRow.getByText('System')).toBeVisible()
+	await expect(systemModuleRow.getByRole('button')).toHaveCount(1)
+
+	const gymModuleRow = page.getByRole('row').filter({ hasText: 'gym' })
+	await expect(gymModuleRow.getByText('System')).toHaveCount(0)
+	await expect(gymModuleRow.getByRole('button')).toHaveCount(2)
+
+	// Screens: same protection (a seeded access-control screen vs a gym screen).
+	await page.getByRole('link', { name: 'Screens', exact: true }).click()
+	await expect(page).toHaveURL('/admin/screens')
+
+	const systemScreenRow = page
+		.getByRole('row')
+		.filter({ hasText: 'access-control.profiles' })
+	await expect(systemScreenRow.getByText('System')).toBeVisible()
+	await expect(systemScreenRow.getByRole('button')).toHaveCount(1)
+
+	const gymScreenRow = page
+		.getByRole('row')
+		.filter({ hasText: 'gym.dashboard' })
+	await expect(gymScreenRow.getByText('System')).toHaveCount(0)
+	await expect(gymScreenRow.getByRole('button')).toHaveCount(2)
+
+	await waitForUIInspection(page)
+})
+
 test('admin edits a profile’s grants and saves', async ({ page }) => {
 	await signIn(page, 'admin')
 

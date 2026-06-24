@@ -38,7 +38,8 @@ export const createScreenMock = http.post('/screens', async ({ request }) => {
 		)
 	}
 
-	const screen: Screen = { id: nextId(), ...parsed.data }
+	// is_system is never client-settable; created screens are always false.
+	const screen: Screen = { id: nextId(), ...parsed.data, is_system: false }
 	screens.push(screen)
 	return HttpResponse.json({ screen }, { status: 201 })
 })
@@ -67,6 +68,18 @@ export const updateScreenMock = http.patch<{ id: string }>(
 			)
 		}
 
+		// A system screen's key is protected; everything else stays editable.
+		if (
+			screen.is_system &&
+			parsed.data.key !== undefined &&
+			parsed.data.key !== screen.key
+		) {
+			return HttpResponse.json(
+				{ message: 'A system screen key cannot be changed.' },
+				{ status: 409 },
+			)
+		}
+
 		Object.assign(screen, parsed.data)
 		return HttpResponse.json({ screen })
 	},
@@ -85,6 +98,14 @@ export const deleteScreenMock = http.delete<{ id: string }>(
 			return HttpResponse.json(
 				{ message: 'Resource not found.' },
 				{ status: 404 },
+			)
+		}
+
+		// System screens are protected from deletion.
+		if (screens[index].is_system) {
+			return HttpResponse.json(
+				{ message: 'A system screen cannot be deleted.' },
+				{ status: 409 },
 			)
 		}
 
