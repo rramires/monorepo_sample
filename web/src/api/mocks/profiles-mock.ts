@@ -77,6 +77,14 @@ export const createProfileMock = http.post('/profiles', async ({ request }) => {
 	}
 	profiles.push(profile)
 	profileScreens[profile.id] = []
+	// Single-default invariant: a new default demotes every other profile.
+	if (profile.is_default) {
+		for (const p of profiles) {
+			if (p.id !== profile.id) {
+				p.is_default = false
+			}
+		}
+	}
 	return HttpResponse.json({ profile }, { status: 201 })
 })
 
@@ -116,7 +124,24 @@ export const updateProfileEntityMock = http.patch<{ id: string }>(
 			)
 		}
 
+		// Single-default invariant: never leave zero defaults — turning the
+		// current default off is rejected (promote another to move it).
+		if (parsed.data.is_default === false && profile.is_default) {
+			return HttpResponse.json(
+				{ message: 'At least one profile must remain the default.' },
+				{ status: 409 },
+			)
+		}
+
 		Object.assign(profile, parsed.data)
+		// Setting this profile as default demotes every other (radio).
+		if (parsed.data.is_default === true) {
+			for (const p of profiles) {
+				if (p.id !== profile.id) {
+					p.is_default = false
+				}
+			}
+		}
 		return HttpResponse.json({ profile })
 	},
 )
