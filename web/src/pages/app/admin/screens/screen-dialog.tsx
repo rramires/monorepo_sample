@@ -52,6 +52,9 @@ export function ScreenDialog({
 	const queryClient = useQueryClient()
 	const [open, setOpen] = useState(false)
 	const editing = !!screen
+	// A system screen's identity (module/key/path) is locked; the backend
+	// rejects changing them with a 409, so the inputs are read-only here.
+	const locked = editing && !!screen?.isSystem
 
 	const {
 		register,
@@ -107,6 +110,12 @@ export function ScreenDialog({
 					<DialogDescription>
 						A screen is the unit access grants attach to.
 					</DialogDescription>
+					{locked && (
+						<p className='text-muted-foreground text-xs'>
+							System screen — module, key and path are locked;
+							only name, description and order can change.
+						</p>
+					)}
 				</DialogHeader>
 
 				<form
@@ -123,6 +132,7 @@ export function ScreenDialog({
 									<Select
 										value={field.value}
 										onValueChange={field.onChange}
+										disabled={locked}
 									>
 										<SelectTrigger>
 											<SelectValue placeholder='Select a module' />
@@ -151,13 +161,28 @@ export function ScreenDialog({
 							<Input
 								{...register('key')}
 								placeholder='gym.dashboard'
+								readOnly={locked}
+								className={
+									locked
+										? 'cursor-not-allowed opacity-60'
+										: undefined
+								}
 							/>
 						</Field>
 						<Field label='Name' error={errors.name?.message}>
 							<Input {...register('name')} />
 						</Field>
 						<Field label='Path'>
-							<Input {...register('path')} placeholder='/' />
+							<Input
+								{...register('path')}
+								placeholder='/'
+								readOnly={locked}
+								className={
+									locked
+										? 'cursor-not-allowed opacity-60'
+										: undefined
+								}
+							/>
 						</Field>
 						<Field label='Description'>
 							<Input {...register('description')} />

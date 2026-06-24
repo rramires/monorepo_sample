@@ -68,16 +68,24 @@ export const updateScreenMock = http.patch<{ id: string }>(
 			)
 		}
 
-		// A system screen's key is protected; everything else stays editable.
-		if (
-			screen.is_system &&
-			parsed.data.key !== undefined &&
-			parsed.data.key !== screen.key
-		) {
-			return HttpResponse.json(
-				{ message: 'A system screen key cannot be changed.' },
-				{ status: 409 },
-			)
+		// A system screen's identity (key, module, path) is protected; only
+		// name/description/order stay editable.
+		if (screen.is_system) {
+			const d = parsed.data
+			const changesIdentity =
+				(d.key !== undefined && d.key !== screen.key) ||
+				(d.module_id !== undefined &&
+					d.module_id !== screen.module_id) ||
+				(d.path !== undefined && d.path !== screen.path)
+			if (changesIdentity) {
+				return HttpResponse.json(
+					{
+						message:
+							'A system screen cannot change its key, module or path.',
+					},
+					{ status: 409 },
+				)
+			}
 		}
 
 		Object.assign(screen, parsed.data)
