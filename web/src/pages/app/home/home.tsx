@@ -1,5 +1,6 @@
 import { LoaderCircle } from 'lucide-react'
 
+import { PageHeader } from '@/components/page-header'
 import { PageTitle } from '@/components/title/page-title'
 import {
 	Card,
@@ -19,15 +20,11 @@ export function Home() {
 		<>
 			<PageTitle title='Dashboard' />
 
-			<div className='flex flex-1 flex-col gap-6 p-8'>
-				<div>
-					<h2 className='text-2xl font-medium'>
-						Welcome back, {pm.user?.username}!
-					</h2>
-					<p className='text-muted-foreground text-sm'>
-						Here&apos;s your recent gym activity.
-					</p>
-				</div>
+			<div className='flex flex-1 flex-col gap-3 px-8 pt-5 pb-8'>
+				<PageHeader
+					title={`Welcome back, ${pm.user?.username ?? ''}!`}
+					description="Here's your recent gym activity."
+				/>
 
 				<div className='grid gap-4 md:grid-cols-3'>
 					<Card>

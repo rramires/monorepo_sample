@@ -36,6 +36,17 @@ export interface NavItem {
 	icon: LucideIcon
 }
 
+// A nav item stays active on its sub-routes (e.g. "Gyms" while on /gyms/new,
+// "Users" while editing /admin/users/:id) — exact equality would drop the
+// highlight on every detail page. Dashboard ("/") must match only itself, or it
+// would light up everywhere.
+export function isItemActive(pathname: string, to: string): boolean {
+	if (to === '/') {
+		return pathname === '/'
+	}
+	return pathname === to || pathname.startsWith(`${to}/`)
+}
+
 export interface NavSection {
 	key: string
 	label: string
@@ -89,7 +100,7 @@ export function useAppSidebarPM() {
 		user,
 		sections,
 		isLoading: permsLoading,
-		pathname: location.pathname,
+		isActive: (to: string) => isItemActive(location.pathname, to),
 		handleSignOut,
 	}
 }

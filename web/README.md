@@ -177,11 +177,14 @@ Files (Vite loads them by mode; later files win):
 ## App routes (pages)
 
 `src/routes.tsx` builds the tree with React Router. The authed area sits behind
-`ProtectedRoute` (redirects guests to `/sign-in`) and uses `AppLayout` (sidebar
-
-- header); the index `/` resolves to the user's landing screen via `LandingRoute`,
-  and each screen is gated by `RequireScreen screen='<key>' [action]` (the same
-  `can()` the menu uses).
+`ProtectedRoute` (redirects guests to `/sign-in`) and uses `AppLayout` (sidebar +
+header); the header carries a **breadcrumb** trail (static crumbs from the route,
+a dynamic leaf published by detail pages; a lone top-level crumb is muted) and the
+sidebar keeps the active item highlighted on its sub-routes. Pages share a compact
+**`PageHeader`** (logo-sized title + description + right-aligned actions). The
+index `/` resolves to the user's landing
+screen via `LandingRoute`, and each screen is gated by
+`RequireScreen screen='<key>' [action]` (the same `can()` the menu uses).
 
 | Path                          | Guard                     | Page               | Notes                                                         |
 | ----------------------------- | ------------------------- | ------------------ | ------------------------------------------------------------- |

@@ -1,6 +1,7 @@
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { PageHeader } from '@/components/page-header'
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -23,14 +24,11 @@ export function AdminModules() {
 		<>
 			<PageTitle title='Manage Modules' />
 
-			<div className='flex flex-1 flex-col gap-4 p-8'>
-				<div className='flex items-start justify-between gap-4'>
-					<div>
-						<h1 className='text-2xl font-bold'>Modules</h1>
-						<p className='text-muted-foreground text-sm'>
-							Modules group related screens.
-						</p>
-					</div>
+			<div className='flex flex-1 flex-col gap-3 px-8 pt-5 pb-8'>
+				<PageHeader
+					title='Modules'
+					description='Modules group related screens.'
+				>
 					{pm.canCreate && (
 						<ModuleDialog
 							trigger={
@@ -41,7 +39,7 @@ export function AdminModules() {
 							}
 						/>
 					)}
-				</div>
+				</PageHeader>
 
 				{pm.isLoading ? (
 					<p className='text-muted-foreground text-sm'>Loading…</p>

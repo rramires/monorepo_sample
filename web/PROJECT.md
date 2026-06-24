@@ -178,6 +178,7 @@ src/
 │   ├── auth/                # AuthContext/Provider/hooks · ProtectedRoute · RequireScreen · LandingRoute · Forbidden · verify-email-banner/
 │   ├── theme/               # ThemeContext/Provider/hooks · mode-toggle
 │   ├── title/               # TitleContext/Provider · page-title (per-page document.title)
+│   ├── breadcrumb/          # BreadcrumbContext/Provider/hooks · breadcrumbs (header trail) + use-breadcrumbs-pm
 │   ├── app-sidebar/         # app-sidebar.tsx (view) + use-app-sidebar-pm.ts (data-driven from /me/permissions.menu)
 │   ├── transfer-table/      # reusable two-table multi-select + dnd-kit assignment widget
 │   ├── ui/                  # shadcn/ui components (generated; do not hand-edit casually)
@@ -334,7 +335,26 @@ profiles; their grants **merge** (OR).
   sections from `permissions.menu` (already only the viewable screens, grouped and
   ordered by module/screen order), intersected with `NAV_ENTRIES` (the screens that
   have a real page + their icon/label). It **no longer fetches** `/modules` +
-  `/screens`; the menu grows as more pages get built.
+  `/screens`; the menu grows as more pages get built. Active state uses a
+  **segment match** (`isItemActive`), not exact equality, so a parent item stays
+  lit on its sub-routes (e.g. "Gyms" while on `/gyms/new`, "Users" while editing
+  `/admin/users/:id`); Dashboard (`/`) matches only itself.
+- **Header breadcrumb** (`breadcrumb/`) — the `app-layout` header fills its space
+  with a breadcrumb trail. A small PM (`use-breadcrumbs-pm`) derives the static
+  trail from the route (`Gyms › New gym`, `Profiles › <name>`); detail pages
+  publish the loaded entity's name as the dynamic leaf via `useSetBreadcrumb`
+  (cleared on unmount so it can't leak onto the next route). It's a context trio
+  (`breadcrumb-context`/`-provider`/`-hooks`) like `title/`; page body
+  titles/descriptions are unchanged. A **lone crumb** (a top-level page) is
+  **muted** — it only repeats the page title below it, and using the same grey as
+  parent links means the crumb doesn't flicker color when you drill into a
+  sub-page and it becomes the link.
+- **`PageHeader`** (`components/page-header.tsx`) — the shared page header every
+  page uses: a compact (logo-sized `text-xl`) title + muted description on the
+  left, an optional `leading` slot (back button) and right-aligned actions
+  bottom-aligned to the description (`items-end`). Centralizes title sizing and
+  header spacing so the pages stay uniform. Card-form pages (user-edit, account,
+  new-gym) keep their own card heading.
 - **Admin screens** (`pages/app/admin/`) — each a view + PM pair, gated by its
   `access-control.*` screen key:
     - **Modules** (`/admin/modules`) and **Screens** (`/admin/screens`) — CRUD the

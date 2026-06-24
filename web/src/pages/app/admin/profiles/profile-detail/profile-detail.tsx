@@ -2,6 +2,8 @@ import { ArrowLeft, LoaderCircle } from 'lucide-react'
 import { Link } from 'react-router'
 
 import type { ScreenModel } from '@/api/screens'
+import { useSetBreadcrumb } from '@/components/breadcrumb/breadcrumb-hooks'
+import { PageHeader } from '@/components/page-header'
 import { PageTitle } from '@/components/title/page-title'
 import { type TransferColumn, TransferTable } from '@/components/transfer-table'
 import { Badge } from '@/components/ui/badge'
@@ -17,6 +19,9 @@ const ACTIONS = ['view', 'create', 'edit', 'delete'] as const
 
 export function ProfileDetail() {
 	const pm = useProfileDetailPM()
+
+	// Publish the profile name as the breadcrumb's dynamic leaf.
+	useSetBreadcrumb(pm.profile?.name)
 
 	if (pm.isLoading) {
 		return (
@@ -87,30 +92,35 @@ export function ProfileDetail() {
 		<>
 			<PageTitle title={`Profile · ${pm.profile.name}`} />
 
-			<div className='flex flex-1 flex-col gap-6 p-8'>
-				<div className='flex items-center gap-3'>
-					<Button asChild variant='ghost' size='icon'>
-						<Link to='/admin/profiles' aria-label='Back'>
-							<ArrowLeft />
-						</Link>
-					</Button>
-					<div className='flex-1'>
-						<h1 className='flex items-center gap-2 text-2xl font-bold'>
+			<div className='flex flex-1 flex-col gap-3 px-8 pt-5 pb-8'>
+				<PageHeader
+					leading={
+						<Button asChild variant='ghost' size='icon'>
+							<Link to='/admin/profiles' aria-label='Back'>
+								<ArrowLeft />
+							</Link>
+						</Button>
+					}
+					title={
+						<span className='flex items-center gap-2'>
 							{pm.profile.name}
 							{pm.profile.isSystem && (
 								<Badge variant='outline'>System</Badge>
 							)}
-						</h1>
-						<p className='text-muted-foreground font-mono text-xs'>
+						</span>
+					}
+					description={
+						<span className='font-mono text-xs'>
 							{pm.profile.key}
-						</p>
-					</div>
+						</span>
+					}
+				>
 					{pm.canEdit && (
 						<Button onClick={pm.save} disabled={pm.isSaving}>
 							Save changes
 						</Button>
 					)}
-				</div>
+				</PageHeader>
 
 				<div className='grid gap-4 sm:grid-cols-2'>
 					<div className='grid gap-2'>

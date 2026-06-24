@@ -43,7 +43,7 @@ export function AppSidebar() {
 									<SidebarMenuItem key={item.to}>
 										<SidebarMenuButton
 											asChild
-											isActive={pm.pathname === item.to}
+											isActive={pm.isActive(item.to)}
 											tooltip={item.label}
 										>
 											<Link to={item.to}>
@@ -79,9 +79,7 @@ export function AppSidebar() {
 						<Button
 							asChild
 							variant={
-								pm.pathname === '/account'
-									? 'secondary'
-									: 'ghost'
+								pm.isActive('/account') ? 'secondary' : 'ghost'
 							}
 							size='icon'
 							className='size-7'

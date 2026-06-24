@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { PageHeader } from '@/components/page-header'
 import { PageTitle } from '@/components/title/page-title'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -25,14 +26,11 @@ export function Gyms() {
 		<>
 			<PageTitle title='Gyms' />
 
-			<div className='flex flex-1 flex-col gap-6 p-8'>
-				<div className='flex items-start justify-between gap-4'>
-					<div>
-						<h2 className='text-2xl font-medium'>Gyms</h2>
-						<p className='text-muted-foreground text-sm'>
-							Find a gym near you, or search by name.
-						</p>
-					</div>
+			<div className='flex flex-1 flex-col gap-3 px-8 pt-5 pb-8'>
+				<PageHeader
+					title='Gyms'
+					description='Find a gym near you, or search by name.'
+				>
 					{pm.canCreate && (
 						<Button asChild size='sm'>
 							<Link to='/gyms/new'>
@@ -41,7 +39,7 @@ export function Gyms() {
 							</Link>
 						</Button>
 					)}
-				</div>
+				</PageHeader>
 
 				<div className='flex flex-wrap items-center gap-4'>
 					<Input

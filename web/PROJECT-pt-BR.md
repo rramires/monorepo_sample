@@ -180,6 +180,7 @@ src/
 │   ├── auth/                # AuthContext/Provider/hooks · ProtectedRoute · RequireScreen · LandingRoute · Forbidden · verify-email-banner/
 │   ├── theme/               # ThemeContext/Provider/hooks · mode-toggle
 │   ├── title/               # TitleContext/Provider · page-title (document.title por página)
+│   ├── breadcrumb/          # BreadcrumbContext/Provider/hooks · breadcrumbs (trilha no header) + use-breadcrumbs-pm
 │   ├── app-sidebar/         # app-sidebar.tsx (view) + use-app-sidebar-pm.ts (dirigida por /me/permissions.menu)
 │   ├── transfer-table/      # widget reutilizável de atribuição: duas tabelas multi-seleção + dnd-kit
 │   ├── ui/                  # componentes shadcn/ui (gerados; não edite à mão sem necessidade)
@@ -338,7 +339,26 @@ profiles; seus grants **se mesclam** (OR).
   seções a partir de `permissions.menu` (já só as telas visíveis, agrupadas e
   ordenadas por ordem de module/screen), interseccionado com `NAV_ENTRIES` (as
   telas que têm página real + ícone/label). Ela **não busca mais** `/modules` +
-  `/screens`; o menu cresce conforme mais páginas são construídas.
+  `/screens`; o menu cresce conforme mais páginas são construídas. O estado ativo
+  usa **match por segmento** (`isItemActive`), não igualdade exata, então o item
+  pai continua aceso nas sub-rotas (ex.: "Gyms" em `/gyms/new`, "Users" ao editar
+  `/admin/users/:id`); o Dashboard (`/`) casa só consigo mesmo.
+- **Breadcrumb no header** (`breadcrumb/`) — o header do `app-layout` preenche seu
+  espaço com uma trilha de breadcrumb. Um PM pequeno (`use-breadcrumbs-pm`) deriva
+  a trilha estática da rota (`Gyms › New gym`, `Profiles › <nome>`); páginas de
+  detalhe publicam o nome da entidade carregada como folha dinâmica via
+  `useSetBreadcrumb` (limpa ao desmontar, para não vazar para a próxima rota). É um
+  trio de contexto (`breadcrumb-context`/`-provider`/`-hooks`) como o `title/`; os
+  títulos/descrições no corpo da página não mudam. Um **crumb único** (página de
+  primeira hierarquia) fica **cinza** — só repete o título logo abaixo; usar o
+  mesmo cinza dos links-pai faz o crumb não "piscar" de cor quando o usuário entra
+  numa sub-página e ele vira o link.
+- **`PageHeader`** (`components/page-header.tsx`) — o header de página que todas as
+  telas usam: título compacto (tamanho da logo, `text-xl`) + descrição cinza à
+  esquerda, um slot `leading` opcional (botão voltar) e ações à direita alinhadas
+  pela base da descrição (`items-end`). Centraliza o tamanho do título e o
+  espaçamento do header para as páginas ficarem uniformes. Páginas em card
+  (user-edit, account, new-gym) mantêm o próprio cabeçalho de card.
 - **Telas de admin** (`pages/app/admin/`) — cada uma um par view + PM, protegida
   por sua screen key `access-control.*`:
     - **Modules** (`/admin/modules`) e **Screens** (`/admin/screens`) — CRUD do
