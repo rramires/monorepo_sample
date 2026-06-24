@@ -4,69 +4,70 @@ Break-glass resume file (portable across models/tools). **State** lives here;
 **doctrine** lives in [`CLAUDE.md`](./CLAUDE.md) (single source — this file points,
 never copies). Architecture: [`PROJECT.md`](./PROJECT.md).
 
-## Resume prompt (cole numa sessão nova)
+## Resume prompt (cole numa sessão nova, após compactar)
 
-> Leia `PLAN.md` + `CLAUDE.md` na raiz e continue a feature **access-control** na branch
-> `feat/access-control`. Monorepo `monorepo_sample`: `api/` (Fastify+Prisma+MySQL) + `web/`
-> (React+Vite+MSW) + `packages/contracts/` (Zod compartilhado), workspace pnpm — `pnpm install`
-> na raiz; gates por app (`pnpm -C api …` / `pnpm -C web …`). Responda sempre em **pt-BR**.
+> Leia `PLAN.md` + `HANDOFF.md` + `CLAUDE.md` na raiz do monorepo `monorepo_sample`
+> e **execute o pacote de follow-ups do access-control**, começando pela **G0**.
+> Monorepo: `api/` (Fastify+Prisma+MySQL) + `web/` (React+Vite+MSW) +
+> `packages/contracts/` (`@root/contracts`, Zod). `PLAN.md` (na raiz, gitignored
+> localmente) tem o detalhe de cada grupo — fases, gates, docs, verificação.
 >
-> **Já feito (Fases 0–5, 7, 8 — commitado, tudo verde):** RBAC `Role{ADMIN,USER}` + Perfis→Telas
-> (ações view/create/edit/delete), `TransferTable` com DnD, 4 telas admin (modules/screens/
-> profiles/users), `can()`+nav data-driven+`RequireScreen`, backend (models + migration +
-> `requireScreen` + CRUD + seed espelhando o dataset), **desativar usuário** (`is_active`:
-> bloqueia login + corta no próximo request via verifyJwt) e **tela default ao logar**
-> (default por-perfil = flag `is_default` no grant + override por-usuário `User.default_screen_key`;
-> resolução: override→default-de-perfil(menor ordem módulo,tela)→primeira permitida→/account,
-> exposto em `GET /me/permissions.default_screen_key`).
+> Ordem: **G0** chore nomes e2e do web (`e2e`→`test:e2e`, `e2e:ui`→`test:e2e:ui`,
+> **e `pree2e`→`pretest:e2e`** senão o hook morre; + CI `web.yml` + docs) → **G1**
+> `is_system` em Module+Screen (anti-lockout; erros→409; só Access Control vira
+> system, gym fica deletável) → **G2** padrão de desativação (toggle Active no form
+> + confirm no save quando desativar, reusa `confirm-dialog.tsx`; retrofit no
+> user-edit que hoje salva silencioso) → **G3** gym soft-delete (`Gym.is_active`;
+> check-in em inativa →403; listas do membro só ativas; admin tem checkbox "Show
+> deactivated"; toggle dentro do Edit gym usando o helper da G2) → **G4** breadcrumb
+> no header (espaço morto do `app-layout`) + corrige ativo da sidebar em sub-rotas
+> (hoje é igualdade exata) → **G5** grants: chips MultiSelect (Popover+Badge+`cmdk`)
+> ACIMA da TransferTable (ela fica intocada) + coluna de módulo → **G6** docs:
+> fechar o gráfico §4.1 do `api/PROJECT.md` (passos 10–13) + sweep final (EN+PT, só
+> docs, direto no master).
 >
-> **FALTA — Fase 6 (final 🚦):**
-> 1. **Fix de catálogo do nav (FAZER PRIMEIRO):** o menu é data-driven via `GET /modules`+
->    `/screens`, mas no backend essas rotas são gated (admin) → um não-admin NÃO monta o nav na
->    API real. Enriquecer `GET /me/permissions` pra já trazer o catálogo do menu (por tela que o
->    user vê: key, name, path, module key/name + ordens) e fazer o sidebar/LandingRoute
->    consumirem isso em vez de `/modules`+`/screens`. Ajustar contracts + mock + resolver.
-> 2. **Ligar web→API real:** `api` com DB seedado (`pnpm -C api db:fresh`) + `pnpm -C web dev`
->    (modo real, sem MSW). Walkthrough DB-limpa de cada rota nova (status codes).
-> 3. **Docs EN+PT** (root + api + web: README/PROJECT × 2 idiomas): tabelas de rotas/env,
->    models, árvore de pastas, nota "out of scope / cloner adiciona multi-tenant".
-> 4. **🚦 final:** usuário testa no browser, autoriza o merge (`git checkout master && git merge`),
->    **usuário** dá push e apaga a branch. **Apagar `PLAN.md`** + a entrada `PLAN.md` no `.gitignore`.
->
-> **Deferido (features/refactor futuro, NÃO nesta branch):** admin criar usuário (hoje só edita
-> auto-cadastrados) + atalho "conceder todas as telas do módulo X"; perfil é bundle global
-> cross-module de propósito (não por-módulo como o AppBase antigo). Loose end: apagar branch remota
-> `origin/ci/monorepo-workflows` (só o usuário pusha).
->
-> Doutrina: gate verde no app tocado antes de cada commit; commit por fase; **NUNCA `git push`**;
-> confirme antes de irreversível; `PLAN.md` nunca commitado.
+> Doutrina: 1 branch local por grupo off `master`; **commit por fase** após gate
+> verde; **antes de cada commit**: `pnpm -C <app> lint:fix && pnpm -C <app> format`
+> (o format evita diff de autosave depois); gates — api `lint && compile && test`
+> (+`test:e2e`, MySQL via `compose:up`), web `lint && build && test:run`
+> (+`test:e2e`), contracts `typecheck`; docs EN+PT (4 arquivos por app). **PARE no
+> fim de cada grupo** pro usuário testar no browser, autorizar o merge e **pushar
+> (só o usuário pusha)**. Confirme antes de qualquer irreversível. Responda em
+> pt-BR. Comece pela G0.
 
 ## Current state
 
-- **Branch:** `feat/access-control` · **commit:** `0f9e1da` (2026-06-23). NÃO mergeada.
-- **Working tree:** só `.gitignore` modificado (entrada `PLAN.md`) — **mudança local intencional,
-  não commitar**; some junto com o `PLAN.md` no fim. `PLAN.md` presente (gitignored) com as fases
-  (Fase 7/8 já feitas; Fase 6 pendente).
-- **Done (commitado, verde):** Fases 0–5 (`f7742dc`→`5349f6f`), 7 `is_active` (`47fb75f`),
-  8 tela-default (`0f9e1da`). Gates: web unit 24 / e2e 24 · api unit 98 / e2e 67 · contracts ok.
-- **MySQL:** container subiu nesta sessão; migrations aplicadas (`add_access_control`,
-  `add_user_is_active`, `add_default_landing_screen`). Pro walkthrough use `pnpm -C api db:fresh`.
-- **Next:** Fase 6 — começar pelo **fix de catálogo do nav** (item 1 acima).
-- **Demo (mock + seed):** users `admin` / `manager` / `support` / `johndoe`, senha `Password1!`.
+- **Branch:** `master` — clean, pushed. Commit `71e5e55` (2026-06-23, merge of
+  `feat/access-control`).
+- **Access-control feature:** DONE, merged, pushed (phases 0–8: RBAC, admin
+  screens, `/me/permissions` with menu catalog, deactivate user, default landing
+  screen). Nothing in flight from it.
+- **In flight:** nothing started yet. A **package of 7 follow-up groups (G0–G6)**
+  is planned in `PLAN.md` (local, gitignored via `.git/info/exclude`). Awaiting
+  the go to start **G0**.
+- **Next step:** branch `chore/web-e2e-script-names` off `master`; do G0 per
+  `PLAN.md`; gate; commit per phase; STOP for the user's merge.
+- **Demo (mock + seed):** users `admin` / `manager` / `support` / `johndoe`,
+  password `Password1!`.
 
-## Working rules
+## Working rules (pointer + guardrails)
 
-Doutrina completa em [`CLAUDE.md`](./CLAUDE.md) (+ `api/CLAUDE.md`, `web/CLAUDE.md`).
-Guardrails irreversíveis (cinto de segurança):
+Full doctrine: [`CLAUDE.md`](./CLAUDE.md) (root) + the app's own
+[`api/CLAUDE.md`](./api/CLAUDE.md) / [`web/CLAUDE.md`](./web/CLAUDE.md). Inlined
+safety belt (do not violate):
 
-- **Nunca `git push`** — o usuário pusha.
-- **Nunca commitar sem aprovação**; branch a partir de `master`.
-- **Gate verde antes de todo commit** (lint + compile/build + test no app tocado; e2e em
-  rotas/flows; `packages/contracts` typecheck).
-- **Confirmar antes de qualquer coisa irreversível** (delete/move/overwrite) — listar primeiro.
-- **Responder sempre em pt-BR.**
+- **Never `git push`** — only the user pushes.
+- **Never commit without the gate green**; commit per phase, stage narrowly.
+- Before each commit: `lint:fix` **and** `format` on the touched app.
+- **One branch per group off `master`**; never commit code to `master` (docs-only
+  may go straight to `master`).
+- **STOP at each group's end** for the user's browser test + merge authorization.
+- Confirm before anything irreversible; reply pt-BR; UI text in code = English.
 
 ## Deeper memory
 
-Harness memory (Claude / mesma máquina):
-`~/.claude/projects/-home-user--Dev-samples-monorepo-sample/memory/` — veja `MEMORY.md`.
+Claude harness memory (same machine only):
+`~/.claude/projects/-home-user--Dev-samples-monorepo-sample/memory/` — see
+`MEMORY.md` (esp. `backlog-plan-package` for the full package detail,
+`feedback-run-format-before-commit`, `project-state`, `autonomous-phase-execution`).
+A cache — `PLAN.md` + this file are the source of truth for state.
