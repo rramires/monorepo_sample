@@ -72,7 +72,10 @@ Vitest · Playwright
   gym editing from the gym card (Dialog).
 - **Gyms & check-ins** — geolocation-based nearby gyms + search by name; check
   in from a gym card; a check-in history with ADMIN **Validate**; the home page
-  is a **dashboard** with a Recharts activity chart.
+  is a **dashboard** with a Recharts activity chart. Gyms soft-delete: the edit
+  dialog has an **Active** toggle (confirm-on-deactivate); inactive gyms are
+  hidden from members and refuse check-ins, while managers can reveal them in
+  search via a **Show deactivated** checkbox.
 - **Presentation Model** — every screen with logic is a pair: `x.tsx` (pure
   view) + `use-x-pm.ts` (state, data, formatting). Views carry no logic. Each
   pair lives in its **own same-named folder**, so the `use-`-prefixed PM stays

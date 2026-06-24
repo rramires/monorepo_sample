@@ -386,8 +386,13 @@ the `*-mock.ts` handlers serve `/modules`, `/screens`, `/profiles`,
   `useConfirmDeactivate` (`hooks/use-confirm-deactivate.ts`) opens a controlled
   `ConfirmDialog` **before** committing; reactivating or any other edit saves
   straight through. The PM calls `guardSave({ wasActive, willBeActive, save })`
-  from `onSubmit` and spreads `dialogProps` onto the dialog (`user-edit` is the
-  reference). Apply this to every deactivatable entity so the UX stays uniform.
+  from `onSubmit` and spreads `dialogProps` onto the dialog. Two consumers:
+  `user-edit` (admin) and the **gym edit dialog** (`edit-gym-dialog`, in-place on
+  the shared Gyms page). Apply this to every deactivatable entity so the UX stays
+  uniform. For gyms, an inactive gym also shows an **Inactive** badge, disables
+  Check-in, and is hidden from members; managers reveal inactive gyms in search
+  via a **Show deactivated** checkbox (passes `includeInactive`, enforced
+  server-side).
 
 ### Async-seeded forms — known gotchas (admin user-edit)
 

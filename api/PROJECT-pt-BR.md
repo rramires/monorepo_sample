@@ -342,13 +342,13 @@ locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do monorepo e
 | POST   | `/auth/me/email`                 |     ✅     | —                                  | self: solicitar troca de e-mail (confirma novo)            |
 | POST   | `/auth/me/email/confirm`         |     ✅     | —                                  | self: confirmar troca de e-mail via OTP                    |
 | GET    | `/me/permissions`                |     ✅     | —                                  | telas efetivas + menu da sidebar + tela padrão             |
-| GET    | `/gyms/search`                   |     ✅     | —                                  | busca por título                                           |
-| GET    | `/gyms/nearby`                   |     ✅     | —                                  | busca por proximidade                                      |
+| GET    | `/gyms/search`                   |     ✅     | —                                  | busca por título (só ativas; gestores: `includeInactive`)  |
+| GET    | `/gyms/nearby`                   |     ✅     | —                                  | busca por proximidade (só ativas)                          |
 | POST   | `/gyms`                          |     ✅     | `gym.gyms` · create                | cadastrar academia                                         |
-| PATCH  | `/gyms/:gymId`                   |     ✅     | `gym.gyms` · edit                  | editar academia (título/descrição/telefone)                |
+| PATCH  | `/gyms/:gymId`                   |     ✅     | `gym.gyms` · edit                  | editar academia (título/descrição/telefone, `is_active`)   |
 | GET    | `/check-ins/history`             |     ✅     | —                                  | histórico próprio                                          |
 | GET    | `/check-ins/metrics`             |     ✅     | —                                  | total próprio                                              |
-| POST   | `/gyms/:gymId/check-ins`         |     ✅     | —                                  | check-in (e-mail verificado se flag ligada)                |
+| POST   | `/gyms/:gymId/check-ins`         |     ✅     | —                                  | check-in (e-mail verificado se flag ligada; `403` se inativa) |
 | PATCH  | `/check-ins/:checkInId/validate` |     ✅     | `gym.validations` · create         | validar check-in                                           |
 | POST   | `/users/send-verification`       |     ✅     | —                                  | enviar e-mail de verificação (link + OTP)                  |
 | GET    | `/users/verify-email`            |     ❌     | —                                  | verificar e-mail via link token (`?token=`)                |
@@ -542,6 +542,14 @@ reúne grants de ação por tela (`ProfileScreen`); um usuário recebe perfis
   (`is_active=false`) — um usuário demitido é cortado na hora, não quando o token
   expira. O login também é recusado: o `AuthenticateUseCase` lança
   `AccountInactiveError` → `403 { "message": "Account is inactive." }`.
+- **Soft-delete de academia (`Gym.is_active`):** `CheckIn.gym_id` é uma FK
+  obrigatória sem cascade, então uma academia nunca é apagada de verdade (quebraria
+  o histórico). Uma academia desativada recusa check-ins (`CheckInUseCase` →
+  `InactiveGymError` → `403`) e some do browse do membro — `findManyNearby` é
+  sempre só-ativas e `searchMany` é só-ativas por padrão. O `searchMany` aceita um
+  flag `includeInactive` que o controller de busca honra **só para gestores de
+  academia** (`gym.gyms` `edit`, ADMIN ignora), então membros não veem academias
+  inativas; o `PATCH /gyms/:gymId` alterna `is_active` (desativar / reativar).
 - **`is_default` / `is_system`:** o perfil `is_default` é anexado automaticamente
   a uma conta nova no `POST /users`. `is_system` marca registros do seed como
   protegidos — em um perfil, **módulo ou tela**, excluir ou editar a identidade é

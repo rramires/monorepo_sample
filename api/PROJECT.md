@@ -340,13 +340,13 @@ username `transform`) stay local. See the monorepo
 | POST   | `/auth/me/email`                 |     ✅     | —                                  | self: request email change (confirm to new addr)        |
 | POST   | `/auth/me/email/confirm`         |     ✅     | —                                  | self: confirm email change via OTP                      |
 | GET    | `/me/permissions`                |     ✅     | —                                  | effective screens + sidebar menu + default screen       |
-| GET    | `/gyms/search`                   |     ✅     | —                                  | search by title                                         |
-| GET    | `/gyms/nearby`                   |     ✅     | —                                  | search by proximity                                     |
+| GET    | `/gyms/search`                   |     ✅     | —                                  | search by title (active only; managers: `includeInactive`) |
+| GET    | `/gyms/nearby`                   |     ✅     | —                                  | search by proximity (active only)                      |
 | POST   | `/gyms`                          |     ✅     | `gym.gyms` · create                | create a gym                                            |
-| PATCH  | `/gyms/:gymId`                   |     ✅     | `gym.gyms` · edit                  | edit a gym (title/description/phone)                    |
+| PATCH  | `/gyms/:gymId`                   |     ✅     | `gym.gyms` · edit                  | edit a gym (title/description/phone, `is_active`)       |
 | GET    | `/check-ins/history`             |     ✅     | —                                  | own history                                             |
 | GET    | `/check-ins/metrics`             |     ✅     | —                                  | own total                                               |
-| POST   | `/gyms/:gymId/check-ins`         |     ✅     | —                                  | check in (verified email if flag on)                    |
+| POST   | `/gyms/:gymId/check-ins`         |     ✅     | —                                  | check in (verified email if flag on; `403` if gym inactive) |
 | PATCH  | `/check-ins/:checkInId/validate` |     ✅     | `gym.validations` · create         | validate check-in                                       |
 | POST   | `/users/send-verification`       |     ✅     | —                                  | send verification email (link + OTP)                    |
 | GET    | `/users/verify-email`            |     ❌     | —                                  | verify email via link token (`?token=`)                 |
@@ -545,6 +545,14 @@ action grants (`ProfileScreen`); a user is assigned profiles (`UserProfile`).
   account — a fired user is cut off immediately, not when the token expires. Login
   is also refused: `AuthenticateUseCase` throws `AccountInactiveError` →
   `403 { "message": "Account is inactive." }`.
+- **Gym soft-delete (`Gym.is_active`):** `CheckIn.gym_id` is a required FK with no
+  cascade, so a gym is never hard-deleted (history would break). A deactivated gym
+  refuses check-ins (`CheckInUseCase` → `InactiveGymError` → `403`) and disappears
+  from the member browse — `findManyNearby` is always active-only and `searchMany`
+  is active-only by default. `searchMany` accepts an `includeInactive` flag that
+  the search controller honors **only for gym managers** (`gym.gyms` `edit`, ADMIN
+  bypasses) so members can't see inactive gyms; `PATCH /gyms/:gymId` toggles
+  `is_active` to deactivate / reactivate.
 - **`is_default` / `is_system`:** the `is_default` profile is auto-attached to a
   new account on `POST /users`. `is_system` marks seeded records as protected —
   on a profile, **module, or screen**, deleting it or editing its identity is a
