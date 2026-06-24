@@ -130,8 +130,8 @@ the `PATCH` method (the backend sets `methods` explicitly for that reason).
 | `pnpm test`          | Unit/component tests (Vitest, watch)                          |
 | `pnpm test:run`      | Unit/component tests once (CI mode)                           |
 | `pnpm test:coverage` | Unit tests + V8 coverage report                               |
-| `pnpm e2e`           | Playwright e2e suite (auto-boots `dev:test` on `:5001`)       |
-| `pnpm e2e:ui`        | Playwright UI mode (slow-mo)                                  |
+| `pnpm test:e2e`      | Playwright e2e suite (auto-boots `dev:test` on `:5001`)       |
+| `pnpm test:e2e:ui`   | Playwright UI mode (slow-mo)                                  |
 | `pnpm lint`          | ESLint (flat config)                                          |
 | `pnpm lint:fix`      | ESLint with `--fix`                                           |
 | `pnpm check`         | Prettier check (`src`)                                        |
@@ -222,7 +222,7 @@ mock handler in `src/api/mocks/` mirrors it.
   specs live **next to the code** (`src/**/*.spec.{ts,tsx}`). A shared
   `renderWithProviders` (`test/utils.tsx`) wraps the unit in a `MemoryRouter`
   and a no-retry `QueryClient`.
-- **`pnpm e2e`** — Playwright (Chromium). Specs live in `test/*.spec.ts`. The
+- **`pnpm test:e2e`** — Playwright (Chromium). Specs live in `test/*.spec.ts`. The
   config auto-boots `pnpm dev:test` on `:5001` (MSW active), so e2e runs against
   the deterministic mock — no backend, no flakiness.
 
@@ -237,7 +237,7 @@ mock handler in `src/api/mocks/` mirrors it.
 pnpm lint        # ESLint, no errors
 pnpm build       # tsc -b type-check + production build
 pnpm test:run    # unit/component suite
-pnpm e2e         # Playwright e2e (auto-boots the mock server)
+pnpm test:e2e    # Playwright e2e (auto-boots the mock server)
 ```
 
 ### Manual smoke (mock mode)

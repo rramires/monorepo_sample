@@ -34,7 +34,7 @@ commit per phase, and let the user own the merge and the push.
     ```
     Changes that touch a user flow / route also run the e2e suite:
     ```sh
-    pnpm e2e
+    pnpm test:e2e
     ```
 4. **When the task is done, STOP and wait for the user.** The user tests the
    branch in the browser and authorizes the merge; only then merge locally

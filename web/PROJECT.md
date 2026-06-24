@@ -455,7 +455,7 @@ these fixes when replicating (`TUTORIAL_10` has the full write-up):
 - `webServer` auto-boots `pnpm dev:test` (MSW active in mode `test`) and reuses a
   running one locally. So **e2e runs entirely against the deterministic mock** —
   no backend, no network flakiness.
-- `pree2e` frees port 5001 first; `pnpm e2e:ui` runs headed/slow-mo.
+- `pretest:e2e` frees port 5001 first; `pnpm test:e2e:ui` runs headed/slow-mo.
 
 ### 9.3 The blind spot (why manual smoke still matters)
 
@@ -499,7 +499,7 @@ To add a screen backed by a new endpoint (e.g. "plans"):
    and `RoleRoute` if admin-only); add a sidebar entry if needed.
 6. **Tests:** `plans.spec.tsx` (unit, `renderWithProviders`) and a
    `test/plans.spec.ts` e2e flow against the mock.
-7. **Verify:** `pnpm lint && pnpm build && pnpm test:run && pnpm e2e`, then a
+7. **Verify:** `pnpm lint && pnpm build && pnpm test:run && pnpm test:e2e`, then a
    manual browser smoke (§9.3).
 
 > **Cross-cutting state?** If many screens need it, add a Context with the

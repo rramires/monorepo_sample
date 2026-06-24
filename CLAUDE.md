@@ -51,7 +51,7 @@ When changing request/response shapes, think contract-first:
    | App | Gate |
    |-----|------|
    | `api` | `pnpm -C api lint && pnpm -C api compile && pnpm -C api test` (+ `test:e2e` for HTTP/routes) |
-   | `web` | `pnpm -C web lint && pnpm -C web build && pnpm -C web test:run` (+ `e2e` for flows) |
+   | `web` | `pnpm -C web lint && pnpm -C web build && pnpm -C web test:run` (+ `test:e2e` for flows) |
    | `contracts` | `pnpm -C packages/contracts typecheck` |
 
 4. **When done, STOP for the user.** The user tests in the browser (for

@@ -113,7 +113,7 @@ Gate antes de cada commit (no app tocado):
 | App | Gate |
 |-----|------|
 | `api` | `pnpm -C api lint && pnpm -C api compile && pnpm -C api test` (+ `test:e2e` pra HTTP) |
-| `web` | `pnpm -C web lint && pnpm -C web build && pnpm -C web test:run` (+ `e2e` pra fluxos) |
+| `web` | `pnpm -C web lint && pnpm -C web build && pnpm -C web test:run` (+ `test:e2e` pra fluxos) |
 | `contracts` | `pnpm -C packages/contracts typecheck` |
 
 Doutrina de processo (disciplina branch/commit/merge) está em
