@@ -9,63 +9,26 @@ import type { Module, Profile, ProfileScreen, Screen } from '@root/contracts'
 // ── Modules ──────────────────────────────────────────────────────────────────
 export const modules: Module[] = [
 	{
-		id: 'mod-access-control',
-		key: 'access-control',
-		name: 'Access Control',
-		description: 'Manage modules, screens, profiles and user access.',
-		order: 0,
-		// System catalog — protected from web-UI deletion / key rename.
-		is_system: true,
-	},
-	{
 		id: 'mod-gym',
 		key: 'gym',
 		name: 'Gym',
 		description: 'The gym domain (dashboard, gyms, check-ins).',
-		order: 1,
+		order: 0,
 		is_system: false,
+	},
+	{
+		id: 'mod-access-control',
+		key: 'access-control',
+		name: 'Access Control',
+		description: 'Manage modules, screens, profiles and user access.',
+		order: 1,
+		// System catalog — protected from web-UI deletion / key rename.
+		is_system: true,
 	},
 ]
 
 // ── Screens ──────────────────────────────────────────────────────────────────
 export const screens: Screen[] = [
-	// access-control (system — protected)
-	{
-		id: 'scr-ac-modules',
-		module_id: 'mod-access-control',
-		key: 'access-control.modules',
-		name: 'Manage Modules',
-		path: '/admin/modules',
-		order: 0,
-		is_system: true,
-	},
-	{
-		id: 'scr-ac-screens',
-		module_id: 'mod-access-control',
-		key: 'access-control.screens',
-		name: 'Manage Screens',
-		path: '/admin/screens',
-		order: 1,
-		is_system: true,
-	},
-	{
-		id: 'scr-ac-profiles',
-		module_id: 'mod-access-control',
-		key: 'access-control.profiles',
-		name: 'Manage Profiles',
-		path: '/admin/profiles',
-		order: 2,
-		is_system: true,
-	},
-	{
-		id: 'scr-ac-users',
-		module_id: 'mod-access-control',
-		key: 'access-control.users',
-		name: 'Manage Users',
-		path: '/admin/users',
-		order: 3,
-		is_system: true,
-	},
 	// gym (demo content — deletable)
 	{
 		id: 'scr-gym-dashboard',
@@ -111,6 +74,43 @@ export const screens: Screen[] = [
 		path: '/validations',
 		order: 4,
 		is_system: false,
+	},
+	// access-control (system — protected)
+	{
+		id: 'scr-ac-modules',
+		module_id: 'mod-access-control',
+		key: 'access-control.modules',
+		name: 'Manage Modules',
+		path: '/admin/modules',
+		order: 0,
+		is_system: true,
+	},
+	{
+		id: 'scr-ac-screens',
+		module_id: 'mod-access-control',
+		key: 'access-control.screens',
+		name: 'Manage Screens',
+		path: '/admin/screens',
+		order: 1,
+		is_system: true,
+	},
+	{
+		id: 'scr-ac-profiles',
+		module_id: 'mod-access-control',
+		key: 'access-control.profiles',
+		name: 'Manage Profiles',
+		path: '/admin/profiles',
+		order: 2,
+		is_system: true,
+	},
+	{
+		id: 'scr-ac-users',
+		module_id: 'mod-access-control',
+		key: 'access-control.users',
+		name: 'Manage Users',
+		path: '/admin/users',
+		order: 3,
+		is_system: true,
 	},
 ]
 
