@@ -368,7 +368,7 @@ locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do monorepo e
 | DELETE | `/modules/:id`                   |     ✅     | `access-control.modules` · delete  | excluir um módulo (`409` se tiver telas ou for de sistema)  |
 | GET    | `/screens`                       |     ✅     | `access-control.screens` · view    | listar telas                                               |
 | POST   | `/screens`                       |     ✅     | `access-control.screens` · create  | criar uma tela                                             |
-| PATCH  | `/screens/:id`                   |     ✅     | `access-control.screens` · edit    | editar uma tela (`409` ao renomear a key de uma de sistema) |
+| PATCH  | `/screens/:id`                   |     ✅     | `access-control.screens` · edit    | editar uma tela (`409` ao mudar key/módulo/path de uma de sistema) |
 | DELETE | `/screens/:id`                   |     ✅     | `access-control.screens` · delete  | excluir uma tela (`409` em tela de sistema)                |
 | GET    | `/profiles`                      |     ✅     | `access-control.profiles` · view   | listar perfis                                              |
 | GET    | `/profiles/:id`                  |     ✅     | `access-control.profiles` · view   | buscar um perfil com seus grants                           |
@@ -544,8 +544,9 @@ reúne grants de ação por tela (`ProfileScreen`); um usuário recebe perfis
   `AccountInactiveError` → `403 { "message": "Account is inactive." }`.
 - **`is_default` / `is_system`:** o perfil `is_default` é anexado automaticamente
   a uma conta nova no `POST /users`. `is_system` marca registros do seed como
-  protegidos — em um perfil, **módulo ou tela**, editar a key ou excluir é `409`;
-  os grants de um perfil seguem editáveis. O seed marca os três perfis e o módulo
+  protegidos — em um perfil, **módulo ou tela**, excluir ou editar a identidade é
+  `409` (a `key`; numa tela também `module` e `path`); name/description/order — e
+  os grants de um perfil — seguem editáveis. O seed marca os três perfis e o módulo
   access-control + suas 4 telas como de sistema; o módulo/telas gym seguem
   deletáveis (conteúdo de demo).
 - **Mapeamento de erros do CRUD** (controllers, via `instanceof`):

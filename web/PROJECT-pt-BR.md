@@ -343,8 +343,9 @@ profiles; seus grants **se mesclam** (OR).
   por sua screen key `access-control.*`:
     - **Modules** (`/admin/modules`) e **Screens** (`/admin/screens`) — CRUD do
       catálogo (dialogs de criar/editar; apagar uma screen cascateia seus grants).
-      Linhas de sistema mostram um badge **System** e escondem o Delete (o backend
-      também retorna `409`).
+      Linhas de sistema mostram um badge **System** e escondem o Delete; o dialog
+      de edição deixa a identidade do registro read-only (a `key`, e o `module` /
+      `path` de uma screen) — o backend também retorna `409`.
     - **Profiles** (`/admin/profiles`) — CRUD de profiles (com badges
       `is_default`/`is_system`); **ProfileDetail** (`/admin/profiles/:profileId`)
       edita um profile e seus grants via a **`TransferTable`** — o lado atribuído

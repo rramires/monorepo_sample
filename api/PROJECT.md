@@ -366,7 +366,7 @@ username `transform`) stay local. See the monorepo
 | DELETE | `/modules/:id`                   |     ✅     | `access-control.modules` · delete  | delete a module (`409` if it has screens or is system)  |
 | GET    | `/screens`                       |     ✅     | `access-control.screens` · view    | list screens                                            |
 | POST   | `/screens`                       |     ✅     | `access-control.screens` · create  | create a screen                                         |
-| PATCH  | `/screens/:id`                   |     ✅     | `access-control.screens` · edit    | edit a screen (`409` renaming a system screen's key)    |
+| PATCH  | `/screens/:id`                   |     ✅     | `access-control.screens` · edit    | edit a screen (`409` changing a system screen's key/module/path) |
 | DELETE | `/screens/:id`                   |     ✅     | `access-control.screens` · delete  | delete a screen (`409` on a system screen)              |
 | GET    | `/profiles`                      |     ✅     | `access-control.profiles` · view   | list profiles                                           |
 | GET    | `/profiles/:id`                  |     ✅     | `access-control.profiles` · view   | fetch a profile with its grants                         |
@@ -547,8 +547,10 @@ action grants (`ProfileScreen`); a user is assigned profiles (`UserProfile`).
   `403 { "message": "Account is inactive." }`.
 - **`is_default` / `is_system`:** the `is_default` profile is auto-attached to a
   new account on `POST /users`. `is_system` marks seeded records as protected —
-  on a profile, **module, or screen**, editing the key or deleting it is a `409`;
-  a profile's grants stay editable. The seed marks all three profiles and the
+  on a profile, **module, or screen**, deleting it or editing its identity is a
+  `409` (the `key`; for a screen also its `module` and `path`); name/description/
+  order — and a profile's grants — stay editable. The seed marks all three
+  profiles and the
   access-control module + its 4 screens as system; the gym module/screens stay
   deletable demo content.
 - **CRUD error mapping** (controllers, via `instanceof`): `ResourceNotFoundError`

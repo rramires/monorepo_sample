@@ -190,7 +190,7 @@ imediatamente** no boot se alguma variável for inválida (validação Zod em
 | `DELETE` | `/modules/:id`                   | Bearer         | `access-control.modules` · delete  | Excluir um módulo (`409` se ainda tiver telas ou for de sistema) |
 | `GET`    | `/screens`                       | Bearer         | `access-control.screens` · view    | Listar telas                                                |
 | `POST`   | `/screens`                       | Bearer         | `access-control.screens` · create  | Criar uma tela                                              |
-| `PATCH`  | `/screens/:id`                   | Bearer         | `access-control.screens` · edit    | Editar uma tela (`409` ao renomear a key de uma tela de sistema) |
+| `PATCH`  | `/screens/:id`                   | Bearer         | `access-control.screens` · edit    | Editar uma tela (`409` ao mudar key/módulo/path de uma de sistema) |
 | `DELETE` | `/screens/:id`                   | Bearer         | `access-control.screens` · delete  | Excluir uma tela (`409` em tela de sistema)                |
 | `GET`    | `/profiles`                      | Bearer         | `access-control.profiles` · view   | Listar perfis                                               |
 | `GET`    | `/profiles/:id`                  | Bearer         | `access-control.profiles` · view   | Buscar um perfil com seus grants                            |

@@ -188,7 +188,7 @@ boot if any variable is invalid (Zod validation in `src/env`).
 | `DELETE` | `/modules/:id`                   | Bearer         | `access-control.modules` · delete  | Delete a module (`409` if it still has screens or is a system module) |
 | `GET`    | `/screens`                       | Bearer         | `access-control.screens` · view    | List screens                                                       |
 | `POST`   | `/screens`                       | Bearer         | `access-control.screens` · create  | Create a screen                                                    |
-| `PATCH`  | `/screens/:id`                   | Bearer         | `access-control.screens` · edit    | Edit a screen (`409` renaming a system screen's key)             |
+| `PATCH`  | `/screens/:id`                   | Bearer         | `access-control.screens` · edit    | Edit a screen (`409` changing a system screen's key/module/path) |
 | `DELETE` | `/screens/:id`                   | Bearer         | `access-control.screens` · delete  | Delete a screen (`409` on a system screen)                        |
 | `GET`    | `/profiles`                      | Bearer         | `access-control.profiles` · view   | List profiles                                                      |
 | `GET`    | `/profiles/:id`                  | Bearer         | `access-control.profiles` · view   | Fetch a profile with its grants                                    |

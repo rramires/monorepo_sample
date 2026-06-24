@@ -339,8 +339,9 @@ profiles; their grants **merge** (OR).
   `access-control.*` screen key:
     - **Modules** (`/admin/modules`) and **Screens** (`/admin/screens`) — CRUD the
       catalog (dialogs for create/edit; deleting a screen cascades its grants).
-      System rows show a **System** badge and hide Delete (the backend also
-      returns `409`).
+      System rows show a **System** badge and hide Delete; the edit dialog makes
+      a system record's identity read-only (the `key`, and a screen's `module` /
+      `path`) — the backend also returns `409`.
     - **Profiles** (`/admin/profiles`) — CRUD profiles (with `is_default`/`is_system`
       badges); **ProfileDetail** (`/admin/profiles/:profileId`) edits one profile
       and its grants via the **`TransferTable`** — the assigned side has per-action
