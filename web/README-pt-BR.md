@@ -84,6 +84,8 @@ Vitest · Playwright
   ficar ao lado da view em vez de ser ordenado pra longe dela.
 - **Mobile-first** — utilitários Tailwind mobile-first; a sidebar vira um Sheet
   em telas pequenas (`useIsMobile`).
+- **Forms amigáveis ao teclado** — telas de digitar focam o primeiro campo; no
+  sign-in o link "Forgot your password?" vem depois do Sign in na ordem de tab.
 - **Env tipado e validado** — `src/env.ts` faz parse de `import.meta.env` com Zod
   e **falha rápido** em má configuração, igual ao backend.
 - **Testado** — specs unit/componente com Vitest + Testing Library (happy-dom) ao

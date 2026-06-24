@@ -408,6 +408,12 @@ token↔user; os handlers `*-mock.ts` servem `/modules`, `/screens`, `/profiles`
 - **Submit:** `handleSubmit(onSubmit)`; `onSubmit` roda a mutation, dá toast de
   sucesso/erro, navega.
 - **Tipagem React 19:** use `React.SubmitEvent` (não o `FormEvent` depreciado).
+- **Teclado / foco.** Uma tela feita para digitar foca o **primeiro campo** ao
+  montar (`autoFocus` no primeiro input — telas de auth, new-gym, user-edit,
+  profile-detail; os dialogs admin de criar/editar ganham isso de graça pelo
+  focus scope do Radix). Links secundários vêm **depois** da ação primária na
+  ordem de tab — no sign-in, "Forgot your password?" fica abaixo do botão Sign in,
+  então a ordem é identifier → password → Sign in → Forgot.
 - **Desativação (soft-delete) = toggle com confirm no save.** Quando uma entidade
   suporta soft-delete, o estado ativo é um **`Switch` Active dentro do form de
   edição** (não um botão separado tipo Delete). No submit, se Active foi **ON →

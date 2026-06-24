@@ -82,6 +82,11 @@ Co-Authored-By: Claude <noreply@anthropic.com>
   `tailwind-merge` v3, `tailwind-variants` v3).
 - **React 19 typing:** use `React.SubmitEvent` (the old `FormEvent` is
   deprecated).
+- **Keyboard / focus:** a screen meant for typing **focuses its first field on
+  mount** (`autoFocus` on the first input; Radix dialogs do it for free).
+  Secondary links go **after** the primary action in tab order (e.g. sign-in's
+  "Forgot your password?" sits below the Sign in button). Details in `PROJECT.md`
+  §6.
 - **Zod 4:** the project is on `zod@^4` — the schema syntax differs from v3
   (some APIs / error-customization moved or were deprecated). Write v4 syntax and
   port deprecations when adapting older snippets.

@@ -84,6 +84,8 @@ Vitest · Playwright
   next to its view instead of sorting away from it.
 - **Mobile-first** — Tailwind mobile-first utilities; the sidebar collapses to a
   Sheet on small screens (`useIsMobile`).
+- **Keyboard-friendly forms** — typing screens autofocus their first field; on
+  sign-in the "Forgot your password?" link comes after Sign in in tab order.
 - **Typed, validated env** — `src/env.ts` parses `import.meta.env` with Zod and
   **fails fast** on misconfig, exactly like the backend.
 - **Tested** — Vitest + Testing Library unit/component specs (happy-dom) next to
