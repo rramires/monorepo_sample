@@ -80,6 +80,7 @@ export function UserEdit() {
 											</Label>
 											<Input
 												id='username'
+												autoFocus
 												{...pm.register('username')}
 											/>
 											{pm.errors.username && (

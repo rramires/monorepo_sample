@@ -36,6 +36,7 @@ export function Register() {
 									<Input
 										id='username'
 										type='text'
+										autoFocus
 										placeholder='your_username'
 										{...pm.register('username')}
 									/>

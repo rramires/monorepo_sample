@@ -5,6 +5,32 @@ import { renderWithProviders } from '../../../../test/utils'
 import { SignIn } from './sign-in'
 
 describe('SignIn form', () => {
+	it('autofocuses the email/username field on mount', () => {
+		renderWithProviders(<SignIn />, { route: '/sign-in' })
+
+		expect(screen.getByLabelText('Email or username')).toHaveFocus()
+	})
+
+	it('places the Forgot link after Sign in in tab order', () => {
+		renderWithProviders(<SignIn />, { route: '/sign-in' })
+
+		const focusable = screen.getAllByRole('textbox') as HTMLElement[]
+		const password = document.getElementById('password')!
+		const signIn = screen.getByRole('button', { name: /sign in/i })
+		const forgot = screen.getByRole('link', {
+			name: /forgot your password/i,
+		})
+
+		// DOM order is the tab order: identifier → password → Sign in → Forgot.
+		const order = [focusable[0], password, signIn, forgot]
+		for (let i = 0; i < order.length - 1; i++) {
+			expect(
+				order[i].compareDocumentPosition(order[i + 1]) &
+					Node.DOCUMENT_POSITION_FOLLOWING,
+			).toBeTruthy()
+		}
+	})
+
 	it('shows validation errors when submitting empty', async () => {
 		const user = userEvent.setup()
 		renderWithProviders(<SignIn />, { route: '/sign-in' })

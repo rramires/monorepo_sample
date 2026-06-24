@@ -404,6 +404,12 @@ the `*-mock.ts` handlers serve `/modules`, `/screens`, `/profiles`,
 - **Submit:** `handleSubmit(onSubmit)`; `onSubmit` runs the mutation, toasts
   success/error, navigates.
 - **React 19 typing:** use `React.SubmitEvent` (not the deprecated `FormEvent`).
+- **Keyboard / focus.** A screen meant for typing focuses its **first field** on
+  mount (`autoFocus` on the first input — auth screens, new-gym, user-edit,
+  profile-detail; admin create/edit dialogs get it for free from Radix's focus
+  scope). Secondary links come **after** the primary action in tab order — on
+  sign-in, "Forgot your password?" sits below the Sign in button so the order is
+  identifier → password → Sign in → Forgot.
 - **Deactivation (soft-delete) = confirm-on-save toggle.** When an entity supports
   soft-delete, its active state is an **Active `Switch` inside the edit form** (not
   a separate Delete-style button). On submit, if Active went **ON → OFF**,

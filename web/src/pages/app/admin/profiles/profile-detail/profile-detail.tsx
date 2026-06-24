@@ -143,6 +143,7 @@ export function ProfileDetail() {
 						<Label htmlFor='profile-name'>Name</Label>
 						<Input
 							id='profile-name'
+							autoFocus
 							value={pm.name}
 							onChange={(e) => pm.setName(e.target.value)}
 							disabled={!pm.canEdit}
