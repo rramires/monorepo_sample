@@ -49,9 +49,9 @@ describe('Search Gyms Use Case', () => {
 		])
 	})
 
-	it('should be able to paginated search for gyms', async () => {
-		// mock 22 gyms
-		for (let i = 1; i <= 22; i++) {
+	it('paginates (PAGE_SIZE 8) and reports the total', async () => {
+		// mock 20 gyms
+		for (let i = 1; i <= 20; i++) {
 			await gymsRepository.create({
 				title: `TypeScript Gym ${i}`,
 				description: 'Best TS Gyn in the city',
@@ -61,18 +61,14 @@ describe('Search Gyms Use Case', () => {
 			})
 		}
 
-		// fetch
-		const { gyms } = await sut.execute({
-			query: 'TypeScript',
-			page: 2,
-		})
+		// page 1: first 8, page 3: the last 4 — total is all 20 regardless of page
+		const page1 = await sut.execute({ query: 'TypeScript', page: 1 })
+		expect(page1.gyms).toHaveLength(8)
+		expect(page1.total).toBe(20)
 
-		// check
-		expect(gyms).toHaveLength(2)
-		expect(gyms).toEqual([
-			expect.objectContaining({ title: 'TypeScript Gym 21' }),
-			expect.objectContaining({ title: 'TypeScript Gym 22' }),
-		])
+		const page3 = await sut.execute({ query: 'TypeScript', page: 3 })
+		expect(page3.gyms).toHaveLength(4)
+		expect(page3.total).toBe(20)
 	})
 
 	it('lists all gyms when the query is empty (the manager browse-all view)', async () => {

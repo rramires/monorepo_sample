@@ -8,7 +8,7 @@ import {
 	IGymUpdateInput,
 } from '../i-gyms-repository'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 8
 const DISTANCE_IN_KILOMETERS = 10
 
 export class PrismaGymsRepository implements IGymsRepository {
@@ -40,19 +40,27 @@ export class PrismaGymsRepository implements IGymsRepository {
 		return gym
 	}
 
+	private searchWhere(query: string, includeInactive: boolean) {
+		return {
+			title: { contains: query },
+			// Members see active gyms only; managers may opt into inactive.
+			...(includeInactive ? {} : { is_active: true }),
+		}
+	}
+
 	async searchMany(query: string, page: number, includeInactive = false) {
 		const gyms = await prisma.gym.findMany({
-			where: {
-				title: {
-					contains: query,
-				},
-				// Members see active gyms only; managers may opt into inactive.
-				...(includeInactive ? {} : { is_active: true }),
-			},
+			where: this.searchWhere(query, includeInactive),
 			take: PAGE_SIZE,
 			skip: (page - 1) * PAGE_SIZE,
 		})
 		return gyms
+	}
+
+	async countMany(query: string, includeInactive = false) {
+		return prisma.gym.count({
+			where: this.searchWhere(query, includeInactive),
+		})
 	}
 
 	async findManyNearby(

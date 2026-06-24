@@ -26,7 +26,7 @@ export async function searchController(
 	const allowInactive = await resolveIncludeInactive(request, includeInactive)
 
 	const searchGymsUseCase = makeSearchGymsUseCase()
-	const { gyms } = await searchGymsUseCase.execute({
+	const { gyms, total } = await searchGymsUseCase.execute({
 		query,
 		page,
 		includeInactive: allowInactive,
@@ -34,5 +34,6 @@ export async function searchController(
 
 	return reply.status(200).send({
 		gyms,
+		total,
 	})
 }

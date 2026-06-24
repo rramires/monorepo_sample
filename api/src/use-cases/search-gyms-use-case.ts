@@ -10,6 +10,8 @@ interface SearchGymsUseCaseRequest {
 
 interface SearchGymsUseCaseResponse {
 	gyms: Gym[]
+	// Total matches across all pages — for the "X–Y of Z" pager.
+	total: number
 }
 
 export class SearchGymsUseCase {
@@ -20,14 +22,13 @@ export class SearchGymsUseCase {
 		page,
 		includeInactive = false,
 	}: SearchGymsUseCaseRequest): Promise<SearchGymsUseCaseResponse> {
-		// search
-		const gyms = await this.gymsRepository.searchMany(
-			query,
-			page,
-			includeInactive,
-		)
+		const [gyms, total] = await Promise.all([
+			this.gymsRepository.searchMany(query, page, includeInactive),
+			this.gymsRepository.countMany(query, includeInactive),
+		])
 		return {
 			gyms,
+			total,
 		}
 	}
 }

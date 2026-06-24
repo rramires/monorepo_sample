@@ -10,7 +10,7 @@ import {
 	IGymUpdateInput,
 } from '../i-gyms-repository'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 8
 const DISTANCE_IN_KILOMETERS = 10
 
 export class InMemoryGymsRepository implements IGymsRepository {
@@ -62,12 +62,22 @@ export class InMemoryGymsRepository implements IGymsRepository {
 		return gym
 	}
 
-	async searchMany(query: string, page: number, includeInactive = false) {
+	private searchMatches(query: string, includeInactive: boolean) {
 		// find by title; members see active-only, managers may include inactive
 		return this.items
 			.filter((item) => item.title.includes(query))
 			.filter((item) => includeInactive || item.is_active)
-			.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+	}
+
+	async searchMany(query: string, page: number, includeInactive = false) {
+		return this.searchMatches(query, includeInactive).slice(
+			(page - 1) * PAGE_SIZE,
+			page * PAGE_SIZE,
+		)
+	}
+
+	async countMany(query: string, includeInactive = false) {
+		return this.searchMatches(query, includeInactive).length
 	}
 
 	async findManyNearby(

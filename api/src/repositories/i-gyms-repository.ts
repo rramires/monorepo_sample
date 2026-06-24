@@ -25,6 +25,8 @@ export interface IGymsRepository {
 		page: number,
 		includeInactive?: boolean,
 	): Promise<Gym[]>
+	// Total matches for `searchMany` (ignoring pagination) — powers "X–Y of Z".
+	countMany(query: string, includeInactive?: boolean): Promise<number>
 	findManyNearby(
 		params: IFindManyNearbyParams,
 		includeInactive?: boolean,
