@@ -64,6 +64,13 @@ Co-Authored-By: Claude <noreply@anthropic.com>
   for session/UI state (auth, theme, title) — **not** for server state.
 - **Server state = TanStack Query** (`useQuery`/`useMutation` + invalidation),
   never hand-rolled fetch-in-effect for server data.
+- **Deactivation (soft-delete) = confirm-on-save toggle:** an entity's active
+  state is an **Active `Switch` inside its edit form** (never a separate button);
+  on save, if Active went **ON → OFF**, `useConfirmDeactivate`
+  (`hooks/use-confirm-deactivate.ts`) opens a controlled `ConfirmDialog` before
+  committing — reactivating / other edits don't prompt. Reuse the hook (don't
+  re-implement the check per form); `user-edit` is the reference. Details in
+  `PROJECT.md` §6.
 - **Component cascade:** shadcn/ui → Radix primitive + Tailwind → custom
   (Tailwind + `tailwind-variants`/`tailwind-merge`, see `ui-sample/`) → custom
   CSS in `global.css`. Never skip straight to custom CSS.
