@@ -182,17 +182,27 @@ export function ProfileDetail() {
 				</div>
 
 				<div className='flex flex-col gap-2'>
-					<div className='flex flex-col gap-1.5 sm:max-w-xs'>
-						<Label className='text-muted-foreground text-xs'>
-							Filter available by module
-						</Label>
-						<MultiSelect
-							options={pm.moduleOptions}
-							selected={pm.moduleFilter}
-							onChange={pm.setModuleFilter}
-							placeholder='All modules'
-							searchPlaceholder='Search modules…'
-							emptyText='No modules.'
+					{/* Mirror the TransferTable's columns so the filter lines up
+					    with the Available search: flex-1 + the move-button
+					    column (w-8) + the Granted panel (flex-1). */}
+					<div className='flex flex-col gap-3 sm:flex-row'>
+						<div className='flex min-w-0 flex-1 flex-col gap-1.5'>
+							<Label className='text-muted-foreground text-xs'>
+								Filter available by module
+							</Label>
+							<MultiSelect
+								options={pm.moduleOptions}
+								selected={pm.moduleFilter}
+								onChange={pm.setModuleFilter}
+								placeholder='All modules'
+								searchPlaceholder='Search modules…'
+								emptyText='No modules.'
+							/>
+						</div>
+						<div className='hidden w-8 sm:block' aria-hidden />
+						<div
+							className='hidden min-w-0 flex-1 sm:block'
+							aria-hidden
 						/>
 					</div>
 
