@@ -6,29 +6,34 @@ never copies). Architecture: [`PROJECT.md`](./PROJECT.md).
 
 ## Resume prompt (cole numa sessão nova, após compactar)
 
-> Leia `HANDOFF.md` + `CLAUDE.md` na raiz do monorepo `monorepo_sample` e continue
-> a partir de _Current state_. O **pacote de follow-ups do access-control (G0–G6)
-> está 100% concluído, mergeado e pushado** no `master` — nada em andamento.
+> Leia `HANDOFF.md` + `CLAUDE.md` + **`PLAN.md`** na raiz do monorepo
+> `monorepo_sample` e continue a partir de _Current state_. Trabalho ativo
+> **aprovado, não iniciado**: um **pacote responsivo no `web/`** (importar a
+> doutrina de layout do design BackToYou). Os detalhes executáveis (decisões
+> travadas, doutrina extraída, fases G1–G6, arquivos a tocar, API do
+> `<ResponsiveList>`) estão em `PLAN.md` (gitignored, on-disk, mesma máquina).
 > Monorepo: `api/` (Fastify+Prisma+MySQL) + `web/` (React+Vite+MSW) +
 > `packages/contracts/` (`@root/contracts`, Zod).
 >
-> Não há trabalho ativo e o **backlog está vazio** — todos os itens coletados
-> foram entregues. Se o usuário trouxer algo novo: brainstorm rápido (1 pergunta
-> por vez, pt-BR), feche escopo, e só então toque.
+> **Próximo passo: G1 (shell responsivo)** — hook `use-layout-band` + default do
+> `SidebarProvider` por faixa (rail no tablet / cheia no desktop), gruda na faixa
+> e re-snap ao cruzar breakpoint; drawer `<md` segue via `Sheet`. Tudo web/mock,
+> **sem `api/`**. Brainstorm já fechado — pode abrir a branch do G1 e tocar; **PARE
+> no fim do G1** pro teste no browser.
 >
 > Doutrina: 1 branch local por grupo off `master`; **commit por fase** após gate
-> verde; **antes de cada commit**: `pnpm -C <app> lint:fix && pnpm -C <app> format`;
-> gates — web `lint && build && test:run` (+`test:e2e`), api `lint && compile &&
-> test` (+`test:e2e`, MySQL via `compose:up`), contracts `typecheck`; docs EN+PT
-> (4 arquivos por app). **PARE no fim de cada grupo** pro usuário testar, autorizar
-> o merge (`git merge --no-ff`) e **pushar (só o usuário pusha)**. Confirme antes
-> de qualquer irreversível. Responda em pt-BR.
+> verde; **antes de cada commit**: `pnpm -C web lint:fix && pnpm -C web format`;
+> gate web `lint && build && test:run` (+`test:e2e` se mexer em fluxo); docs EN+PT
+> (4 arquivos). **PARE no fim de cada grupo** pro usuário testar, autorizar o merge
+> (`git merge --no-ff`) e **pushar (só o usuário pusha)**. Confirme antes de
+> irreversível. Responda em pt-BR. `web/docs/TUTORIAL_*` é congelado — não mexer.
 
 ## Current state
 
-- **Branch:** `master` — clean. Last commit `6dec7d1`
-  (`Merge branch 'chore/sidebar-module-order'`), 2026-06-24. **If `master` is
-  ahead of `origin`, the user still needs to push.**
+- **Branch:** `master` — clean, in sync with `origin`. Last commit `7824b74`
+  (`docs: refresh HANDOFF — default-profile invariant + sidebar order shipped`),
+  2026-06-24. This HANDOFF edit (responsive pass + resume prompt) is uncommitted —
+  **commit it as `docs:` straight to `master` and push to be disaster-safe.**
 - **Done + merged + pushed — access-control follow-up package COMPLETE (G0–G6):**
   - **G0** web e2e scripts → `test:e2e`. **G1** `is_system` on Module+Screen
     (delete/key-rename → 409; screen locks module+path; read-only edit fields).
@@ -62,8 +67,13 @@ never copies). Architecture: [`PROJECT.md`](./PROJECT.md).
   - `chore/sidebar-module-order` — the data-driven sidebar lists **Gym before
     Access Control** (swapped module `order` in the backend seed + MSW mock;
     landing unaffected).
-- **In flight:** nothing.
-- **Backlog:** empty — all collected items shipped. (`PLAN.md` deleted.)
+- **In flight:** **Responsive pass (web)** — brainstorm DONE + approved, **execution not
+  started**. Full executable detail in **`PLAN.md`** (root, gitignored, on-disk). Next =
+  **G1 shell** (band-driven sidebar default: rail tablet / expanded desktop). Bands:
+  mobile `<md`(768) · tablet `md–lg` · desktop `≥lg`(1024). Content `compact = <lg`
+  (tables→cards via a reusable `<ResponsiveList>`). Design source via DesignSync MCP
+  (see memory `ref-backtoyou-design`). Phases G1–G6 in `PLAN.md`.
+- **Backlog:** empty besides the approved responsive pass above (in `PLAN.md`).
 - **Demo (mock + seed):** users `admin` / `manager` / `support` / `johndoe`,
   senha `Password1!`. Mock seed has 24 gyms (2 inactive) to show pagination.
 
