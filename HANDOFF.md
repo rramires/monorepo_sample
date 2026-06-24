@@ -12,10 +12,9 @@ never copies). Architecture: [`PROJECT.md`](./PROJECT.md).
 > Monorepo: `api/` (Fastify+Prisma+MySQL) + `web/` (React+Vite+MSW) +
 > `packages/contracts/` (`@root/contracts`, Zod).
 >
-> Não há trabalho ativo. Itens de **backlog** (NÃO começar sem o usuário fechar
-> escopo): (1) invariante "exatamente 1 profile `is_default`" — bloquear desligar
-> o último default / no máx. um (backend profiles use-case + web profile-detail);
-> (2) sign-in keyboard UX (autofocus no 1º campo; o link Forgot rouba um tab).
+> Não há trabalho ativo. Item de **backlog** (NÃO começar sem o usuário fechar
+> escopo): invariante "exatamente 1 profile `is_default`" — bloquear desligar o
+> último default / no máx. um (backend profiles use-case + web profile-detail).
 >
 > Doutrina: 1 branch local por grupo off `master`; **commit por fase** após gate
 > verde; **antes de cada commit**: `pnpm -C <app> lint:fix && pnpm -C <app> format`;
@@ -27,8 +26,8 @@ never copies). Architecture: [`PROJECT.md`](./PROJECT.md).
 
 ## Current state
 
-- **Branch:** `master` — clean. Last commit `99a12a6`
-  (`docs(api): close §4.1 ... steps 10-13`), 2026-06-24. **If `master` is ahead of
+- **Branch:** `master` — clean. Last commit `fa07736`
+  (`Merge branch 'feat/form-autofocus'`), 2026-06-24. **If `master` is ahead of
   `origin`, the user still needs to push.**
 - **Done + merged + pushed — access-control follow-up package COMPLETE (G0–G6):**
   - **G0** web e2e scripts → `test:e2e`. **G1** `is_system` on Module+Screen
@@ -49,10 +48,15 @@ never copies). Architecture: [`PROJECT.md`](./PROJECT.md).
     kept so Granted never loses rows.
   - **G6** closed `api/PROJECT.md` §4.1 request-lifecycle graph (steps 10–13) +
     final EN+PT doc sweep (no drift).
+- **After the package — also done + merged + pushed:** `feat/form-autofocus`
+  (web) — forms autofocus their first field on mount (auth screens + new-gym /
+  user-edit / profile-detail; admin create/edit dialogs already do via Radix's
+  focus scope) and the sign-in "Forgot your password?" link moved below the Sign
+  in button (tab order identifier → password → Sign in → Forgot). Docs EN+PT.
 - **In flight:** nothing.
 - **Backlog (not started; don't begin without the user closing scope):** exactly-
-  one-`is_default`-profile invariant; sign-in keyboard UX. `PLAN.md` (local,
-  gitignored) is now stale — may be `rm`-ed.
+  one-`is_default`-profile invariant. (`PLAN.md` was deleted after this feature
+  shipped.)
 - **Demo (mock + seed):** users `admin` / `manager` / `support` / `johndoe`,
   senha `Password1!`. Mock seed has 24 gyms (2 inactive) to show pagination.
 
