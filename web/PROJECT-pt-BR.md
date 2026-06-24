@@ -183,7 +183,7 @@ src/
 │   ├── breadcrumb/          # BreadcrumbContext/Provider/hooks · breadcrumbs (trilha no header) + use-breadcrumbs-pm
 │   ├── app-sidebar/         # app-sidebar.tsx (view) + use-app-sidebar-pm.ts (dirigida por /me/permissions.menu)
 │   ├── transfer-table/      # widget reutilizável de atribuição: duas tabelas multi-seleção + dnd-kit
-│   ├── ui/                  # componentes shadcn/ui (gerados; não edite à mão sem necessidade)
+│   ├── ui/                  # componentes shadcn/ui (gerados; não edite à mão sem necessidade) · multi-select.tsx = MultiSelect enxuto em chips sobre Popover + Command (cmdk) + Badge
 │   └── ui-sample/           # referência do tier 3 da cascata: Tailwind custom + tailwind-variants
 ├── hooks/
 │   ├── use-mobile.ts        # useIsMobile (matchMedia)
@@ -370,7 +370,11 @@ profiles; seus grants **se mesclam** (OR).
       `is_default`/`is_system`); **ProfileDetail** (`/admin/profiles/:profileId`)
       edita um profile e seus grants via a **`TransferTable`** — o lado atribuído
       tem checkboxes por ação (view/create/edit/delete) e um radio **Default** que
-      escolhe a tela de destino padrão do profile.
+      escolhe a tela de destino padrão do profile. Cada linha de screen é unida ao
+      seu module para mostrar uma coluna **Module** nos dois lados, e um
+      **`MultiSelect`** em chips acima da tabela filtra o lado **Available** por
+      module (screens já concedidas sempre permanecem, então o lado Granted nunca
+      perde linhas); a busca da tabela também casa com o nome do module.
     - **Users** (`/admin/users`) — tabela paginada; **UserEdit**
       (`/admin/users/:userId`) edita username/email/role/`is_verified` mais um
       switch **Active** (`is_active`; auto-desativação bloqueada) e um card de

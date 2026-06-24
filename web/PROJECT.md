@@ -181,7 +181,7 @@ src/
 │   ├── breadcrumb/          # BreadcrumbContext/Provider/hooks · breadcrumbs (header trail) + use-breadcrumbs-pm
 │   ├── app-sidebar/         # app-sidebar.tsx (view) + use-app-sidebar-pm.ts (data-driven from /me/permissions.menu)
 │   ├── transfer-table/      # reusable two-table multi-select + dnd-kit assignment widget
-│   ├── ui/                  # shadcn/ui components (generated; do not hand-edit casually)
+│   ├── ui/                  # shadcn/ui components (generated; do not hand-edit casually) · multi-select.tsx = lean chips MultiSelect on Popover + Command (cmdk) + Badge
 │   └── ui-sample/           # cascade tier-3 reference: custom Tailwind + tailwind-variants
 ├── hooks/
 │   ├── use-mobile.ts        # useIsMobile (matchMedia)
@@ -366,7 +366,11 @@ profiles; their grants **merge** (OR).
       badges); **ProfileDetail** (`/admin/profiles/:profileId`) edits one profile
       and its grants via the **`TransferTable`** — the assigned side has per-action
       checkboxes (view/create/edit/delete) and a **Default** radio picking the
-      profile's default landing screen.
+      profile's default landing screen. Each screen row is joined with its module
+      to show a **Module** column on both sides, and a chips **`MultiSelect`** above
+      the table filters the **Available** side by module (already-granted screens
+      always stay, so the Granted side never loses rows); the table search also
+      matches the module name.
     - **Users** (`/admin/users`) — paginated table; **UserEdit**
       (`/admin/users/:userId`) edits username/email/role/`is_verified` plus an
       **Active** switch (`is_active`; self-deactivation blocked) and a **profiles**

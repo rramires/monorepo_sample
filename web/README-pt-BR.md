@@ -187,26 +187,26 @@ da logo + descrição + ações à direita). O índice `/` resolve a tela de des
 usuário via `LandingRoute`, e cada tela é protegida por `RequireScreen
 screen='<chave>' [action]` (o mesmo `can()` que o menu usa).
 
-| Caminho                       | Guarda                    | Página             | Notas                                                           |
-| ----------------------------- | ------------------------- | ------------------ | --------------------------------------------------------------- |
-| `/`                           | Protected                 | LandingRoute       | Resolve a tela de destino do usuário (dashboard/primeira)       |
-| `/gyms`                       | `gym.gyms`                | Gyms               | Próximas (geolocalização) + busca por nome                      |
-| `/check-ins`                  | `gym.check-in`            | CheckIns           | Histórico; ADMIN vê **Validate**                                |
-| `/account`                    | Protected                 | Account            | Editar username · trocar e-mail · escolher tela de destino      |
-| `/gyms/new`                   | `gym.gyms` (create)       | NewGym             | Criar academia                                                  |
-| `/admin/users`                | `access-control.users`    | AdminUsers         | Tabela de usuários paginada                                     |
-| `/admin/users/:userId`        | `access-control.users`    | UserEdit           | Editar username/email/role/`is_verified`/`is_active` + profiles |
-| `/admin/modules`              | `access-control.modules`  | AdminModules       | CRUD de modules                                                 |
-| `/admin/screens`              | `access-control.screens`  | AdminScreens       | CRUD de screens (por module)                                    |
-| `/admin/profiles`             | `access-control.profiles` | AdminProfiles      | CRUD de profiles                                                |
-| `/admin/profiles/:profileId`  | `access-control.profiles` | ProfileDetail      | Editor de grants (TransferTable) + tela padrão                  |
-| `/sign-in`                    | público (auth)            | SignIn             |                                                                 |
-| `/register`                   | público                   | Register           |                                                                 |
-| `/forgot-password`            | público (auth)            | ForgotPassword     |                                                                 |
-| `/users/reset-password`       | público (auth)            | ResetPassword      | Token via `?token=` ou email + OTP                              |
-| `/users/verify-email`         | público (auth)            | VerifyEmail        | Landing do link (`?token=`) + OTP                               |
-| `/users/confirm-email-change` | público (auth)            | ConfirmEmailChange | Landing do link de troca de e-mail                              |
-| `*`                           | —                         | NotFound           | 404                                                             |
+| Caminho                       | Guarda                    | Página             | Notas                                                                    |
+| ----------------------------- | ------------------------- | ------------------ | ------------------------------------------------------------------------ |
+| `/`                           | Protected                 | LandingRoute       | Resolve a tela de destino do usuário (dashboard/primeira)                |
+| `/gyms`                       | `gym.gyms`                | Gyms               | Próximas (geolocalização) + busca por nome                               |
+| `/check-ins`                  | `gym.check-in`            | CheckIns           | Histórico; ADMIN vê **Validate**                                         |
+| `/account`                    | Protected                 | Account            | Editar username · trocar e-mail · escolher tela de destino               |
+| `/gyms/new`                   | `gym.gyms` (create)       | NewGym             | Criar academia                                                           |
+| `/admin/users`                | `access-control.users`    | AdminUsers         | Tabela de usuários paginada                                              |
+| `/admin/users/:userId`        | `access-control.users`    | UserEdit           | Editar username/email/role/`is_verified`/`is_active` + profiles          |
+| `/admin/modules`              | `access-control.modules`  | AdminModules       | CRUD de modules                                                          |
+| `/admin/screens`              | `access-control.screens`  | AdminScreens       | CRUD de screens (por module)                                             |
+| `/admin/profiles`             | `access-control.profiles` | AdminProfiles      | CRUD de profiles                                                         |
+| `/admin/profiles/:profileId`  | `access-control.profiles` | ProfileDetail      | Editor de grants (TransferTable) + filtro/coluna de module + tela padrão |
+| `/sign-in`                    | público (auth)            | SignIn             |                                                                          |
+| `/register`                   | público                   | Register           |                                                                          |
+| `/forgot-password`            | público (auth)            | ForgotPassword     |                                                                          |
+| `/users/reset-password`       | público (auth)            | ResetPassword      | Token via `?token=` ou email + OTP                                       |
+| `/users/verify-email`         | público (auth)            | VerifyEmail        | Landing do link (`?token=`) + OTP                                        |
+| `/users/confirm-email-change` | público (auth)            | ConfirmEmailChange | Landing do link de troca de e-mail                                       |
+| `*`                           | —                         | NotFound           | 404                                                                      |
 
 O contrato da API que essas páginas consomem (rotas, papéis, formatos de erro)
 está documentado no [README do `solid_api_sample`](../api/README.md).
@@ -271,10 +271,11 @@ pnpm dev:test    # http://localhost:5001
    somente-leitura. Desligue o switch **Active** de um membro e confirme que ele
    não consegue mais entrar. Mova um profile no **card de profiles** do usuário e
    salve.
-6. **Admin → Profiles** → abra um profile → no **editor de grants** arraste (ou use
-   `>>`/`<<`) telas entre Available e Assigned, marque view/create/edit/delete,
-   escolha a tela **Default** do profile → Save. **Modules** e **Screens** oferecem
-   o mesmo CRUD para o catálogo.
+6. **Admin → Profiles** → abra um profile → no **editor de grants** restrinja a
+   lista **Available** com o filtro de **module** em chips, arraste (ou use
+   `>>`/`<<`) telas entre Available e Granted (cada linha mostra seu **Module**),
+   marque view/create/edit/delete, escolha a tela **Default** do profile → Save.
+   **Modules** e **Screens** oferecem o mesmo CRUD para o catálogo.
 7. Saia e entre como **`johndoe`**, **`manager`**, **`support`** em seguida — cada
    um vê uma **sidebar diferente** montada a partir dos grants do seu profile; o
    admin vê todas as seções. Visitar uma tela que você não tem renderiza
