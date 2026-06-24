@@ -5,6 +5,7 @@ import { IModulesRepository } from '@/repositories/i-modules-repository'
 
 import { ModuleHasScreensError } from './errors/module-has-screens-error'
 import { ResourceNotFoundError } from './errors/resource-not-found-error'
+import { SystemModuleError } from './errors/system-module-error'
 
 export class ModulesUseCase {
 	constructor(private modulesRepository: IModulesRepository) {}
@@ -24,6 +25,15 @@ export class ModulesUseCase {
 			throw new ResourceNotFoundError()
 		}
 
+		// A system module keeps its name/order editable but its key is locked.
+		if (
+			existing.is_system &&
+			body.key !== undefined &&
+			body.key !== existing.key
+		) {
+			throw new SystemModuleError()
+		}
+
 		const module = await this.modulesRepository.update(id, body)
 		return module
 	}
@@ -32,6 +42,10 @@ export class ModulesUseCase {
 		const existing = await this.modulesRepository.findById(id)
 		if (!existing) {
 			throw new ResourceNotFoundError()
+		}
+
+		if (existing.is_system) {
+			throw new SystemModuleError()
 		}
 
 		if (await this.modulesRepository.hasScreens(id)) {

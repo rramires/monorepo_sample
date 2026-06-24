@@ -3,6 +3,7 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 
 import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
+import { SystemModuleError } from '@/use-cases/errors/system-module-error'
 import { makeModulesUseCase } from '@/use-cases/factories/make-modules-use-case'
 
 export async function updateController(
@@ -26,6 +27,9 @@ export async function updateController(
 	} catch (err) {
 		if (err instanceof ResourceNotFoundError) {
 			return reply.status(404).send({ message: err.message })
+		}
+		if (err instanceof SystemModuleError) {
+			return reply.status(409).send({ message: err.message })
 		}
 		throw err
 	}

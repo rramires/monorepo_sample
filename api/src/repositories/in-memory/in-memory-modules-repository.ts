@@ -25,6 +25,8 @@ export class InMemoryModulesRepository implements IModulesRepository {
 			name: data.name,
 			description: data.description ?? null,
 			order: data.order ?? 0,
+			// is_system is never client-settable; created modules are always false.
+			is_system: false,
 		}
 		this.items.push(module)
 
