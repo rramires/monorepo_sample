@@ -9,9 +9,16 @@ export const searchGymsMock = http.get('/gyms/search', ({ request }) => {
 	const query = (url.searchParams.get('query') ?? '').toLowerCase()
 	const page = Number(url.searchParams.get('page') ?? '1')
 
-	const matches = gyms.filter((gym) =>
-		gym.title.toLowerCase().includes(query),
-	)
+	// includeInactive is honored only for managers — mirror the backend by
+	// gating on the admin token; members always get active-only.
+	const isManager =
+		request.headers.get('Authorization') === 'Bearer mock-admin-jwt-token'
+	const includeInactive =
+		isManager && url.searchParams.get('includeInactive') === 'true'
+
+	const matches = gyms
+		.filter((gym) => gym.title.toLowerCase().includes(query))
+		.filter((gym) => includeInactive || gym.is_active)
 	const start = (page - 1) * PAGE_SIZE
 	const paged = matches.slice(start, start + PAGE_SIZE)
 

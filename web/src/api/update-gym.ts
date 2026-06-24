@@ -2,12 +2,13 @@ import { api } from '@/lib/api'
 
 import { type Gym, normalizeGym } from './search-gyms'
 
-// Admin edit. Only the three editable fields — latitude/longitude are fixed at
-// creation, so they are not part of the update.
+// Admin edit. latitude/longitude are fixed at creation, so they are not part of
+// the update. `is_active` toggles the soft-delete (deactivate / reactivate).
 export interface UpdateGymBody {
 	title?: string
 	description?: string | null
 	phone?: string | null
+	is_active?: boolean
 }
 
 interface UpdateGymResponse {

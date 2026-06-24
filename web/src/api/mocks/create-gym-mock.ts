@@ -17,7 +17,8 @@ export const createGymMock = http.post<never, CreateGymBody>(
 		}
 
 		const body = await request.json()
-		const gym = { id: `gym-${nextId++}`, ...body }
+		// New gyms are always active (is_active is never client-settable on create).
+		const gym = { id: `gym-${nextId++}`, ...body, is_active: true }
 		gyms.push(gym)
 
 		return HttpResponse.json({ gym }, { status: 201 })

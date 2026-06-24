@@ -10,6 +10,7 @@ export const gyms: Gym[] = [
 		phone: '+5511970000001',
 		latitude: -23.55,
 		longitude: -46.63,
+		is_active: true,
 	},
 	{
 		id: 'gym-2',
@@ -18,6 +19,7 @@ export const gyms: Gym[] = [
 		phone: null,
 		latitude: -23.56,
 		longitude: -46.64,
+		is_active: true,
 	},
 	{
 		id: 'gym-3',
@@ -26,13 +28,16 @@ export const gyms: Gym[] = [
 		phone: '+5511970000003',
 		latitude: -23.54,
 		longitude: -46.62,
+		is_active: true,
 	},
 	{
+		// Seeded deactivated, so "Show deactivated" has something to reveal.
 		id: 'gym-4',
 		title: 'Powerhouse Gym',
 		description: 'Open 24 hours.',
 		phone: '+5511970000004',
 		latitude: -23.57,
 		longitude: -46.65,
+		is_active: false,
 	},
 ]

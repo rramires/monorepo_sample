@@ -3,7 +3,9 @@ import { Link } from 'react-router'
 
 import { PageTitle } from '@/components/title/page-title'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 import { GymCard } from './gym-card'
 import { useGymsPM } from './use-gyms-pm'
@@ -33,14 +35,27 @@ export function Gyms() {
 					)}
 				</div>
 
-				<Input
-					placeholder='Search gyms by name…'
-					value={pm.query}
-					onChange={(event) =>
-						pm.handleQueryChange(event.target.value)
-					}
-					className='max-w-md'
-				/>
+				<div className='flex flex-wrap items-center gap-4'>
+					<Input
+						placeholder='Search gyms by name…'
+						value={pm.query}
+						onChange={(event) =>
+							pm.handleQueryChange(event.target.value)
+						}
+						className='max-w-md'
+					/>
+					{pm.canManage && (
+						<Label className='text-muted-foreground flex items-center gap-2 text-sm font-normal'>
+							<Checkbox
+								checked={pm.showDeactivated}
+								onCheckedChange={(value) =>
+									pm.setShowDeactivated(value === true)
+								}
+							/>
+							Show deactivated (search)
+						</Label>
+					)}
+				</div>
 
 				{pm.status === 'geo-denied' && (
 					<p className='text-muted-foreground text-sm'>

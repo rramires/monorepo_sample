@@ -18,10 +18,13 @@ export type GymsStatus =
 
 export function useGymsPM() {
 	const { can } = usePermissions()
+	// Editing/managing gyms needs the gym.gyms `edit` grant (managers + admins).
+	const canManage = can('gym.gyms', 'edit')
 	const [coords, setCoords] = useState<Coordinates | null>(null)
 	const [geoError, setGeoError] = useState(false)
 	const [query, setQuery] = useState('')
 	const [page, setPage] = useState(1)
+	const [showDeactivated, setShowDeactivated] = useState(false)
 
 	// On mount: ask for the user's location. Granted → show nearby gyms;
 	// denied/unavailable → fall back to search-by-name only.
@@ -33,6 +36,9 @@ export function useGymsPM() {
 
 	const trimmed = query.trim()
 	const searching = trimmed.length >= MIN_QUERY
+	// Managers can opt into inactive gyms via the "Show deactivated" toggle; it
+	// only applies to search (nearby is the member browse — always active-only).
+	const includeInactive = canManage && showDeactivated
 
 	const nearby = useQuery({
 		queryKey: ['gyms', 'nearby', coords],
@@ -41,8 +47,8 @@ export function useGymsPM() {
 	})
 
 	const search = useQuery({
-		queryKey: ['gyms', 'search', trimmed, page],
-		queryFn: () => searchGyms({ query: trimmed, page }),
+		queryKey: ['gyms', 'search', trimmed, page, includeInactive],
+		queryFn: () => searchGyms({ query: trimmed, page, includeInactive }),
 		enabled: searching,
 	})
 
@@ -75,6 +81,10 @@ export function useGymsPM() {
 		searching,
 		// Creating a gym needs the gym.gyms `create` grant (managers + admins).
 		canCreate: can('gym.gyms', 'create'),
+		// Managers may reveal deactivated gyms in search results.
+		canManage,
+		showDeactivated,
+		setShowDeactivated,
 		hasPrevPage: searching && page > 1,
 		hasNextPage: searching && gyms.length === PAGE_SIZE,
 		handleQueryChange,

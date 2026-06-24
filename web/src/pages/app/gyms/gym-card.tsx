@@ -1,6 +1,7 @@
 import { CircleCheck, LoaderCircle, MapPin, Phone } from 'lucide-react'
 
 import type { Gym } from '@/api/search-gyms'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
 	Card,
@@ -23,7 +24,12 @@ export function GymCard({ gym }: { gym: Gym }) {
 	return (
 		<Card className='flex flex-col'>
 			<CardHeader>
-				<CardTitle>{gym.title}</CardTitle>
+				<CardTitle className='flex items-center gap-2'>
+					<span>{gym.title}</span>
+					{!gym.is_active && (
+						<Badge variant='destructive'>Inactive</Badge>
+					)}
+				</CardTitle>
 				{gym.description && (
 					<CardDescription>{gym.description}</CardDescription>
 				)}
@@ -46,7 +52,7 @@ export function GymCard({ gym }: { gym: Gym }) {
 				<Button
 					variant='outline'
 					className='w-full'
-					disabled={isCheckingIn}
+					disabled={isCheckingIn || !gym.is_active}
 					onClick={() => handleCheckIn(gym.id)}
 				>
 					{isCheckingIn ? (

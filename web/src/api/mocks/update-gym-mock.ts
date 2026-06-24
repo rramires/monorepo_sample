@@ -18,7 +18,8 @@ export const updateGymMock = http.patch<{ gymId: string }, UpdateGymBody>(
 		if (
 			body.title === undefined &&
 			body.description === undefined &&
-			body.phone === undefined
+			body.phone === undefined &&
+			body.is_active === undefined
 		) {
 			return HttpResponse.json(
 				{ message: 'Provide at least one field to update.' },
@@ -42,6 +43,9 @@ export const updateGymMock = http.patch<{ gymId: string }, UpdateGymBody>(
 		}
 		if (body.phone !== undefined) {
 			gym.phone = body.phone
+		}
+		if (body.is_active !== undefined) {
+			gym.is_active = body.is_active
 		}
 
 		return HttpResponse.json({ gym })
