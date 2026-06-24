@@ -1,6 +1,7 @@
 import { Controller } from 'react-hook-form'
 import { Link } from 'react-router'
 
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -230,6 +231,13 @@ export function UserEdit() {
 										</div>
 									</div>
 								</form>
+
+								<ConfirmDialog
+									{...pm.confirmDeactivate}
+									title='Deactivate user'
+									description={`Deactivate ${pm.user.username}? They will be cut off on their next request and can't sign in until reactivated.`}
+									confirmLabel='Deactivate'
+								/>
 							</CardContent>
 						</>
 					)}

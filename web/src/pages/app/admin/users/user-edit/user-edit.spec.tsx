@@ -1,8 +1,9 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Route, Routes } from 'react-router'
-import { vi } from 'vitest'
+import { beforeEach, vi } from 'vitest'
 
+import { updateUser } from '@/api/update-user'
 import {
 	AuthContext,
 	type AuthContextValue,
@@ -24,6 +25,15 @@ vi.mock('@/api/get-user', () => ({
 		password_changed_at: null,
 	})),
 }))
+
+// Stub the save so we can assert when (and with what) it's called.
+vi.mock('@/api/update-user', () => ({
+	updateUser: vi.fn(async () => ({})),
+}))
+
+beforeEach(() => {
+	vi.clearAllMocks()
+})
 
 function renderEdit({
 	selfId,
@@ -102,5 +112,54 @@ describe('UserEdit page', () => {
 		expect(
 			screen.getByRole('switch', { name: 'Email verified' }),
 		).toBeDisabled()
+	})
+
+	it('confirms before deactivating, then saves on confirm', async () => {
+		renderEdit({ selfId: 'admin-id', targetId: 'other-id' })
+
+		const active = await screen.findByRole('switch', { name: 'Active' })
+		expect(active).toBeChecked()
+		await userEvent.click(active) // turn Active off
+
+		await userEvent.click(
+			screen.getByRole('button', { name: 'Save changes' }),
+		)
+
+		// The confirm dialog shows and nothing is saved yet.
+		expect(
+			await screen.findByText(/Deactivate memberx\?/),
+		).toBeInTheDocument()
+		expect(updateUser).not.toHaveBeenCalled()
+
+		await userEvent.click(
+			screen.getByRole('button', { name: 'Deactivate' }),
+		)
+
+		await waitFor(() =>
+			expect(updateUser).toHaveBeenCalledWith('other-id', {
+				is_active: false,
+			}),
+		)
+	})
+
+	it('saves a non-deactivating edit without prompting', async () => {
+		renderEdit({ selfId: 'admin-id', targetId: 'other-id' })
+
+		const username = await screen.findByLabelText('Username')
+		await userEvent.clear(username)
+		await userEvent.type(username, 'renamed')
+
+		await userEvent.click(
+			screen.getByRole('button', { name: 'Save changes' }),
+		)
+
+		await waitFor(() =>
+			expect(updateUser).toHaveBeenCalledWith('other-id', {
+				username: 'renamed',
+			}),
+		)
+		expect(
+			screen.queryByText(/Deactivate memberx\?/),
+		).not.toBeInTheDocument()
 	})
 })
