@@ -102,7 +102,8 @@ export const ModuleScalarFieldEnum = {
   key: 'key',
   name: 'name',
   description: 'description',
-  order: 'order'
+  order: 'order',
+  is_system: 'is_system'
 } as const
 
 export type ModuleScalarFieldEnum = (typeof ModuleScalarFieldEnum)[keyof typeof ModuleScalarFieldEnum]
@@ -115,6 +116,7 @@ export const ScreenScalarFieldEnum = {
   path: 'path',
   description: 'description',
   order: 'order',
+  is_system: 'is_system',
   module_id: 'module_id'
 } as const
 

@@ -40,6 +40,7 @@ export type ModuleMinAggregateOutputType = {
   name: string | null
   description: string | null
   order: number | null
+  is_system: boolean | null
 }
 
 export type ModuleMaxAggregateOutputType = {
@@ -48,6 +49,7 @@ export type ModuleMaxAggregateOutputType = {
   name: string | null
   description: string | null
   order: number | null
+  is_system: boolean | null
 }
 
 export type ModuleCountAggregateOutputType = {
@@ -56,6 +58,7 @@ export type ModuleCountAggregateOutputType = {
   name: number
   description: number
   order: number
+  is_system: number
   _all: number
 }
 
@@ -74,6 +77,7 @@ export type ModuleMinAggregateInputType = {
   name?: true
   description?: true
   order?: true
+  is_system?: true
 }
 
 export type ModuleMaxAggregateInputType = {
@@ -82,6 +86,7 @@ export type ModuleMaxAggregateInputType = {
   name?: true
   description?: true
   order?: true
+  is_system?: true
 }
 
 export type ModuleCountAggregateInputType = {
@@ -90,6 +95,7 @@ export type ModuleCountAggregateInputType = {
   name?: true
   description?: true
   order?: true
+  is_system?: true
   _all?: true
 }
 
@@ -185,6 +191,7 @@ export type ModuleGroupByOutputType = {
   name: string
   description: string | null
   order: number
+  is_system: boolean
   _count: ModuleCountAggregateOutputType | null
   _avg: ModuleAvgAggregateOutputType | null
   _sum: ModuleSumAggregateOutputType | null
@@ -216,6 +223,7 @@ export type ModuleWhereInput = {
   name?: Prisma.StringFilter<"Module"> | string
   description?: Prisma.StringNullableFilter<"Module"> | string | null
   order?: Prisma.IntFilter<"Module"> | number
+  is_system?: Prisma.BoolFilter<"Module"> | boolean
   screens?: Prisma.ScreenListRelationFilter
 }
 
@@ -225,6 +233,7 @@ export type ModuleOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   order?: Prisma.SortOrder
+  is_system?: Prisma.SortOrder
   screens?: Prisma.ScreenOrderByRelationAggregateInput
   _relevance?: Prisma.ModuleOrderByRelevanceInput
 }
@@ -238,6 +247,7 @@ export type ModuleWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Module"> | string
   description?: Prisma.StringNullableFilter<"Module"> | string | null
   order?: Prisma.IntFilter<"Module"> | number
+  is_system?: Prisma.BoolFilter<"Module"> | boolean
   screens?: Prisma.ScreenListRelationFilter
 }, "id" | "key">
 
@@ -247,6 +257,7 @@ export type ModuleOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   order?: Prisma.SortOrder
+  is_system?: Prisma.SortOrder
   _count?: Prisma.ModuleCountOrderByAggregateInput
   _avg?: Prisma.ModuleAvgOrderByAggregateInput
   _max?: Prisma.ModuleMaxOrderByAggregateInput
@@ -263,6 +274,7 @@ export type ModuleScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Module"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Module"> | string | null
   order?: Prisma.IntWithAggregatesFilter<"Module"> | number
+  is_system?: Prisma.BoolWithAggregatesFilter<"Module"> | boolean
 }
 
 export type ModuleCreateInput = {
@@ -271,6 +283,7 @@ export type ModuleCreateInput = {
   name: string
   description?: string | null
   order?: number
+  is_system?: boolean
   screens?: Prisma.ScreenCreateNestedManyWithoutModuleInput
 }
 
@@ -280,6 +293,7 @@ export type ModuleUncheckedCreateInput = {
   name: string
   description?: string | null
   order?: number
+  is_system?: boolean
   screens?: Prisma.ScreenUncheckedCreateNestedManyWithoutModuleInput
 }
 
@@ -289,6 +303,7 @@ export type ModuleUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   screens?: Prisma.ScreenUpdateManyWithoutModuleNestedInput
 }
 
@@ -298,6 +313,7 @@ export type ModuleUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   screens?: Prisma.ScreenUncheckedUpdateManyWithoutModuleNestedInput
 }
 
@@ -307,6 +323,7 @@ export type ModuleCreateManyInput = {
   name: string
   description?: string | null
   order?: number
+  is_system?: boolean
 }
 
 export type ModuleUpdateManyMutationInput = {
@@ -315,6 +332,7 @@ export type ModuleUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ModuleUncheckedUpdateManyInput = {
@@ -323,6 +341,7 @@ export type ModuleUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ModuleOrderByRelevanceInput = {
@@ -337,6 +356,7 @@ export type ModuleCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   order?: Prisma.SortOrder
+  is_system?: Prisma.SortOrder
 }
 
 export type ModuleAvgOrderByAggregateInput = {
@@ -349,6 +369,7 @@ export type ModuleMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   order?: Prisma.SortOrder
+  is_system?: Prisma.SortOrder
 }
 
 export type ModuleMinOrderByAggregateInput = {
@@ -357,6 +378,7 @@ export type ModuleMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   order?: Prisma.SortOrder
+  is_system?: Prisma.SortOrder
 }
 
 export type ModuleSumOrderByAggregateInput = {
@@ -396,6 +418,7 @@ export type ModuleCreateWithoutScreensInput = {
   name: string
   description?: string | null
   order?: number
+  is_system?: boolean
 }
 
 export type ModuleUncheckedCreateWithoutScreensInput = {
@@ -404,6 +427,7 @@ export type ModuleUncheckedCreateWithoutScreensInput = {
   name: string
   description?: string | null
   order?: number
+  is_system?: boolean
 }
 
 export type ModuleCreateOrConnectWithoutScreensInput = {
@@ -428,6 +452,7 @@ export type ModuleUpdateWithoutScreensInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ModuleUncheckedUpdateWithoutScreensInput = {
@@ -436,6 +461,7 @@ export type ModuleUncheckedUpdateWithoutScreensInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 
@@ -475,6 +501,7 @@ export type ModuleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name?: boolean
   description?: boolean
   order?: boolean
+  is_system?: boolean
   screens?: boolean | Prisma.Module$screensArgs<ExtArgs>
   _count?: boolean | Prisma.ModuleCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["module"]>
@@ -487,9 +514,10 @@ export type ModuleSelectScalar = {
   name?: boolean
   description?: boolean
   order?: boolean
+  is_system?: boolean
 }
 
-export type ModuleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "key" | "name" | "description" | "order", ExtArgs["result"]["module"]>
+export type ModuleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "key" | "name" | "description" | "order" | "is_system", ExtArgs["result"]["module"]>
 export type ModuleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   screens?: boolean | Prisma.Module$screensArgs<ExtArgs>
   _count?: boolean | Prisma.ModuleCountOutputTypeDefaultArgs<ExtArgs>
@@ -506,6 +534,7 @@ export type $ModulePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     name: string
     description: string | null
     order: number
+    is_system: boolean
   }, ExtArgs["result"]["module"]>
   composites: {}
 }
@@ -881,6 +910,7 @@ export interface ModuleFieldRefs {
   readonly name: Prisma.FieldRef<"Module", 'String'>
   readonly description: Prisma.FieldRef<"Module", 'String'>
   readonly order: Prisma.FieldRef<"Module", 'Int'>
+  readonly is_system: Prisma.FieldRef<"Module", 'Boolean'>
 }
     
 
