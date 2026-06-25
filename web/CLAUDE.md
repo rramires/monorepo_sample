@@ -74,8 +74,12 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - **Component cascade:** shadcn/ui → Radix primitive + Tailwind → custom
   (Tailwind + `tailwind-variants`/`tailwind-merge`, see `ui-sample/`) → custom
   CSS in `global.css`. Never skip straight to custom CSS.
-- **Mobile-first:** author Tailwind mobile-first; use `useIsMobile()` for
-  responsive branches.
+- **Mobile-first / responsive bands:** author Tailwind mobile-first.
+  `useIsMobile()` (768) drives the sidebar Sheet; `useLayoutBand()` gives the
+  three bands (mobile `<md` / tablet `md–lg` / desktop `≥lg`) for band-specific
+  layout. Content is **compact below `lg`** — wide tables become cards via
+  `ResponsiveList` (column `card` slots), multi-col forms collapse to one column.
+  Use the shared `Pager` for paginated lists.
 - **Tailwind v4:** config is **in CSS** (`global.css`) — there is **no**
   `tailwind.config.js`. The `dark:` variant needs
   `@custom-variant dark (&:is(.dark *))`. Packages are v4+ (`@tailwindcss/vite`,

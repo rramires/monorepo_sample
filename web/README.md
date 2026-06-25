@@ -82,8 +82,13 @@ Vitest · Playwright
   view) + `use-x-pm.ts` (state, data, formatting). Views carry no logic. Each
   pair lives in its **own same-named folder**, so the `use-`-prefixed PM stays
   next to its view instead of sorting away from it.
-- **Mobile-first** — Tailwind mobile-first utilities; the sidebar collapses to a
-  Sheet on small screens (`useIsMobile`).
+- **Responsive across three bands** — mobile (`< md`), tablet (`md–lg`) and
+  desktop (`≥ lg`) via `useLayoutBand`: the sidebar is a slide-over Sheet on
+  mobile, an icon rail on tablet and expanded on desktop (the toggle re-snaps to
+  the band default on a breakpoint cross). Below `lg` the layout goes compact —
+  the wide admin tables become cards (`ResponsiveList`), multi-column forms drop
+  to one column, list pages sit in a card, touch targets grow, and a shared
+  `Pager` carries the gym and user lists.
 - **Keyboard-friendly forms** — typing screens autofocus their first field; on
   sign-in the "Forgot your password?" link comes after Sign in in tab order.
 - **Typed, validated env** — `src/env.ts` parses `import.meta.env` with Zod and

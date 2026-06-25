@@ -113,13 +113,28 @@ CSS (from `TUTORIAL_02_shadcn.md`):
 > shadcn/ui **is** Radix + Tailwind — its components are Radix primitives,
 > pre-styled. So the cascade is just stepping down one level in the same stack.
 
-### 2.5 Mobile-first
+### 2.5 Mobile-first & responsive bands
 
 Tailwind utilities are authored mobile-first (unprefixed = small screens,
 `sm:`/`md:`/`lg:` add up). `useIsMobile()` (`hooks/use-mobile.ts`, a
-`useSyncExternalStore` over a `matchMedia` query, breakpoint 768px) drives
-responsive behavior — e.g. the sidebar renders as a slide-over **Sheet** on
-mobile and a fixed rail on desktop.
+`useSyncExternalStore` over a `matchMedia` query, breakpoint 768px) drives the
+sidebar's **Sheet** vs. persistent rendering.
+
+The wider layout follows **three bands** on Tailwind's default breakpoints —
+`hooks/use-layout-band.ts` → `useLayoutBand()` (a `useSyncExternalStore` over two
+`matchMedia` queries; the pure `getBandForWidth` is unit-tested):
+
+- **mobile** `< md` (768) — sidebar is a slide-over Sheet; single column.
+- **tablet** `md–lg` (768–1023) — sidebar defaults to the icon **rail**; content
+  is "compact".
+- **desktop** `≥ lg` (1024) — sidebar expanded; full multi-column layout.
+
+The sidebar's open default is band-driven (rail on tablet, expanded on desktop);
+a manual toggle sticks within a band and re-snaps to the band default when the
+viewport crosses a breakpoint (`app-layout.tsx`, derived state — no
+setState-in-effect). Content is **compact below `lg`** (tablet **and** mobile):
+wide data tables become cards (`ResponsiveList`, §8), multi-column forms collapse
+to one column, list pages sit inside a `Card`, and touch targets grow on phones.
 
 ### 2.6 Dependency direction
 
@@ -181,10 +196,13 @@ src/
 │   ├── breadcrumb/          # BreadcrumbContext/Provider/hooks · breadcrumbs (header trail) + use-breadcrumbs-pm
 │   ├── app-sidebar/         # app-sidebar.tsx (view) + use-app-sidebar-pm.ts (data-driven from /me/permissions.menu)
 │   ├── transfer-table/      # reusable two-table multi-select + dnd-kit assignment widget
+│   ├── responsive-list/     # ResponsiveList: shadcn Table on desktop, column-driven cards < lg
+│   ├── pager/               # shared Pager (first/prev/next/last + "from–to of total", or simple prev/next)
 │   ├── ui/                  # shadcn/ui components (generated; do not hand-edit casually) · multi-select.tsx = lean chips MultiSelect on Popover + Command (cmdk) + Badge
 │   └── ui-sample/           # cascade tier-3 reference: custom Tailwind + tailwind-variants
 ├── hooks/
 │   ├── use-mobile.ts        # useIsMobile (matchMedia)
+│   ├── use-layout-band.ts   # useLayoutBand → 'mobile' | 'tablet' | 'desktop' (md/lg)
 │   ├── use-permissions.ts   # usePermissions() + can(screenKey, action); ADMIN bypasses
 │   └── use-check-in.ts      # shared check-in mutation (geo + POST + invalidate)
 ├── lib/
@@ -488,6 +506,15 @@ these fixes when replicating (`TUTORIAL_10` has the full write-up):
   conflict-free class merging. Custom variant-driven components use
   `tailwind-variants` (`tv`) — see `components/ui-sample/button.tsx` (cascade
   tier 3).
+- **Responsive data lists** (`components/responsive-list/`): `ResponsiveList`
+  renders a shadcn `Table` on desktop (`≥ lg`) and a stack of cards below it.
+  Both come from **one** `columns` config — each column declares a compact-mode
+  `card` slot (`top` · `bottom` · `bottom-right` · `actions` · `hide`) and the
+  card is built as `Label: value` fields. It renders only the active tree (via
+  `useLayoutBand`), so per-row dialogs/links mount once. The four admin lists use
+  it. `components/pager/` `Pager` is the shared pager (full mode = first/prev/
+  next/last + "from–to of total"; simple mode = prev/next + "Page N"), used by the
+  gym and user lists; its buttons widen on phones for easier tapping.
 
 ---
 

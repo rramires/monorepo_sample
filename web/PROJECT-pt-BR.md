@@ -116,13 +116,29 @@ CSS customizado (do `TUTORIAL_02_shadcn.md`):
 > shadcn/ui **é** Radix + Tailwind — seus componentes são primitivos do Radix já
 > estilizados. Então a cascata é só descer um nível na mesma stack.
 
-### 2.5 Mobile-first
+### 2.5 Mobile-first & faixas responsivas
 
 Os utilitários Tailwind são escritos mobile-first (sem prefixo = telas pequenas,
 `sm:`/`md:`/`lg:` somam). `useIsMobile()` (`hooks/use-mobile.ts`, um
-`useSyncExternalStore` sobre uma query `matchMedia`, breakpoint 768px) dirige o
-comportamento responsivo — ex.: a sidebar renderiza como um **Sheet** deslizante
-no mobile e um rail fixo no desktop.
+`useSyncExternalStore` sobre uma query `matchMedia`, breakpoint 768px) dirige a
+renderização da sidebar como **Sheet** vs. persistente.
+
+O layout maior segue **três faixas** nos breakpoints padrão do Tailwind —
+`hooks/use-layout-band.ts` → `useLayoutBand()` (um `useSyncExternalStore` sobre
+duas queries `matchMedia`; a função pura `getBandForWidth` é testada em unidade):
+
+- **mobile** `< md` (768) — sidebar é um Sheet deslizante; uma coluna.
+- **tablet** `md–lg` (768–1023) — sidebar começa no **rail** de ícones; conteúdo
+  fica "compacto".
+- **desktop** `≥ lg` (1024) — sidebar expandida; layout multi-coluna completo.
+
+O default de abertura da sidebar segue a faixa (rail no tablet, expandida no
+desktop); o toggle manual gruda na faixa e re-snapa para o default ao cruzar um
+breakpoint (`app-layout.tsx`, estado derivado — sem setState-in-effect). O
+conteúdo é **compacto abaixo de `lg`** (tablet **e** mobile): tabelas largas
+viram cards (`ResponsiveList`, §8), formulários multi-coluna colapsam para uma
+coluna, as páginas-lista ficam dentro de um `Card`, e os alvos de toque crescem
+no celular.
 
 ### 2.6 Direção das dependências
 
@@ -183,10 +199,13 @@ src/
 │   ├── breadcrumb/          # BreadcrumbContext/Provider/hooks · breadcrumbs (trilha no header) + use-breadcrumbs-pm
 │   ├── app-sidebar/         # app-sidebar.tsx (view) + use-app-sidebar-pm.ts (dirigida por /me/permissions.menu)
 │   ├── transfer-table/      # widget reutilizável de atribuição: duas tabelas multi-seleção + dnd-kit
+│   ├── responsive-list/     # ResponsiveList: Table shadcn no desktop, cards por coluna < lg
+│   ├── pager/               # Pager compartilhado (primeiro/anterior/próximo/último + "de–até de total", ou só anterior/próximo)
 │   ├── ui/                  # componentes shadcn/ui (gerados; não edite à mão sem necessidade) · multi-select.tsx = MultiSelect enxuto em chips sobre Popover + Command (cmdk) + Badge
 │   └── ui-sample/           # referência do tier 3 da cascata: Tailwind custom + tailwind-variants
 ├── hooks/
 │   ├── use-mobile.ts        # useIsMobile (matchMedia)
+│   ├── use-layout-band.ts   # useLayoutBand → 'mobile' | 'tablet' | 'desktop' (md/lg)
 │   ├── use-permissions.ts   # usePermissions() + can(screenKey, action); ADMIN ignora tudo
 │   └── use-check-in.ts      # mutation de check-in compartilhada (geo + POST + invalidate)
 ├── lib/
@@ -496,6 +515,16 @@ replicar (o `TUTORIAL_10` tem o relato completo):
   condicional e sem conflito. Componentes dirigidos por variantes usam
   `tailwind-variants` (`tv`) — veja `components/ui-sample/button.tsx` (tier 3 da
   cascata).
+- **Listas responsivas** (`components/responsive-list/`): `ResponsiveList`
+  renderiza uma `Table` shadcn no desktop (`≥ lg`) e uma pilha de cards abaixo
+  disso. Os dois saem de **uma** config de `columns` — cada coluna declara um
+  slot `card` para o modo compacto (`top` · `bottom` · `bottom-right` ·
+  `actions` · `hide`) e o card é montado como campos `Label: valor`. Renderiza só
+  a árvore ativa (via `useLayoutBand`), então diálogos/links por linha montam uma
+  vez. As quatro telas admin usam. `components/pager/` `Pager` é o pager
+  compartilhado (modo full = primeiro/anterior/próximo/último + "de–até de
+  total"; modo simples = anterior/próximo + "Page N"), usado pelas listas de
+  gyms e users; os botões alargam no celular para facilitar o toque.
 
 ---
 
