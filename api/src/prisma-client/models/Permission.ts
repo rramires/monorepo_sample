@@ -27,7 +27,7 @@ export type AggregatePermission = {
 export type PermissionMinAggregateOutputType = {
   id: string | null
   screen_id: string | null
-  action: $Enums.PermissionAction | null
+  action: string | null
   label: string | null
   is_system: boolean | null
 }
@@ -35,7 +35,7 @@ export type PermissionMinAggregateOutputType = {
 export type PermissionMaxAggregateOutputType = {
   id: string | null
   screen_id: string | null
-  action: $Enums.PermissionAction | null
+  action: string | null
   label: string | null
   is_system: boolean | null
 }
@@ -150,7 +150,7 @@ export type PermissionGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
 export type PermissionGroupByOutputType = {
   id: string
   screen_id: string
-  action: $Enums.PermissionAction
+  action: string
   label: string
   is_system: boolean
   _count: PermissionCountAggregateOutputType | null
@@ -179,7 +179,7 @@ export type PermissionWhereInput = {
   NOT?: Prisma.PermissionWhereInput | Prisma.PermissionWhereInput[]
   id?: Prisma.StringFilter<"Permission"> | string
   screen_id?: Prisma.StringFilter<"Permission"> | string
-  action?: Prisma.EnumPermissionActionFilter<"Permission"> | $Enums.PermissionAction
+  action?: Prisma.StringFilter<"Permission"> | string
   label?: Prisma.StringFilter<"Permission"> | string
   is_system?: Prisma.BoolFilter<"Permission"> | boolean
   screen?: Prisma.XOR<Prisma.ScreenScalarRelationFilter, Prisma.ScreenWhereInput>
@@ -204,7 +204,7 @@ export type PermissionWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.PermissionWhereInput[]
   NOT?: Prisma.PermissionWhereInput | Prisma.PermissionWhereInput[]
   screen_id?: Prisma.StringFilter<"Permission"> | string
-  action?: Prisma.EnumPermissionActionFilter<"Permission"> | $Enums.PermissionAction
+  action?: Prisma.StringFilter<"Permission"> | string
   label?: Prisma.StringFilter<"Permission"> | string
   is_system?: Prisma.BoolFilter<"Permission"> | boolean
   screen?: Prisma.XOR<Prisma.ScreenScalarRelationFilter, Prisma.ScreenWhereInput>
@@ -228,14 +228,14 @@ export type PermissionScalarWhereWithAggregatesInput = {
   NOT?: Prisma.PermissionScalarWhereWithAggregatesInput | Prisma.PermissionScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Permission"> | string
   screen_id?: Prisma.StringWithAggregatesFilter<"Permission"> | string
-  action?: Prisma.EnumPermissionActionWithAggregatesFilter<"Permission"> | $Enums.PermissionAction
+  action?: Prisma.StringWithAggregatesFilter<"Permission"> | string
   label?: Prisma.StringWithAggregatesFilter<"Permission"> | string
   is_system?: Prisma.BoolWithAggregatesFilter<"Permission"> | boolean
 }
 
 export type PermissionCreateInput = {
   id?: string
-  action: $Enums.PermissionAction
+  action: string
   label: string
   is_system?: boolean
   screen: Prisma.ScreenCreateNestedOneWithoutPermissionsInput
@@ -245,7 +245,7 @@ export type PermissionCreateInput = {
 export type PermissionUncheckedCreateInput = {
   id?: string
   screen_id: string
-  action: $Enums.PermissionAction
+  action: string
   label: string
   is_system?: boolean
   profiles?: Prisma.ProfilePermissionUncheckedCreateNestedManyWithoutPermissionInput
@@ -253,7 +253,7 @@ export type PermissionUncheckedCreateInput = {
 
 export type PermissionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  action?: Prisma.EnumPermissionActionFieldUpdateOperationsInput | $Enums.PermissionAction
+  action?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   screen?: Prisma.ScreenUpdateOneRequiredWithoutPermissionsNestedInput
@@ -263,7 +263,7 @@ export type PermissionUpdateInput = {
 export type PermissionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   screen_id?: Prisma.StringFieldUpdateOperationsInput | string
-  action?: Prisma.EnumPermissionActionFieldUpdateOperationsInput | $Enums.PermissionAction
+  action?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   profiles?: Prisma.ProfilePermissionUncheckedUpdateManyWithoutPermissionNestedInput
@@ -272,14 +272,14 @@ export type PermissionUncheckedUpdateInput = {
 export type PermissionCreateManyInput = {
   id?: string
   screen_id: string
-  action: $Enums.PermissionAction
+  action: string
   label: string
   is_system?: boolean
 }
 
 export type PermissionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  action?: Prisma.EnumPermissionActionFieldUpdateOperationsInput | $Enums.PermissionAction
+  action?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -287,7 +287,7 @@ export type PermissionUpdateManyMutationInput = {
 export type PermissionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   screen_id?: Prisma.StringFieldUpdateOperationsInput | string
-  action?: Prisma.EnumPermissionActionFieldUpdateOperationsInput | $Enums.PermissionAction
+  action?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -310,7 +310,7 @@ export type PermissionOrderByRelevanceInput = {
 
 export type PermissionScreen_idActionCompoundUniqueInput = {
   screen_id: string
-  action: $Enums.PermissionAction
+  action: string
 }
 
 export type PermissionCountOrderByAggregateInput = {
@@ -384,10 +384,6 @@ export type PermissionUncheckedUpdateManyWithoutScreenNestedInput = {
   deleteMany?: Prisma.PermissionScalarWhereInput | Prisma.PermissionScalarWhereInput[]
 }
 
-export type EnumPermissionActionFieldUpdateOperationsInput = {
-  set?: $Enums.PermissionAction
-}
-
 export type PermissionCreateNestedOneWithoutProfilesInput = {
   create?: Prisma.XOR<Prisma.PermissionCreateWithoutProfilesInput, Prisma.PermissionUncheckedCreateWithoutProfilesInput>
   connectOrCreate?: Prisma.PermissionCreateOrConnectWithoutProfilesInput
@@ -404,7 +400,7 @@ export type PermissionUpdateOneRequiredWithoutProfilesNestedInput = {
 
 export type PermissionCreateWithoutScreenInput = {
   id?: string
-  action: $Enums.PermissionAction
+  action: string
   label: string
   is_system?: boolean
   profiles?: Prisma.ProfilePermissionCreateNestedManyWithoutPermissionInput
@@ -412,7 +408,7 @@ export type PermissionCreateWithoutScreenInput = {
 
 export type PermissionUncheckedCreateWithoutScreenInput = {
   id?: string
-  action: $Enums.PermissionAction
+  action: string
   label: string
   is_system?: boolean
   profiles?: Prisma.ProfilePermissionUncheckedCreateNestedManyWithoutPermissionInput
@@ -450,14 +446,14 @@ export type PermissionScalarWhereInput = {
   NOT?: Prisma.PermissionScalarWhereInput | Prisma.PermissionScalarWhereInput[]
   id?: Prisma.StringFilter<"Permission"> | string
   screen_id?: Prisma.StringFilter<"Permission"> | string
-  action?: Prisma.EnumPermissionActionFilter<"Permission"> | $Enums.PermissionAction
+  action?: Prisma.StringFilter<"Permission"> | string
   label?: Prisma.StringFilter<"Permission"> | string
   is_system?: Prisma.BoolFilter<"Permission"> | boolean
 }
 
 export type PermissionCreateWithoutProfilesInput = {
   id?: string
-  action: $Enums.PermissionAction
+  action: string
   label: string
   is_system?: boolean
   screen: Prisma.ScreenCreateNestedOneWithoutPermissionsInput
@@ -466,7 +462,7 @@ export type PermissionCreateWithoutProfilesInput = {
 export type PermissionUncheckedCreateWithoutProfilesInput = {
   id?: string
   screen_id: string
-  action: $Enums.PermissionAction
+  action: string
   label: string
   is_system?: boolean
 }
@@ -489,7 +485,7 @@ export type PermissionUpdateToOneWithWhereWithoutProfilesInput = {
 
 export type PermissionUpdateWithoutProfilesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  action?: Prisma.EnumPermissionActionFieldUpdateOperationsInput | $Enums.PermissionAction
+  action?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   screen?: Prisma.ScreenUpdateOneRequiredWithoutPermissionsNestedInput
@@ -498,21 +494,21 @@ export type PermissionUpdateWithoutProfilesInput = {
 export type PermissionUncheckedUpdateWithoutProfilesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   screen_id?: Prisma.StringFieldUpdateOperationsInput | string
-  action?: Prisma.EnumPermissionActionFieldUpdateOperationsInput | $Enums.PermissionAction
+  action?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type PermissionCreateManyScreenInput = {
   id?: string
-  action: $Enums.PermissionAction
+  action: string
   label: string
   is_system?: boolean
 }
 
 export type PermissionUpdateWithoutScreenInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  action?: Prisma.EnumPermissionActionFieldUpdateOperationsInput | $Enums.PermissionAction
+  action?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   profiles?: Prisma.ProfilePermissionUpdateManyWithoutPermissionNestedInput
@@ -520,7 +516,7 @@ export type PermissionUpdateWithoutScreenInput = {
 
 export type PermissionUncheckedUpdateWithoutScreenInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  action?: Prisma.EnumPermissionActionFieldUpdateOperationsInput | $Enums.PermissionAction
+  action?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   profiles?: Prisma.ProfilePermissionUncheckedUpdateManyWithoutPermissionNestedInput
@@ -528,7 +524,7 @@ export type PermissionUncheckedUpdateWithoutScreenInput = {
 
 export type PermissionUncheckedUpdateManyWithoutScreenInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  action?: Prisma.EnumPermissionActionFieldUpdateOperationsInput | $Enums.PermissionAction
+  action?: Prisma.StringFieldUpdateOperationsInput | string
   label?: Prisma.StringFieldUpdateOperationsInput | string
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -601,7 +597,7 @@ export type $PermissionPayload<ExtArgs extends runtime.Types.Extensions.Internal
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     screen_id: string
-    action: $Enums.PermissionAction
+    action: string
     label: string
     is_system: boolean
   }, ExtArgs["result"]["permission"]>
@@ -977,7 +973,7 @@ export interface Prisma__PermissionClient<T, Null = never, ExtArgs extends runti
 export interface PermissionFieldRefs {
   readonly id: Prisma.FieldRef<"Permission", 'String'>
   readonly screen_id: Prisma.FieldRef<"Permission", 'String'>
-  readonly action: Prisma.FieldRef<"Permission", 'PermissionAction'>
+  readonly action: Prisma.FieldRef<"Permission", 'String'>
   readonly label: Prisma.FieldRef<"Permission", 'String'>
   readonly is_system: Prisma.FieldRef<"Permission", 'Boolean'>
 }

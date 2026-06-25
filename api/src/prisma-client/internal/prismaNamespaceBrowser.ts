@@ -325,6 +325,7 @@ export type ProfileScreenOrderByRelevanceFieldEnum = (typeof ProfileScreenOrderB
 export const PermissionOrderByRelevanceFieldEnum = {
   id: 'id',
   screen_id: 'screen_id',
+  action: 'action',
   label: 'label'
 } as const
 

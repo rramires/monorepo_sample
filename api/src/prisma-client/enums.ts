@@ -15,13 +15,3 @@ export const Role = {
 } as const
 
 export type Role = (typeof Role)[keyof typeof Role]
-
-
-export const PermissionAction = {
-  view: 'view',
-  create: 'create',
-  edit: 'edit',
-  delete: 'delete'
-} as const
-
-export type PermissionAction = (typeof PermissionAction)[keyof typeof PermissionAction]
