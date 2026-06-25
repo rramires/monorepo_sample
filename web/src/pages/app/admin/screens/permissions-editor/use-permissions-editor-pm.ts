@@ -1,5 +1,8 @@
 import {
 	actionFamily,
+	actionKeySchema,
+	actionLabelSchema,
+	composeActionKey,
 	PERMISSION_FAMILIES,
 	type PermissionFamily,
 } from '@root/contracts'
@@ -53,18 +56,37 @@ export function usePermissionsEditorPM(screenId: string, enabled: boolean) {
 		enabled,
 	})
 
-	// Add-row draft.
-	const [newAction, setNewAction] = useState<PermissionFamily | ''>('')
+	// Add-row draft. `op` is the Operation Select: a bare CRUD family, or `other`
+	// to compose an extra key from a family + a free name. `newFamily`+`newName`
+	// only matter when `op === 'other'`.
+	const [op, setOp] = useState<PermissionFamily | 'other' | ''>('')
+	const [newFamily, setNewFamily] = useState<PermissionFamily | ''>('')
+	const [newName, setNewName] = useState('')
 	const [newLabel, setNewLabel] = useState('')
 	// Inline edit: the unlocked row id + its draft label.
 	const [editingId, setEditingId] = useState<string | null>(null)
 	const [draftLabel, setDraftLabel] = useState('')
 
-	// A screen offers each op at most once — hide already-used ones in the Select.
-	const availableActions = useMemo(() => {
-		const used = new Set(permissions.map((p) => p.action))
-		return ALL_ACTIONS.filter((a) => !used.has(a))
-	}, [permissions])
+	const usedKeys = useMemo(
+		() => new Set(permissions.map((p) => p.action)),
+		[permissions],
+	)
+	// Bare families the screen doesn't already offer. `Other…` is always available
+	// (a screen can hold many composed keys sharing a family).
+	const availableFamilies = useMemo(
+		() => ALL_ACTIONS.filter((f) => !usedKeys.has(f)),
+		[usedKeys],
+	)
+
+	const isOther = op === 'other'
+	const namePart = newName.trim()
+	// The final action key the editor will send: the bare op, or the composed
+	// `family_name`. Empty until the draft is complete enough to preview.
+	const composedKey = isOther
+		? newFamily && namePart
+			? composeActionKey(newFamily, namePart)
+			: ''
+		: op
 
 	async function invalidate() {
 		// Prefix-invalidate so the profile-detail catalog (['permissions']) and
@@ -75,12 +97,14 @@ export function usePermissionsEditorPM(screenId: string, enabled: boolean) {
 	const add = useMutation({
 		mutationFn: () =>
 			createPermission(screenId, {
-				action: newAction as PermissionFamily,
+				action: composedKey,
 				label: newLabel.trim(),
 			}),
 		onSuccess: async () => {
 			toast.success('Permission added.')
-			setNewAction('')
+			setOp('')
+			setNewFamily('')
+			setNewName('')
 			setNewLabel('')
 			await invalidate()
 		},
@@ -121,18 +145,33 @@ export function usePermissionsEditorPM(screenId: string, enabled: boolean) {
 		setDraftLabel('')
 	}
 
-	const canAdd =
-		availableActions.length > 0 &&
-		newAction !== '' &&
-		newLabel.trim().length > 0
+	// Name part of a composed key: starts with a letter, lowercase + underscore,
+	// 2–32 chars (family prefix + the 40-char cap are enforced by actionKeySchema).
+	const nameValid =
+		/^[a-z][a-z_]*$/.test(namePart) &&
+		namePart.length >= 2 &&
+		namePart.length <= 32
+	const keyValid =
+		composedKey !== '' &&
+		!usedKeys.has(composedKey) &&
+		actionKeySchema.safeParse(composedKey).success &&
+		(!isOther || (newFamily !== '' && nameValid))
+	const labelValid = actionLabelSchema.safeParse(newLabel).success
+	const canAdd = keyValid && labelValid
 
 	return {
 		permissions,
 		isLoading,
-		availableActions,
 		// add row
-		newAction,
-		setNewAction,
+		op,
+		setOp,
+		isOther,
+		availableFamilies,
+		newFamily,
+		setNewFamily,
+		newName,
+		setNewName,
+		composedKey,
 		newLabel,
 		setNewLabel,
 		canAdd,
