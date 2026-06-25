@@ -179,7 +179,7 @@ imediatamente** no boot se alguma variável for inválida (validação Zod em
 | `POST`   | `/users/resend-verification`     | Bearer         | –                                  | Reenviar e-mail de verificação                                                   |
 | `POST`   | `/users/forgot-password`         | –              | –                                  | Solicitar reset; sempre `202` (rate limit)                                       |
 | `POST`   | `/users/reset-password`          | –              | –                                  | Resetar via link token ou email + OTP (rate limit)                               |
-| `GET`    | `/users`                         | Bearer         | `access-control.users` · view      | Listar usuários (paginado, 20/página)                                            |
+| `GET`    | `/users`                         | Bearer         | `access-control.users` · view      | Listar usuários (paginado, 20/página) → `{ users, total }`                       |
 | `GET`    | `/users/:userId`                 | Bearer         | `access-control.users` · view      | Buscar um usuário por id                                                         |
 | `PATCH`  | `/users/:userId`                 | Bearer         | `access-control.users` · edit      | Editar usuário (username/email/role/is_verified/is_active)                       |
 | `GET`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · view      | Listar os perfis atribuídos a um usuário                                         |

@@ -372,7 +372,7 @@ locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do monorepo e
 | POST   | `/users/forgot-password`         |     ❌     | —                                  | solicitar reset; sempre `202` (anti-enumeração)                    |
 | POST   | `/users/reset-password`          |     ❌     | —                                  | resetar via link token ou email + OTP                              |
 | GET    | `/users/confirm-email-change`    |     ❌     | —                                  | confirmar troca de e-mail via link (`?token=`)                     |
-| GET    | `/users`                         |     ✅     | `access-control.users` · view      | listar usuários (paginado, 20/página)                              |
+| GET    | `/users`                         |     ✅     | `access-control.users` · view      | listar usuários (paginado, 20/página) → `{ users, total }`         |
 | GET    | `/users/:userId`                 |     ✅     | `access-control.users` · view      | buscar um usuário por id (PublicUser)                              |
 | PATCH  | `/users/:userId`                 |     ✅     | `access-control.users` · edit      | editar usuário (username/email/role/is_verified/is_active)         |
 | GET    | `/users/:userId/profiles`        |     ✅     | `access-control.users` · view      | listar os perfis atribuídos a um usuário                           |

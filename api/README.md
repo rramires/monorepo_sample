@@ -177,7 +177,7 @@ boot if any variable is invalid (Zod validation in `src/env`).
 | `POST`   | `/users/resend-verification`     | Bearer         | –                                  | Resend verification email                                                               |
 | `POST`   | `/users/forgot-password`         | –              | –                                  | Request a reset; always `202` (rate-limited)                                            |
 | `POST`   | `/users/reset-password`          | –              | –                                  | Reset via link token or email + OTP (rate-limited)                                      |
-| `GET`    | `/users`                         | Bearer         | `access-control.users` · view      | List users (paginated, 20/page)                                                         |
+| `GET`    | `/users`                         | Bearer         | `access-control.users` · view      | List users (paginated, 20/page) → `{ users, total }`                                    |
 | `GET`    | `/users/:userId`                 | Bearer         | `access-control.users` · view      | Fetch a single user by id                                                               |
 | `PATCH`  | `/users/:userId`                 | Bearer         | `access-control.users` · edit      | Edit a user (username/email/role/is_verified/is_active)                                 |
 | `GET`    | `/users/:userId/profiles`        | Bearer         | `access-control.users` · view      | List the profiles assigned to a user                                                    |

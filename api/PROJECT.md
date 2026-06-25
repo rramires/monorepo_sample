@@ -370,7 +370,7 @@ username `transform`) stay local. See the monorepo
 | POST   | `/users/forgot-password`         |     ❌     | —                                  | request reset; always `202` (anti-enumeration)                   |
 | POST   | `/users/reset-password`          |     ❌     | —                                  | reset via link token or email + OTP                              |
 | GET    | `/users/confirm-email-change`    |     ❌     | —                                  | confirm email change via link token (`?token=`)                  |
-| GET    | `/users`                         |     ✅     | `access-control.users` · view      | list users (paginated, 20/page)                                  |
+| GET    | `/users`                         |     ✅     | `access-control.users` · view      | list users (paginated, 20/page) → `{ users, total }`            |
 | GET    | `/users/:userId`                 |     ✅     | `access-control.users` · view      | fetch a single user by id (PublicUser)                           |
 | PATCH  | `/users/:userId`                 |     ✅     | `access-control.users` · edit      | edit a user (username/email/role/is_verified/is_active)          |
 | GET    | `/users/:userId/profiles`        |     ✅     | `access-control.users` · view      | list a user's assigned profiles                                  |
