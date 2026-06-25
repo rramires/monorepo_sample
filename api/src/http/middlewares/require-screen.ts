@@ -32,11 +32,9 @@ function requireScreen(screenKey: string, action: ScreenAction = 'view') {
 			// Granted, but the screen is killed (emergency switch) for non-admins.
 			const menuEntry = menu.find((m) => m.screen_key === screenKey)
 			if (menuEntry && !menuEntry.is_enabled) {
-				return reply
-					.status(403)
-					.send({
-						message: 'This screen is temporarily unavailable.',
-					})
+				return reply.status(403).send({
+					message: 'This screen is temporarily unavailable.',
+				})
 			}
 		} catch (err) {
 			if (err instanceof ResourceNotFoundError) {

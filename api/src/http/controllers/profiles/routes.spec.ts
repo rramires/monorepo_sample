@@ -40,6 +40,10 @@ describe('Profiles routes (e2e)', () => {
 				order: 0,
 			},
 		})
+		// A curated permission on the screen to grant.
+		const permissionRow = await prisma.permission.create({
+			data: { screen_id: screenRow.id, action: 'view', label: 'View' },
+		})
 
 		// create
 		const createResponse = await request(app.server)
@@ -72,7 +76,7 @@ describe('Profiles routes (e2e)', () => {
 		expect(getResponse.statusCode).toEqual(200)
 		expect(Array.isArray(getResponse.body.screens)).toBe(true)
 
-		// set screens (grants)
+		// set grants (membership + granted permission ids + landing)
 		const setScreensResponse = await request(app.server)
 			.put(`/profiles/${profileId}/screens`)
 			.set('Authorization', `Bearer ${token}`)
@@ -80,12 +84,10 @@ describe('Profiles routes (e2e)', () => {
 				screens: [
 					{
 						screen_id: screenRow.id,
-						can_view: true,
-						can_create: true,
-						can_edit: false,
-						can_delete: false,
+						permission_ids: [permissionRow.id],
 					},
 				],
+				default_screen_id: screenRow.id,
 			})
 
 		expect(setScreensResponse.statusCode).toEqual(200)
@@ -93,6 +95,10 @@ describe('Profiles routes (e2e)', () => {
 		expect(setScreensResponse.body.screens[0].screen_id).toEqual(
 			screenRow.id,
 		)
+		expect(setScreensResponse.body.screens[0].permission_ids).toEqual([
+			permissionRow.id,
+		])
+		expect(setScreensResponse.body.default_screen_id).toEqual(screenRow.id)
 
 		// update
 		const updateResponse = await request(app.server)
@@ -151,5 +157,32 @@ describe('Profiles routes (e2e)', () => {
 			.set('Authorization', `Bearer ${token}`)
 			.send({ is_default: false })
 		expect(removeLast.statusCode).toEqual(409)
+	})
+
+	it('blocks deleting a profile that is still assigned to a user (no cascade)', async () => {
+		// A profile assigned to a freshly-created user.
+		const profile = await prisma.profile.create({
+			data: { key: `profile-${randomUUID()}`, name: 'In-use Profile' },
+		})
+		const user = await prisma.user.create({
+			data: {
+				username: `u${randomUUID().slice(0, 8)}`,
+				email: `${randomUUID()}@example.com`,
+				password_hash: 'x',
+			},
+		})
+		await prisma.userProfile.create({
+			data: { user_id: user.id, profile_id: profile.id },
+		})
+
+		const response = await request(app.server)
+			.delete(`/profiles/${profile.id}`)
+			.set('Authorization', `Bearer ${token}`)
+			.send()
+
+		expect(response.statusCode).toEqual(409)
+		expect(response.body.message).toEqual(
+			'Assigned to 1 user(s). Unassign it from those users first.',
+		)
 	})
 })
