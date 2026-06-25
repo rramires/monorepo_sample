@@ -3,7 +3,9 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
 import { makeGetUserPermissionsUseCase } from '@/use-cases/factories/make-get-user-permissions-use-case'
 
-export type ScreenAction = 'view' | 'create' | 'edit' | 'delete'
+// An action KEY — a bare CRUD family (`create`) or a composed `family_name`
+// (`create_checkin`). Free string now; the catalog is the source of truth.
+export type ScreenAction = string
 
 // Authorization guard: allows the request only when the authenticated user
 // `can()` perform `action` on `screenKey`. Effective permissions are read from
@@ -24,7 +26,7 @@ function requireScreen(screenKey: string, action: ScreenAction = 'view') {
 			}
 
 			const screen = screens.find((s) => s.screen_key === screenKey)
-			if (!screen?.[action]) {
+			if (!screen?.actions.includes(action)) {
 				// Authenticated but lacking the grant: 403, not 401.
 				return reply.status(403).send({ message: 'Forbidden.' })
 			}

@@ -23,21 +23,18 @@ export class PrismaPermissionsRepository implements IPermissionsRepository {
 			},
 		})
 
-		// OR the actions per screen key.
-		const byKey = new Map<string, EffectiveScreenPermission>()
+		// Union the granted action keys per screen key.
+		const byKey = new Map<string, Set<string>>()
 		for (const grant of grants) {
 			const key = grant.permission.screen.key
-			const entry = byKey.get(key) ?? {
-				screen_key: key,
-				view: false,
-				create: false,
-				edit: false,
-				delete: false,
-			}
-			entry[grant.permission.action] = true
-			byKey.set(key, entry)
+			const set = byKey.get(key) ?? new Set<string>()
+			set.add(grant.permission.action)
+			byKey.set(key, set)
 		}
-		return [...byKey.values()]
+		return [...byKey.entries()].map(([screen_key, set]) => ({
+			screen_key,
+			actions: [...set],
+		}))
 	}
 
 	async getMembershipScreenKeys(userId: string): Promise<string[]> {

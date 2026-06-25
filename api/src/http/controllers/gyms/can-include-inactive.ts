@@ -22,6 +22,10 @@ export async function resolveIncludeInactive(
 
 	return (
 		role === 'ADMIN' ||
-		Boolean(screens.find((s) => s.screen_key === 'gym.gyms')?.edit)
+		Boolean(
+			screens
+				.find((s) => s.screen_key === 'gym.gyms')
+				?.actions.includes('edit'),
+		)
 	)
 }

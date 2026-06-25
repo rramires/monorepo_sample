@@ -26,7 +26,7 @@ export async function checkInsRoutes(app: FastifyInstance) {
 	//
 	app.patch(
 		'/check-ins/:checkInId/validate',
-		{ onRequest: [requireScreen('gym.validations', 'create')] },
+		{ onRequest: [requireScreen('gym.check-ins', 'edit_validate')] },
 		validateController,
 	)
 }

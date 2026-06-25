@@ -1,12 +1,10 @@
-// One screen's effective permissions for a user — the OR across all the
-// profiles the user holds, keyed by screen `key`. `view` is an explicit granted
-// permission now (no longer default-true).
+// One screen's effective permissions for a user — the union of granted action
+// KEYS across all the profiles the user holds, keyed by screen `key`. `view` is
+// an explicit granted action now (no longer default-true); extra ops are
+// composed keys (`create_checkin`). `can(key, action) = actions.includes(action)`.
 export interface EffectiveScreenPermission {
 	screen_key: string
-	view: boolean
-	create: boolean
-	edit: boolean
-	delete: boolean
+	actions: string[]
 }
 
 export interface IPermissionsRepository {

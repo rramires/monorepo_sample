@@ -1,9 +1,8 @@
 import { Permission } from '@/prisma-client'
-import { PermissionAction } from '@/prisma-client/enums'
 
 // Partial edit: `undefined` = leave as-is.
 export interface IPermissionUpdateInput {
-	action?: PermissionAction
+	action?: string
 	label?: string
 }
 
@@ -15,10 +14,10 @@ export interface IPermissionCatalogRepository {
 	/** The owning screen's protection flag (mirrors onto the permission), or null. */
 	findScreen(screenId: string): Promise<{ is_system: boolean } | null>
 	/** UNIQUE(screen_id, action) guard. */
-	actionExists(screenId: string, action: PermissionAction): Promise<boolean>
+	actionExists(screenId: string, action: string): Promise<boolean>
 	create(data: {
 		screen_id: string
-		action: PermissionAction
+		action: string
 		label: string
 		is_system: boolean
 	}): Promise<Permission>

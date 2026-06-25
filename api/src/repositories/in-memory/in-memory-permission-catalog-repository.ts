@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto'
 
 import { Permission } from '@/prisma-client'
-import { PermissionAction } from '@/prisma-client/enums'
 
 import {
 	IPermissionCatalogRepository,
@@ -31,7 +30,7 @@ export class InMemoryPermissionCatalogRepository implements IPermissionCatalogRe
 		return screen ? { is_system: screen.is_system } : null
 	}
 
-	async actionExists(screenId: string, action: PermissionAction) {
+	async actionExists(screenId: string, action: string) {
 		return this.items.some(
 			(p) => p.screen_id === screenId && p.action === action,
 		)
@@ -39,7 +38,7 @@ export class InMemoryPermissionCatalogRepository implements IPermissionCatalogRe
 
 	async create(data: {
 		screen_id: string
-		action: PermissionAction
+		action: string
 		label: string
 		is_system: boolean
 	}) {

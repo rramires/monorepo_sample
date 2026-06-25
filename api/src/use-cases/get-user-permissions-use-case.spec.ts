@@ -34,7 +34,11 @@ describe('Get User Permissions Use Case', () => {
 		expect(role).toBe('ADMIN')
 		expect(screens).toHaveLength(2)
 		expect(
-			screens.every((s) => s.view && s.create && s.edit && s.delete),
+			screens.every((s) =>
+				['view', 'create', 'edit', 'delete'].every((a) =>
+					s.actions.includes(a),
+				),
+			),
 		).toBe(true)
 	})
 
@@ -49,11 +53,17 @@ describe('Get User Permissions Use Case', () => {
 			{ user_id: user.id, profile_id: 'p1' },
 			{ user_id: user.id, profile_id: 'p2' },
 		]
-		// One granted permission row per (profile, screen, action).
+		// One granted permission row per (profile, screen, action key); a composed
+		// key (create_checkin) rides alongside the bare families.
 		permissionsRepository.grants = [
 			{ profile_id: 'p1', screen_key: 'gym.gyms', action: 'view' },
 			{ profile_id: 'p2', screen_key: 'gym.gyms', action: 'view' },
 			{ profile_id: 'p2', screen_key: 'gym.gyms', action: 'create' },
+			{
+				profile_id: 'p2',
+				screen_key: 'gym.gyms',
+				action: 'create_checkin',
+			},
 		]
 
 		const { role, screens } = await sut.execute({ userId: user.id })
@@ -62,10 +72,7 @@ describe('Get User Permissions Use Case', () => {
 		expect(screens).toEqual([
 			{
 				screen_key: 'gym.gyms',
-				view: true,
-				create: true,
-				edit: false,
-				delete: false,
+				actions: ['view', 'create', 'create_checkin'],
 			},
 		])
 	})
