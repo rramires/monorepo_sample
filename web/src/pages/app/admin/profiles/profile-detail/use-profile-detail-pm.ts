@@ -108,19 +108,32 @@ export function useProfileDetailPM() {
 			}),
 		[screens, modulesById],
 	)
+	const screenById = useMemo(
+		() => new Map(screenRows.map((s) => [s.id, s])),
+		[screenRows],
+	)
 
-	// The module filter narrows only the Available side: always keep already-
-	// granted screens in the universe so the Granted side stays complete (the
-	// TransferTable drops assigned rows from Available on its own).
+	// What the TransferTable sees. A disabled screen can't be newly assigned, so
+	// it's hidden from Available — but kept if it's already granted, so it still
+	// shows (muted) on the Granted side and can be removed (one-way). The module
+	// filter narrows only Available; granted screens are always kept so the
+	// Granted side stays complete.
 	const visibleScreens = useMemo(() => {
-		if (moduleFilter.length === 0) {
-			return screenRows
-		}
 		const mods = new Set(moduleFilter)
 		const assigned = new Set(assignedIds)
-		return screenRows.filter(
-			(s) => mods.has(s.moduleId) || assigned.has(s.id),
-		)
+		return screenRows.filter((s) => {
+			if (!s.isActive && !assigned.has(s.id)) {
+				return false
+			}
+			if (
+				moduleFilter.length > 0 &&
+				!mods.has(s.moduleId) &&
+				!assigned.has(s.id)
+			) {
+				return false
+			}
+			return true
+		})
 	}, [screenRows, moduleFilter, assignedIds])
 
 	// Seed local edit state from the loaded profile (runs when the profile
@@ -152,9 +165,10 @@ export function useProfileDetailPM() {
 		return !!viewPerm && (grants[screenId] ?? []).includes(viewPerm.id)
 	}
 
-	// Keep grants in sync with membership: a newly granted screen starts with no
-	// permissions (turn them on per screen); a removed one drops its grants.
-	function handleAssignedChange(ids: string[]) {
+	// Apply a membership change: keep grants in sync (a newly granted screen
+	// starts with no permissions; a removed one drops its grants) and drop the
+	// landing if its screen left.
+	function applyAssigned(ids: string[]) {
 		setAssignedIds(ids)
 		setGrants((prev) => {
 			const next: Record<string, string[]> = {}
@@ -163,8 +177,41 @@ export function useProfileDetailPM() {
 			}
 			return next
 		})
-		// Drop the landing if its screen was removed.
 		setDefaultScreenId((prev) => (prev && ids.includes(prev) ? prev : null))
+	}
+
+	// Removing a disabled screen is one-way (it can't be re-added until
+	// re-enabled), so confirm first; everything else applies straight through.
+	const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false)
+	const pendingAssigned = useRef<string[] | null>(null)
+
+	function handleAssignedChange(ids: string[]) {
+		const removed = assignedIds.filter((id) => !ids.includes(id))
+		const removingDisabled = removed.some(
+			(id) => screenById.get(id)?.isActive === false,
+		)
+		if (removingDisabled) {
+			pendingAssigned.current = ids
+			setConfirmRemoveOpen(true)
+			return
+		}
+		applyAssigned(ids)
+	}
+
+	function onConfirmRemoveOpenChange(next: boolean) {
+		setConfirmRemoveOpen(next)
+		if (!next) {
+			pendingAssigned.current = null
+		}
+	}
+
+	function confirmRemoveDisabled() {
+		const ids = pendingAssigned.current
+		pendingAssigned.current = null
+		setConfirmRemoveOpen(false)
+		if (ids) {
+			applyAssigned(ids)
+		}
 	}
 
 	// Replace a screen's granted permissions (the per-row MultiSelect). Dropping
@@ -285,6 +332,11 @@ export function useProfileDetailPM() {
 			open: confirmDefaultOpen,
 			onOpenChange: onConfirmDefaultOpenChange,
 			onConfirm: confirmReplaceDefault,
+		},
+		confirmRemoveDisabled: {
+			open: confirmRemoveOpen,
+			onOpenChange: onConfirmRemoveOpenChange,
+			onConfirm: confirmRemoveDisabled,
 		},
 	}
 }

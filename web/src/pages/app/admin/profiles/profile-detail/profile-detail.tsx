@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { Switch } from '@/components/ui/switch'
+import { cn } from '@/lib/utils'
 
 import { type ScreenRow, useProfileDetailPM } from './use-profile-detail-pm'
 
@@ -58,7 +59,15 @@ export function ProfileDetail() {
 		header: 'Screen',
 		cell: (s) => (
 			<div className='flex flex-col'>
-				<span className='font-medium'>{s.name}</span>
+				<span
+					className={cn(
+						'flex items-center gap-2 font-medium',
+						!s.isActive && 'text-muted-foreground',
+					)}
+				>
+					{s.name}
+					{!s.isActive && <Badge variant='outline'>Disabled</Badge>}
+				</span>
 				<span className='text-muted-foreground text-xs'>{s.key}</span>
 			</div>
 		),
@@ -266,6 +275,13 @@ export function ProfileDetail() {
 					title='Replace default profile'
 					description={`The current default profile is: ${pm.currentDefaultName}. Do you confirm that you want to replace it as the default?`}
 					confirmLabel='Replace'
+				/>
+
+				<ConfirmDialog
+					{...pm.confirmRemoveDisabled}
+					title='Remove disabled screen'
+					description="This screen is disabled — if you remove it you can't re-add it until it's re-enabled. Remove?"
+					confirmLabel='Remove'
 				/>
 			</div>
 		</>

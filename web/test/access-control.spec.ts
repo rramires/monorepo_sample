@@ -165,3 +165,45 @@ test('admin turns a screen off via the kill switch (confirm)', async ({
 
 	await waitForUIInspection(page)
 })
+
+test('a disabled screen is marked in a profile and confirms on removal', async ({
+	page,
+}) => {
+	await signIn(page, 'admin')
+
+	// Disable the Check-in History screen (gym.history) via its edit dialog.
+	await page.getByRole('link', { name: 'Screens', exact: true }).click()
+	await page
+		.getByRole('row')
+		.filter({ hasText: 'gym.history' })
+		.getByRole('button')
+		.nth(1)
+		.click()
+	const screenDialog = page.getByRole('dialog')
+	await expect(screenDialog.getByText('Edit screen')).toBeVisible()
+	await screenDialog.getByRole('switch', { name: 'Active' }).click()
+	await screenDialog.getByRole('button', { name: 'Save changes' }).click()
+	await expect(page.getByText(/Deactivate "Check-in History"\?/)).toBeVisible()
+	await page.getByRole('button', { name: 'Deactivate' }).click()
+	await expect(page.getByText('Screen updated.')).toBeVisible()
+
+	// Open gym-member's grants — the disabled screen still sits on the Granted
+	// side, marked "Disabled".
+	await page.getByRole('link', { name: 'Profiles', exact: true }).click()
+	await page
+		.getByRole('row')
+		.filter({ hasText: 'gym-member' })
+		.getByRole('link', { name: 'Grants' })
+		.click()
+	await expect(page).toHaveURL(/\/admin\/profiles\/.+/)
+
+	const grantedRow = page.getByRole('row').filter({ hasText: 'gym.history' })
+	await expect(grantedRow.getByText('Disabled')).toBeVisible()
+
+	// Removing it (one-way) prompts a confirm first.
+	await grantedRow.getByRole('checkbox', { name: 'Select row' }).check()
+	await page.getByRole('button', { name: 'Move selected left' }).click()
+	await expect(page.getByText('Remove disabled screen')).toBeVisible()
+
+	await waitForUIInspection(page)
+})
