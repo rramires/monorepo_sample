@@ -2,57 +2,89 @@ import { z } from 'zod'
 
 import { roleSchema } from './primitives'
 
-// The action enum is the CODE contract — routes call `requireScreen('x','create')`
-// and the frontend `can('x','create')`. The four actions are fixed; only their
-// presentation (the friendly `label` below) and curation (which ones a screen
-// actually has) vary. Never add/rename an action without touching code.
-export const permissionActionSchema = z.enum([
-	'view',
-	'create',
-	'edit',
-	'delete',
-])
-export type PermissionAction = z.infer<typeof permissionActionSchema>
+// The four CRUD FAMILIES are the fixed semantic roots. They are no longer the
+// whole story: a permission's `action` is now a free string KEY whose family
+// (the part before the first `_`) must be one of these four. A bare family
+// (`create`) is the simple case; a composed key (`create_checkin`) lets a screen
+// carry MANY ops of the same family without spawning a phantom screen. Routes
+// call `requireScreen('x','create_checkin')` and the frontend `can('x',key)`.
+export const permissionFamilySchema = z.enum(['view', 'create', 'edit', 'delete'])
+export type PermissionFamily = z.infer<typeof permissionFamilySchema>
+export const PERMISSION_FAMILIES = permissionFamilySchema.options
 
-// A curated permission a screen actually offers. `action` is the fixed code
-// contract; `label` is the friendly, editable display name (e.g. check-in's
-// `create` is shown as "Check in"). UNIQUE(screen_id, action) — at most one
-// permission per (screen, action). `is_system` mirrors its screen: seeded
-// permissions are protected (no delete) just like seeded screens.
+// The family of an action key = everything before the first underscore (a bare
+// key is its own family). `create_checkin` → `create`; `view` → `view`. Single
+// rule, used both to validate keys and to drive family-aware UI.
+export function actionFamily(key: string): string {
+	const i = key.indexOf('_')
+	return i === -1 ? key : key.slice(0, i)
+}
+
+// Build a composed key from a family + a free name part. The editor sends the
+// final composed key; this is the one place that convention is encoded.
+export function composeActionKey(family: string, name: string): string {
+	return `${family}_${name}`
+}
+
+// An action KEY: lowercase + underscores, family ∈ the four CRUD families. The
+// bare families pass (`actionFamily('view') === 'view'`); composed keys
+// (`create_checkin`) pass too. Max 40 chars total. This replaces the old enum as
+// the code contract for `permission.action`.
+export const actionKeySchema = z
+	.string()
+	.trim()
+	.max(40)
+	.regex(/^[a-z][a-z_]*$/, 'Use lowercase letters and underscores only.')
+	.refine((k) => (PERMISSION_FAMILIES as readonly string[]).includes(actionFamily(k)), {
+		message: 'Action must start with a CRUD family (view/create/edit/delete).',
+	})
+
+// The friendly, editable display name for a permission (e.g. `create_checkin` is
+// shown as "Check in"). Letters/digits/space/hyphen, must start with a letter;
+// trimmed, 3–40 chars. Looser than the key on purpose — it is display text.
+export const actionLabelSchema = z
+	.string()
+	.trim()
+	.min(3)
+	.max(40)
+	.regex(/^[A-Za-z][A-Za-z0-9 -]*$/, 'Letters, digits, spaces and hyphens only.')
+
+// A curated permission a screen actually offers. `action` is the free-key code
+// contract; `label` is the friendly, editable display name. UNIQUE(screen_id,
+// action) — at most one permission per (screen, action key). `is_system` mirrors
+// its screen: seeded permissions are protected (no delete) like seeded screens.
 export const permissionSchema = z.object({
 	id: z.string(),
 	screen_id: z.string(),
-	action: permissionActionSchema,
-	label: z.string().min(1),
+	action: actionKeySchema,
+	label: actionLabelSchema,
 	is_system: z.boolean(),
 })
 export type Permission = z.infer<typeof permissionSchema>
 
 // POST /screens/:screenId/permissions — add one curated op to a screen. The
-// action must not already exist on the screen (UNIQUE), enforced server-side.
+// editor sends the FINAL composed key (e.g. `create_checkin`). The key must not
+// already exist on the screen (UNIQUE), enforced server-side.
 export const createPermissionBodySchema = z.object({
-	action: permissionActionSchema,
-	label: z.string().min(1),
+	action: actionKeySchema,
+	label: actionLabelSchema,
 })
 export type CreatePermissionBody = z.infer<typeof createPermissionBodySchema>
 
-// PATCH /permissions/:id — rename and/or re-target the op (the editor hides
-// already-used actions); every field optional.
+// PATCH /permissions/:id — rename and/or re-key the op; every field optional.
 export const updatePermissionBodySchema = createPermissionBodySchema.partial()
 export type UpdatePermissionBody = z.infer<typeof updatePermissionBodySchema>
 
 // One screen's effective permissions for the current user (union across all the
-// user's profiles — each action is the OR over profiles). Keyed by screen `key`
-// so the frontend can resolve grants without knowing screen ids. `view` is now
-// an explicit grant (no more default-true). Does NOT factor in the screen kill
-// switch — `is_enabled` is carried on the menu entry and enforced separately so
-// the guard can tell "no access" apart from "temporarily unavailable".
+// user's profiles). `actions` is the set of granted action KEYS for the screen —
+// `can(key, action) = actions.includes(action)`. Keyed by screen `key` so the
+// frontend resolves grants without knowing screen ids. Does NOT factor in the
+// screen kill switch — `is_enabled` is carried on the menu entry and enforced
+// separately so the guard can tell "no access" apart from "temporarily
+// unavailable".
 export const screenPermissionSchema = z.object({
 	screen_key: z.string(),
-	view: z.boolean(),
-	create: z.boolean(),
-	edit: z.boolean(),
-	delete: z.boolean(),
+	actions: z.array(z.string()),
 })
 export type ScreenPermission = z.infer<typeof screenPermissionSchema>
 
