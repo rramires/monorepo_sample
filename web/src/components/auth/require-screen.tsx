@@ -17,7 +17,7 @@ export function RequireScreen({
 	screen: string
 	action?: ScreenAction
 }) {
-	const { can, isLoading } = usePermissions()
+	const { can, isScreenEnabled, isLoading } = usePermissions()
 
 	if (isLoading) {
 		return (
@@ -27,8 +27,25 @@ export function RequireScreen({
 		)
 	}
 
+	// No grant for this screen/action — the member may have it assigned (it shows
+	// in the sidebar) but the permission hasn't been turned on yet.
 	if (!can(screen, action)) {
-		return <Forbidden />
+		return (
+			<Forbidden
+				title='403 — No access'
+				message="You don't have access to this screen yet."
+			/>
+		)
+	}
+
+	// Granted, but the screen is killed (emergency switch) for non-admins.
+	if (!isScreenEnabled(screen)) {
+		return (
+			<Forbidden
+				title='Temporarily unavailable'
+				message='This screen is temporarily unavailable.'
+			/>
+		)
 	}
 
 	return <Outlet />

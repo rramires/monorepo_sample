@@ -1,9 +1,20 @@
-import type { Module, Profile, ProfileScreen, Screen } from '@root/contracts'
+import type {
+	Module,
+	Permission,
+	PermissionAction,
+	Profile,
+	Screen,
+} from '@root/contracts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Access-control seed — the single source of truth for the RBAC demo dataset.
 // MSW reads + mutates these arrays now; the Prisma seed mirrors this file later
-// (PLAN §4). Ids are human-readable so handlers and tests stay legible.
+// (PLAN G5). Ids are human-readable so handlers and tests stay legible.
+//
+// Model (PLAN): modules 1─N screens 1─N permissions; profiles carry MEMBERSHIP
+// (`profileScreens`, which screens are in the sidebar) + GRANTS
+// (`profilePermissions`, which curated ops are allowed) + a landing screen
+// (`profileDefaultScreen`). `view` is now an explicit granted permission.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Modules ──────────────────────────────────────────────────────────────────
@@ -12,22 +23,25 @@ export const modules: Module[] = [
 		id: 'mod-gym',
 		key: 'gym',
 		name: 'Gym',
-		description: 'The gym domain (dashboard, gyms, check-ins).',
+		description: 'Dashboard, gyms and check-ins.',
 		order: 0,
 		is_system: false,
+		is_active: true,
 	},
 	{
 		id: 'mod-access-control',
 		key: 'access-control',
 		name: 'Access Control',
-		description: 'Manage modules, screens, profiles and user access.',
+		description: 'Modules, screens, profiles, users.',
 		order: 1,
 		// System catalog — protected from web-UI deletion / key rename.
 		is_system: true,
+		is_active: true,
 	},
 ]
 
 // ── Screens ──────────────────────────────────────────────────────────────────
+// `is_active` (lifecycle) + `is_enabled` (kill switch) default true.
 export const screens: Screen[] = [
 	// gym (demo content — deletable)
 	{
@@ -36,8 +50,11 @@ export const screens: Screen[] = [
 		key: 'gym.dashboard',
 		name: 'Dashboard',
 		path: '/',
+		description: 'Activity at a glance.',
 		order: 0,
 		is_system: false,
+		is_active: true,
+		is_enabled: true,
 	},
 	{
 		id: 'scr-gym-gyms',
@@ -45,8 +62,11 @@ export const screens: Screen[] = [
 		key: 'gym.gyms',
 		name: 'Gyms',
 		path: '/gyms',
+		description: 'Browse and manage gyms.',
 		order: 1,
 		is_system: false,
+		is_active: true,
+		is_enabled: true,
 	},
 	{
 		id: 'scr-gym-checkin',
@@ -54,8 +74,11 @@ export const screens: Screen[] = [
 		key: 'gym.check-in',
 		name: 'Check-in',
 		path: '/check-ins',
+		description: 'Check in to a gym.',
 		order: 2,
 		is_system: false,
+		is_active: true,
+		is_enabled: true,
 	},
 	{
 		id: 'scr-gym-history',
@@ -63,8 +86,11 @@ export const screens: Screen[] = [
 		key: 'gym.history',
 		name: 'Check-in History',
 		path: '/history',
+		description: 'Your past check-ins.',
 		order: 3,
 		is_system: false,
+		is_active: true,
+		is_enabled: true,
 	},
 	{
 		id: 'scr-gym-validations',
@@ -72,8 +98,11 @@ export const screens: Screen[] = [
 		key: 'gym.validations',
 		name: 'Validate Check-ins',
 		path: '/validations',
+		description: 'Approve member check-ins.',
 		order: 4,
 		is_system: false,
+		is_active: true,
+		is_enabled: true,
 	},
 	// access-control (system — protected)
 	{
@@ -82,8 +111,11 @@ export const screens: Screen[] = [
 		key: 'access-control.modules',
 		name: 'Manage Modules',
 		path: '/admin/modules',
+		description: 'Group screens into modules.',
 		order: 0,
 		is_system: true,
+		is_active: true,
+		is_enabled: true,
 	},
 	{
 		id: 'scr-ac-screens',
@@ -91,8 +123,11 @@ export const screens: Screen[] = [
 		key: 'access-control.screens',
 		name: 'Manage Screens',
 		path: '/admin/screens',
+		description: 'Screens and their permissions.',
 		order: 1,
 		is_system: true,
+		is_active: true,
+		is_enabled: true,
 	},
 	{
 		id: 'scr-ac-profiles',
@@ -100,8 +135,11 @@ export const screens: Screen[] = [
 		key: 'access-control.profiles',
 		name: 'Manage Profiles',
 		path: '/admin/profiles',
+		description: 'Bundle permissions into profiles.',
 		order: 2,
 		is_system: true,
+		is_active: true,
+		is_enabled: true,
 	},
 	{
 		id: 'scr-ac-users',
@@ -109,10 +147,87 @@ export const screens: Screen[] = [
 		key: 'access-control.users',
 		name: 'Manage Users',
 		path: '/admin/users',
+		description: 'Users and their profiles.',
 		order: 3,
 		is_system: true,
+		is_active: true,
+		is_enabled: true,
 	},
 ]
+
+// ── Permissions catalog ──────────────────────────────────────────────────────
+// Curated per screen with friendly labels — only the ops a screen really has.
+// `is_system` mirrors the screen. UNIQUE(screen_id, action) holds by construction.
+// `gym.gyms` and `access-control.users` deliberately have NO `delete` (they
+// deactivate via the Active switch), which is what kills the phantom ops.
+type PermSpec = { screen_key: string; action: PermissionAction; label: string }
+
+const PERMISSION_SPECS: PermSpec[] = [
+	{ screen_key: 'gym.dashboard', action: 'view', label: 'View' },
+	{ screen_key: 'gym.gyms', action: 'view', label: 'View' },
+	{ screen_key: 'gym.gyms', action: 'create', label: 'Add' },
+	{ screen_key: 'gym.gyms', action: 'edit', label: 'Edit' },
+	{ screen_key: 'gym.check-in', action: 'view', label: 'View' },
+	{ screen_key: 'gym.check-in', action: 'create', label: 'Check in' },
+	{ screen_key: 'gym.history', action: 'view', label: 'View' },
+	{ screen_key: 'gym.validations', action: 'view', label: 'View' },
+	{ screen_key: 'gym.validations', action: 'create', label: 'Validate' },
+	{ screen_key: 'access-control.modules', action: 'view', label: 'View' },
+	{ screen_key: 'access-control.modules', action: 'create', label: 'Add' },
+	{ screen_key: 'access-control.modules', action: 'edit', label: 'Edit' },
+	{ screen_key: 'access-control.modules', action: 'delete', label: 'Remove' },
+	{ screen_key: 'access-control.screens', action: 'view', label: 'View' },
+	{ screen_key: 'access-control.screens', action: 'create', label: 'Add' },
+	{ screen_key: 'access-control.screens', action: 'edit', label: 'Edit' },
+	{ screen_key: 'access-control.screens', action: 'delete', label: 'Remove' },
+	{ screen_key: 'access-control.profiles', action: 'view', label: 'View' },
+	{ screen_key: 'access-control.profiles', action: 'create', label: 'Add' },
+	{ screen_key: 'access-control.profiles', action: 'edit', label: 'Edit' },
+	{
+		screen_key: 'access-control.profiles',
+		action: 'delete',
+		label: 'Remove',
+	},
+	{ screen_key: 'access-control.users', action: 'view', label: 'View' },
+	{ screen_key: 'access-control.users', action: 'create', label: 'Add' },
+	{ screen_key: 'access-control.users', action: 'edit', label: 'Edit' },
+]
+
+function screenByKey(key: string): Screen {
+	const screen = screens.find((s) => s.key === key)
+	if (!screen) {
+		throw new Error(`Seed error: unknown screen "${key}"`)
+	}
+	return screen
+}
+
+// `perm-<screen-suffix>-<action>` e.g. perm-gym-gyms-create / perm-ac-modules-delete.
+function permId(screen: Screen, action: PermissionAction): string {
+	return `perm-${screen.id.replace(/^scr-/, '')}-${action}`
+}
+
+export const permissions: Permission[] = PERMISSION_SPECS.map((spec) => {
+	const screen = screenByKey(spec.screen_key)
+	return {
+		id: permId(screen, spec.action),
+		screen_id: screen.id,
+		action: spec.action,
+		label: spec.label,
+		is_system: screen.is_system,
+	}
+})
+
+// Look up a catalog permission id by screen key + action (seed authoring helper).
+function grantId(screenKey: string, action: PermissionAction): string {
+	const screen = screenByKey(screenKey)
+	const id = permId(screen, action)
+	if (!permissions.some((p) => p.id === id)) {
+		throw new Error(
+			`Seed error: ${screenKey} has no "${action}" permission`,
+		)
+	}
+	return id
+}
 
 // ── Profiles ─────────────────────────────────────────────────────────────────
 export const profiles: Profile[] = [
@@ -123,6 +238,7 @@ export const profiles: Profile[] = [
 		description: 'Default profile granted on registration.',
 		is_system: true,
 		is_default: true,
+		is_active: true,
 	},
 	{
 		id: 'prof-gym-manager',
@@ -131,6 +247,7 @@ export const profiles: Profile[] = [
 		description: 'Runs a gym: manages gyms and validates check-ins.',
 		is_system: true,
 		is_default: false,
+		is_active: true,
 	},
 	{
 		id: 'prof-support',
@@ -139,63 +256,85 @@ export const profiles: Profile[] = [
 		description: 'Back-office: administers profiles and user access.',
 		is_system: true,
 		is_default: false,
+		is_active: true,
 	},
 ]
 
-// Grant helper: author by screen key + the actions that are true; everything
-// else defaults to false (can_view defaults true for any listed screen).
-type Grant = {
+// Author a profile by screen + the granted ops on it; `landing` marks the
+// profile's default screen. Membership = the listed screens (a screen with an
+// empty `ops` would be member-only — staged rollout — none seeded by default).
+type ProfileSpec = {
 	screen_key: string
-	create?: boolean
-	edit?: boolean
-	delete?: boolean
-	default?: boolean
+	ops: PermissionAction[]
+	landing?: boolean
 }
 
-function grant(g: Grant): ProfileScreen {
-	const screen = screens.find((s) => s.key === g.screen_key)
-	if (!screen) {
-		throw new Error(`Seed error: unknown screen "${g.screen_key}"`)
-	}
-	return {
-		screen_id: screen.id,
-		can_view: true,
-		can_create: g.create ?? false,
-		can_edit: g.edit ?? false,
-		can_delete: g.delete ?? false,
-		is_default: g.default ?? false,
-	}
-}
-
-// Profile → its grants (PLAN §4). Mutable: PUT /profiles/:id/screens replaces an
-// entry; the TransferTable reads it back.
-export const profileScreens: Record<string, ProfileScreen[]> = {
+const PROFILE_SPECS: Record<string, ProfileSpec[]> = {
 	'prof-gym-member': [
-		grant({ screen_key: 'gym.dashboard', default: true }),
-		grant({ screen_key: 'gym.check-in', create: true }),
-		grant({ screen_key: 'gym.gyms' }),
-		grant({ screen_key: 'gym.history' }),
+		{ screen_key: 'gym.dashboard', ops: ['view'], landing: true },
+		{ screen_key: 'gym.check-in', ops: ['view', 'create'] },
+		{ screen_key: 'gym.gyms', ops: ['view'] },
+		{ screen_key: 'gym.history', ops: ['view'] },
 	],
 	'prof-gym-manager': [
-		grant({ screen_key: 'gym.dashboard', default: true }),
-		grant({ screen_key: 'gym.check-in', create: true }),
-		grant({ screen_key: 'gym.gyms', create: true, edit: true }),
-		grant({ screen_key: 'gym.history' }),
-		grant({ screen_key: 'gym.validations', create: true }),
-		grant({ screen_key: 'access-control.users', create: true }),
+		{ screen_key: 'gym.dashboard', ops: ['view'], landing: true },
+		{ screen_key: 'gym.check-in', ops: ['view', 'create'] },
+		{ screen_key: 'gym.gyms', ops: ['view', 'create', 'edit'] },
+		{ screen_key: 'gym.history', ops: ['view'] },
+		{ screen_key: 'gym.validations', ops: ['view', 'create'] },
+		{ screen_key: 'access-control.users', ops: ['view', 'create'] },
 	],
 	'prof-support': [
-		grant({
+		{
 			screen_key: 'access-control.profiles',
-			create: true,
-			edit: true,
-			delete: true,
-			default: true,
-		}),
-		grant({ screen_key: 'access-control.users', edit: true }),
-		grant({ screen_key: 'access-control.screens' }),
+			ops: ['view', 'create', 'edit', 'delete'],
+			landing: true,
+		},
+		{ screen_key: 'access-control.users', ops: ['view', 'edit'] },
+		{ screen_key: 'access-control.screens', ops: ['view'] },
 	],
 }
+
+function membershipFrom(specs: ProfileSpec[]): string[] {
+	return specs.map((s) => screenByKey(s.screen_key).id)
+}
+
+function grantsFrom(specs: ProfileSpec[]): string[] {
+	return specs.flatMap((s) => s.ops.map((op) => grantId(s.screen_key, op)))
+}
+
+function landingFrom(specs: ProfileSpec[]): string | null {
+	const landing = specs.find((s) => s.landing)
+	return landing ? screenByKey(landing.screen_key).id : null
+}
+
+// Profile → membership (screen ids in the sidebar). Mutable: PUT
+// /profiles/:id/screens replaces it; the TransferTable reads it back.
+export const profileScreens: Record<string, string[]> = Object.fromEntries(
+	Object.entries(PROFILE_SPECS).map(([pid, specs]) => [
+		pid,
+		membershipFrom(specs),
+	]),
+)
+
+// Profile → granted permission ids (the curated ops it's allowed). Mutable:
+// replaced together with membership on save.
+export const profilePermissions: Record<string, string[]> = Object.fromEntries(
+	Object.entries(PROFILE_SPECS).map(([pid, specs]) => [
+		pid,
+		grantsFrom(specs),
+	]),
+)
+
+// Profile → landing screen id (≤1). Mutable: set on save. Replaces the old
+// per-grant `is_default` flag.
+export const profileDefaultScreen: Record<string, string | null> =
+	Object.fromEntries(
+		Object.entries(PROFILE_SPECS).map(([pid, specs]) => [
+			pid,
+			landingFrom(specs),
+		]),
+	)
 
 // ── User ↔ Profile assignments ───────────────────────────────────────────────
 // Mutable: PUT /users/:id/profiles replaces a user's list; POST /register

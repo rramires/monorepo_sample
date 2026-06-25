@@ -5,17 +5,16 @@ import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 
 import { getModules } from '@/api/modules'
+import { getPermissions } from '@/api/permissions'
 import {
 	getProfile,
 	getProfiles,
-	type GrantModel,
-	setProfileScreens,
+	type ProfileScreenGrantModel,
+	setProfileGrants,
 	updateProfile,
 } from '@/api/profiles'
 import { getScreens, type ScreenModel } from '@/api/screens'
 import { usePermissions } from '@/hooks/use-permissions'
-
-type Actions = Pick<GrantModel, 'view' | 'create' | 'edit' | 'delete'>
 
 // A screen row enriched with its module's key/name, so the grants table can
 // show a module column and filter by module without a second lookup per row.
@@ -24,12 +23,8 @@ export interface ScreenRow extends ScreenModel {
 	moduleName: string
 }
 
-const VIEW_DEFAULT: Actions = {
-	view: true,
-	create: false,
-	edit: false,
-	delete: false,
-}
+// Stable display/order of curated ops.
+const ACTION_ORDER = { view: 0, create: 1, edit: 2, delete: 3 } as const
 
 export function useProfileDetailPM() {
 	const { profileId = '' } = useParams()
@@ -56,12 +51,18 @@ export function useProfileDetailPM() {
 		queryKey: ['profiles'],
 		queryFn: () => getProfiles(),
 	})
+	// The curated permission catalog — drives the per-screen permission badges.
+	const { data: permissions = [] } = useQuery({
+		queryKey: ['permissions'],
+		queryFn: () => getPermissions(),
+	})
 
 	const [name, setName] = useState('')
 	const [description, setDescription] = useState('')
 	const [isDefault, setIsDefault] = useState(false)
 	const [assignedIds, setAssignedIds] = useState<string[]>([])
-	const [grants, setGrants] = useState<Record<string, Actions>>({})
+	// screenId → granted permission ids (subset of the screen's catalog).
+	const [grants, setGrants] = useState<Record<string, string[]>>({})
 	// The profile's default landing screen (≤1). Acts like a radio.
 	const [defaultScreenId, setDefaultScreenId] = useState<string | null>(null)
 	// Module ids chosen in the chips filter; empty = no filter (show all).
@@ -79,6 +80,20 @@ export function useProfileDetailPM() {
 				.map((m) => ({ value: m.id, label: m.name })),
 		[modules],
 	)
+
+	// Permission catalog grouped per screen (ordered view→create→edit→delete).
+	const permsByScreen = useMemo(() => {
+		const map = new Map<string, typeof permissions>()
+		for (const p of permissions) {
+			const list = map.get(p.screenId) ?? []
+			list.push(p)
+			map.set(p.screenId, list)
+		}
+		for (const list of map.values()) {
+			list.sort((a, b) => ACTION_ORDER[a.action] - ACTION_ORDER[b.action])
+		}
+		return map
+	}, [permissions])
 
 	// Screens carry only a moduleId; join the module name/key for the column.
 	const screenRows = useMemo<ScreenRow[]>(
@@ -120,53 +135,54 @@ export function useProfileDetailPM() {
 		setDescription(profile.description ?? '')
 		setIsDefault(profile.isDefault)
 		setAssignedIds(profile.screens.map((g) => g.screenId))
-		setDefaultScreenId(
-			profile.screens.find((g) => g.isDefault)?.screenId ?? null,
-		)
+		setDefaultScreenId(profile.defaultScreenId)
 		setGrants(
 			Object.fromEntries(
-				profile.screens.map((g) => [
-					g.screenId,
-					{
-						view: g.view,
-						create: g.create,
-						edit: g.edit,
-						delete: g.delete,
-					},
-				]),
+				profile.screens.map((g) => [g.screenId, g.permissionIds]),
 			),
 		)
 	}, [profile])
 	/* eslint-enable react-hooks/set-state-in-effect */
 
-	// Keep grants in sync with membership: a newly granted screen starts at
-	// view=true; a removed one drops its grant.
+	// A screen can be the landing only when it's granted `view`.
+	function isViewable(screenId: string): boolean {
+		const viewPerm = permsByScreen
+			.get(screenId)
+			?.find((p) => p.action === 'view')
+		return !!viewPerm && (grants[screenId] ?? []).includes(viewPerm.id)
+	}
+
+	// Keep grants in sync with membership: a newly granted screen starts with no
+	// permissions (turn them on per screen); a removed one drops its grants.
 	function handleAssignedChange(ids: string[]) {
 		setAssignedIds(ids)
 		setGrants((prev) => {
-			const next: Record<string, Actions> = {}
+			const next: Record<string, string[]> = {}
 			for (const id of ids) {
-				next[id] = prev[id] ?? { ...VIEW_DEFAULT }
+				next[id] = prev[id] ?? []
 			}
 			return next
 		})
-		// Drop the default if its screen was removed.
+		// Drop the landing if its screen was removed.
 		setDefaultScreenId((prev) => (prev && ids.includes(prev) ? prev : null))
 	}
 
-	// Radio-style: pick the profile's default screen (click again to clear).
-	function setDefault(screenId: string) {
-		setDefaultScreenId((prev) => (prev === screenId ? null : screenId))
+	// Replace a screen's granted permissions (the per-row MultiSelect). Dropping
+	// `view` also clears the landing if it pointed here.
+	function setScreenPermissions(screenId: string, permissionIds: string[]) {
+		setGrants((prev) => ({ ...prev, [screenId]: permissionIds }))
+		const viewPerm = permsByScreen
+			.get(screenId)
+			?.find((p) => p.action === 'view')
+		const stillViewable = !!viewPerm && permissionIds.includes(viewPerm.id)
+		if (!stillViewable) {
+			setDefaultScreenId((prev) => (prev === screenId ? null : prev))
+		}
 	}
 
-	function toggleAction(screenId: string, key: keyof Actions) {
-		setGrants((prev) => {
-			const current = prev[screenId] ?? { ...VIEW_DEFAULT }
-			return {
-				...prev,
-				[screenId]: { ...current, [key]: !current[key] },
-			}
-		})
+	// Radio-style: pick the profile's landing screen (click again to clear).
+	function setDefault(screenId: string) {
+		setDefaultScreenId((prev) => (prev === screenId ? null : screenId))
 	}
 
 	const save = useMutation({
@@ -176,12 +192,13 @@ export function useProfileDetailPM() {
 				description: description || null,
 				is_default: isDefault,
 			})
-			const list: GrantModel[] = assignedIds.map((screenId) => ({
-				screenId,
-				...(grants[screenId] ?? VIEW_DEFAULT),
-				isDefault: screenId === defaultScreenId,
-			}))
-			await setProfileScreens(profileId, list)
+			const list: ProfileScreenGrantModel[] = assignedIds.map(
+				(screenId) => ({
+					screenId,
+					permissionIds: grants[screenId] ?? [],
+				}),
+			)
+			await setProfileGrants(profileId, list, defaultScreenId)
 		},
 		onSuccess: async () => {
 			toast.success('Profile saved.')
@@ -254,10 +271,12 @@ export function useProfileDetailPM() {
 		setIsDefault,
 		assignedIds,
 		grants,
+		permsByScreen,
+		isViewable,
 		defaultScreenId,
 		setDefault,
+		setScreenPermissions,
 		handleAssignedChange,
-		toggleAction,
 		canEdit: can('access-control.profiles', 'edit'),
 		save: requestSave,
 		isSaving: save.isPending,

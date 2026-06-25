@@ -12,8 +12,10 @@ export interface ScreenPermission {
 	delete: boolean
 }
 
-// A navigable screen the user may view — the catalog bits the sidebar groups
-// into the menu (so it never calls the admin-gated /modules + /screens).
+// A membership screen — the catalog bits the sidebar groups into the menu (so it
+// never calls the admin-gated /modules + /screens). Shown even without a `view`
+// grant or while killed; `isEnabled` (the kill switch) lets the guard tell
+// "no access yet" apart from "temporarily unavailable".
 export interface MenuScreen {
 	screenKey: string
 	screenName: string
@@ -22,6 +24,7 @@ export interface MenuScreen {
 	moduleKey: string
 	moduleName: string
 	moduleOrder: number
+	isEnabled: boolean
 }
 
 export interface MyPermissions {
@@ -54,6 +57,7 @@ export async function getMePermissions(): Promise<MyPermissions> {
 			moduleKey: m.module_key,
 			moduleName: m.module_name,
 			moduleOrder: m.module_order,
+			isEnabled: m.is_enabled,
 		})),
 		defaultScreenKey: parsed.default_screen_key,
 	}

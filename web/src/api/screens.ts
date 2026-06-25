@@ -16,6 +16,8 @@ export interface ScreenModel {
 	description: string | null
 	order: number
 	isSystem: boolean
+	isActive: boolean
+	isEnabled: boolean
 }
 
 const listSchema = z.object({ screens: z.array(screenSchema) })
@@ -31,6 +33,8 @@ function toModel(s: z.infer<typeof screenSchema>): ScreenModel {
 		description: s.description ?? null,
 		order: s.order,
 		isSystem: s.is_system,
+		isActive: s.is_active,
+		isEnabled: s.is_enabled,
 	}
 }
 

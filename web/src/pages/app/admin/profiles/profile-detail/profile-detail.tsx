@@ -23,8 +23,6 @@ import { Switch } from '@/components/ui/switch'
 
 import { type ScreenRow, useProfileDetailPM } from './use-profile-detail-pm'
 
-const ACTIONS = ['view', 'create', 'edit', 'delete'] as const
-
 export function ProfileDetail() {
 	const pm = useProfileDetailPM()
 
@@ -84,29 +82,46 @@ export function ProfileDetail() {
 	const assignedColumns: TransferColumn<ScreenRow>[] = [
 		nameColumn,
 		moduleColumn,
-		...ACTIONS.map((action) => ({
-			key: action,
-			header: action[0].toUpperCase() + action.slice(1),
-			className: 'text-center',
-			cell: (s: ScreenRow) => (
-				<Checkbox
-					checked={pm.grants[s.id]?.[action] ?? false}
-					onCheckedChange={() => pm.toggleAction(s.id, action)}
-					disabled={!pm.canEdit}
-					aria-label={`${s.key} ${action}`}
-				/>
-			),
-		})),
 		{
-			key: 'default',
-			header: 'Default',
+			key: 'permissions',
+			header: 'Permissions',
+			className: 'min-w-56',
+			cell: (s: ScreenRow) => {
+				const options = (pm.permsByScreen.get(s.id) ?? []).map((p) => ({
+					value: p.id,
+					label: p.label,
+				}))
+				if (options.length === 0) {
+					return (
+						<span className='text-muted-foreground text-xs'>
+							No permissions defined.
+						</span>
+					)
+				}
+				return (
+					<MultiSelect
+						options={options}
+						selected={pm.grants[s.id] ?? []}
+						onChange={(ids) => pm.setScreenPermissions(s.id, ids)}
+						disabled={!pm.canEdit}
+						placeholder='No permissions'
+						searchPlaceholder='Search permissions…'
+						emptyText='No permissions.'
+					/>
+				)
+			},
+		},
+		{
+			key: 'landing',
+			header: 'Landing',
 			className: 'text-center',
 			cell: (s: ScreenRow) => (
 				<Checkbox
 					checked={pm.defaultScreenId === s.id}
 					onCheckedChange={() => pm.setDefault(s.id)}
-					disabled={!pm.canEdit}
-					aria-label={`${s.key} default`}
+					// Only a viewable screen can be the landing.
+					disabled={!pm.canEdit || !pm.isViewable(s.id)}
+					aria-label={`${s.key} landing`}
 				/>
 			),
 		},
@@ -198,8 +213,8 @@ export function ProfileDetail() {
 					<CardHeader>
 						<CardTitle>Screen grants</CardTitle>
 						<CardDescription>
-							Move screens to "Granted" and pick the allowed
-							actions.
+							Move screens to "Granted", pick each screen's
+							permissions, and choose one landing screen.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className='flex flex-col gap-6'>

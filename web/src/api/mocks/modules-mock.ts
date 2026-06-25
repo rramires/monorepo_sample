@@ -33,8 +33,13 @@ export const createModuleMock = http.post('/modules', async ({ request }) => {
 		)
 	}
 
-	// is_system is never client-settable; created modules are always false.
-	const module: Module = { id: nextId(), ...parsed.data, is_system: false }
+	// is_system is never client-settable; new modules start active.
+	const module: Module = {
+		id: nextId(),
+		...parsed.data,
+		is_system: false,
+		is_active: true,
+	}
 	modules.push(module)
 	return HttpResponse.json({ module }, { status: 201 })
 })
