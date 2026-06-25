@@ -23,7 +23,7 @@ vi.mock('@/api/get-check-ins-history', () => ({
 	]),
 }))
 
-// The member has no gym.validations grant; ADMIN bypasses `can()` regardless.
+// The member has no gym.check-ins.edit_validate grant; ADMIN bypasses regardless.
 vi.mock('@/api/get-me-permissions', () => ({
 	getMePermissions: vi
 		.fn()

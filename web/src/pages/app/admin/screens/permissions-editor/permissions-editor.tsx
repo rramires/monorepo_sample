@@ -76,7 +76,9 @@ export function PermissionsEditor({
 											{ACTION_LABEL[a]}
 										</SelectItem>
 									))}
-									<SelectItem value='other'>Other…</SelectItem>
+									<SelectItem value='other'>
+										Other…
+									</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
@@ -130,7 +132,9 @@ export function PermissionsEditor({
 								</Label>
 								<Input
 									value={pm.newName}
-									onChange={(e) => pm.setNewName(e.target.value)}
+									onChange={(e) =>
+										pm.setNewName(e.target.value)
+									}
 									placeholder='check_in'
 									aria-label='Key name'
 								/>
