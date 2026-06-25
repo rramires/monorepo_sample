@@ -22,6 +22,7 @@ function flagBadges(profile: ProfileRow) {
 		<>
 			{profile.isDefault && <Badge variant='secondary'>Default</Badge>}
 			{profile.isSystem && <Badge variant='outline'>System</Badge>}
+			{!profile.isActive && <Badge variant='outline'>Inactive</Badge>}
 		</>
 	)
 }
@@ -40,7 +41,7 @@ export function AdminProfiles() {
 			{pm.canDelete && !profile.isSystem && (
 				<ConfirmDialog
 					title='Delete profile'
-					description={`Delete "${profile.name}"? Users lose this profile.`}
+					description={`Delete "${profile.name}"? Only profiles not assigned to any user can be deleted.`}
 					confirmLabel='Delete'
 					onConfirm={() => pm.deleteProfile(profile.id)}
 					trigger={

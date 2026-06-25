@@ -21,6 +21,7 @@ function nameWithFlag(module: ModuleRow) {
 		<>
 			{module.name}
 			{module.isSystem && <Badge variant='outline'>System</Badge>}
+			{!module.isActive && <Badge variant='outline'>Inactive</Badge>}
 		</>
 	)
 }

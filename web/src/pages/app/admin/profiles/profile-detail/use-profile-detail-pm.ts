@@ -14,6 +14,7 @@ import {
 	updateProfile,
 } from '@/api/profiles'
 import { getScreens, type ScreenModel } from '@/api/screens'
+import { useConfirmDeactivate } from '@/hooks/use-confirm-deactivate'
 import { usePermissions } from '@/hooks/use-permissions'
 
 // A screen row enriched with its module's key/name, so the grants table can
@@ -60,6 +61,7 @@ export function useProfileDetailPM() {
 	const [name, setName] = useState('')
 	const [description, setDescription] = useState('')
 	const [isDefault, setIsDefault] = useState(false)
+	const [isActive, setIsActive] = useState(true)
 	const [assignedIds, setAssignedIds] = useState<string[]>([])
 	// screenId → granted permission ids (subset of the screen's catalog).
 	const [grants, setGrants] = useState<Record<string, string[]>>({})
@@ -147,6 +149,7 @@ export function useProfileDetailPM() {
 		setName(profile.name)
 		setDescription(profile.description ?? '')
 		setIsDefault(profile.isDefault)
+		setIsActive(profile.isActive)
 		setAssignedIds(profile.screens.map((g) => g.screenId))
 		setDefaultScreenId(profile.defaultScreenId)
 		setGrants(
@@ -238,6 +241,7 @@ export function useProfileDetailPM() {
 				name,
 				description: description || null,
 				is_default: isDefault,
+				is_active: isActive,
 			})
 			const list: ProfileScreenGrantModel[] = assignedIds.map(
 				(screenId) => ({
@@ -279,7 +283,19 @@ export function useProfileDetailPM() {
 	)
 	const isPromotingDefault = !!profile && !profile.isDefault && isDefault
 
+	// Deactivating (Active ON→OFF) confirms first; on confirm it falls through to
+	// the promote check, so both prompts can chain in the rare combined case.
+	const deactivateConfirm = useConfirmDeactivate()
+
 	function requestSave() {
+		deactivateConfirm.guardSave({
+			wasActive: profile?.isActive ?? true,
+			willBeActive: isActive,
+			save: proceedSave,
+		})
+	}
+
+	function proceedSave() {
 		if (isPromotingDefault && currentDefault) {
 			pendingSave.current = () => save.mutate()
 			setConfirmDefaultOpen(true)
@@ -316,6 +332,8 @@ export function useProfileDetailPM() {
 		setDescription,
 		isDefault,
 		setIsDefault,
+		isActive,
+		setIsActive,
 		assignedIds,
 		grants,
 		permsByScreen,
@@ -338,5 +356,6 @@ export function useProfileDetailPM() {
 			onOpenChange: onConfirmRemoveOpenChange,
 			onConfirm: confirmRemoveDisabled,
 		},
+		confirmDeactivate: deactivateConfirm.dialogProps,
 	}
 }

@@ -207,3 +207,56 @@ test('a disabled screen is marked in a profile and confirms on removal', async (
 
 	await waitForUIInspection(page)
 })
+
+test('admin deactivates a profile (confirm) and the list marks it Inactive', async ({
+	page,
+}) => {
+	await signIn(page, 'admin')
+
+	await page.getByRole('link', { name: 'Profiles', exact: true }).click()
+	await page
+		.getByRole('row')
+		.filter({ hasText: 'support' })
+		.getByRole('link', { name: 'Grants' })
+		.click()
+	await expect(page).toHaveURL(/\/admin\/profiles\/.+/)
+
+	// Turn the profile's Active switch off → confirm → save.
+	await page.getByRole('switch', { name: 'Active' }).click()
+	await page.getByRole('button', { name: 'Save changes' }).click()
+	await expect(page.getByText(/Deactivate "Support"\?/)).toBeVisible()
+	await page.getByRole('button', { name: 'Deactivate' }).click()
+
+	await expect(page.getByText('Profile saved.')).toBeVisible()
+	await expect(page).toHaveURL('/admin/profiles')
+	await expect(
+		page
+			.getByRole('row')
+			.filter({ hasText: 'support' })
+			.getByText('Inactive'),
+	).toBeVisible()
+
+	await waitForUIInspection(page)
+})
+
+test('deleting a module that still has screens is blocked with a message', async ({
+	page,
+}) => {
+	await signIn(page, 'admin')
+
+	await page.getByRole('link', { name: 'Modules', exact: true }).click()
+
+	// gym is a non-system module (Edit + Delete) and still owns screens.
+	await page
+		.getByRole('row')
+		.filter({ hasText: 'gym' })
+		.getByRole('button')
+		.nth(1)
+		.click()
+	await expect(page.getByText(/Delete "Gym"\?/)).toBeVisible()
+	await page.getByRole('button', { name: 'Delete' }).click()
+
+	await expect(page.getByText('Module still has screens.')).toBeVisible()
+
+	await waitForUIInspection(page)
+})

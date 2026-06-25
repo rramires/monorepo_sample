@@ -248,7 +248,9 @@ describe('ProfileDetail — single-default invariant', () => {
 		await screen.findByText('Gym Dashboard')
 
 		// Turn this (non-default) profile into the default, then save.
-		await user.click(screen.getByRole('switch'))
+		await user.click(
+			screen.getByRole('switch', { name: 'Default profile' }),
+		)
 		await user.click(screen.getByRole('button', { name: 'Save changes' }))
 
 		// The confirm dialog names the current default profile.
@@ -275,7 +277,9 @@ describe('ProfileDetail — single-default invariant', () => {
 
 		await screen.findByText('Gym Dashboard')
 
-		expect(screen.getByRole('switch')).toBeDisabled()
+		expect(
+			screen.getByRole('switch', { name: 'Default profile' }),
+		).toBeDisabled()
 		expect(
 			screen.getByText(/This is the default profile/),
 		).toBeInTheDocument()

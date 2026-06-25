@@ -66,6 +66,12 @@ export function ScreenDialog({
 	const activeConfirm = useConfirmDeactivate()
 	const killConfirm = useConfirmDeactivate()
 
+	// Disabled modules can't be targeted by new/edited screens — hide them, but
+	// keep the screen's current module so editing never drops a valid selection.
+	const moduleOptions = modules.filter(
+		(m) => m.isActive || m.id === screen?.moduleId,
+	)
+
 	const {
 		register,
 		handleSubmit,
@@ -183,7 +189,7 @@ export function ScreenDialog({
 											<SelectValue placeholder='Select a module' />
 										</SelectTrigger>
 										<SelectContent>
-											{modules.map((m) => (
+											{moduleOptions.map((m) => (
 												<SelectItem
 													key={m.id}
 													value={m.id}

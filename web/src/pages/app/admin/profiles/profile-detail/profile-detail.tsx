@@ -210,9 +210,27 @@ export function ProfileDetail() {
 							<Switch
 								checked={pm.isDefault}
 								onCheckedChange={pm.setIsDefault}
+								aria-label='Default profile'
 								// The current default can't be switched off (it
 								// would leave zero); promote another profile.
 								disabled={!pm.canEdit || pm.profile.isDefault}
+							/>
+						</div>
+
+						<div className='flex items-center justify-between gap-4 border-t pt-4'>
+							<div>
+								<Label>Active</Label>
+								<p className='text-muted-foreground text-xs'>
+									Inactive profiles are hidden when assigning
+									profiles to users; existing assignments keep
+									working.
+								</p>
+							</div>
+							<Switch
+								checked={pm.isActive}
+								onCheckedChange={pm.setIsActive}
+								aria-label='Active'
+								disabled={!pm.canEdit}
 							/>
 						</div>
 					</CardContent>
@@ -282,6 +300,13 @@ export function ProfileDetail() {
 					title='Remove disabled screen'
 					description="This screen is disabled — if you remove it you can't re-add it until it's re-enabled. Remove?"
 					confirmLabel='Remove'
+				/>
+
+				<ConfirmDialog
+					{...pm.confirmDeactivate}
+					title='Deactivate profile'
+					description={`Deactivate "${pm.profile.name}"? It will be hidden when assigning profiles to users; existing assignments keep working.`}
+					confirmLabel='Deactivate'
 				/>
 			</div>
 		</>

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import { getProfiles } from '@/api/profiles'
@@ -32,6 +32,13 @@ export function useUserProfilesPM(userId: string) {
 		}
 	}, [assignedQuery.data])
 
+	// A disabled profile can't be newly assigned — hide it from the picker, but
+	// keep one already assigned to this user so it stays visible (and removable).
+	const visibleProfiles = useMemo(
+		() => profiles.filter((p) => p.isActive || assignedIds.includes(p.id)),
+		[profiles, assignedIds],
+	)
+
 	const save = useMutation({
 		mutationFn: () => setUserProfiles(userId, assignedIds),
 		onSuccess: async () => {
@@ -55,7 +62,7 @@ export function useUserProfilesPM(userId: string) {
 	})
 
 	return {
-		profiles,
+		profiles: visibleProfiles,
 		assignedIds,
 		setAssignedIds,
 		isLoading: assignedQuery.isLoading,
