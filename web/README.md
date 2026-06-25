@@ -55,10 +55,12 @@ Vitest · Playwright
   `USER` follows grants) plus dynamic **Profiles**. A profile is **membership**
   (which screens show in the sidebar) + **granted permissions** (per screen) + a
   **landing screen**. Permissions live in a **curated catalog per screen with
-  friendly, editable labels** (e.g. Check-in offers "View" + "Check in";
+  friendly, editable labels** (e.g. `gym.gyms` offers "View" + "Add" + "Check in";
   `gym.gyms` and `access-control.users` have no delete — they deactivate via an
-  Active switch). The action enum (`view`/`create`/`edit`/`delete`) stays the
-  code contract for `can(screenKey, action)`; the label is presentation only.
+  Active switch). An action is a **free string KEY** — a bare CRUD family
+  (`create`) or a composed `family_name` (`create_checkin`); the family must be
+  one of `view`/`create`/`edit`/`delete`. `can(screenKey, action)` checks the key;
+  the label is presentation only.
   `view` is now an **explicit grant**, not default-true. **Modules** group
   **Screens**; profiles carry `is_default` (auto-attached on register), and
   profiles, modules and screens carry `is_system` — the seeded access-control
@@ -211,7 +213,7 @@ screen via `LandingRoute`, and each screen is gated by
 | ----------------------------- | ------------------------- | ------------------ | ------------------------------------------------------------------ |
 | `/`                           | Protected                 | LandingRoute       | Resolves to the user's landing screen (dashboard/first)            |
 | `/gyms`                       | `gym.gyms`                | Gyms               | Nearby (geolocation) + search by name                              |
-| `/check-ins`                  | `gym.check-in`            | CheckIns           | History; ADMIN sees **Validate**                                   |
+| `/check-ins`                  | `gym.check-ins`           | CheckIns           | History; **Validate** needs `gym.check-ins.edit_validate`          |
 | `/account`                    | Protected                 | Account            | Edit username · change email · pick landing screen                 |
 | `/gyms/new`                   | `gym.gyms` (create)       | NewGym             | Create a gym                                                       |
 | `/admin/users`                | `access-control.users`    | AdminUsers         | Paginated users table                                              |

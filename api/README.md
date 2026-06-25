@@ -105,8 +105,10 @@ pnpm dev              # start dev server
 > `add_system_flag_module_screen` and `add_gym_is_active`, then the RBAC
 > redesign: `rbac_permissions` (the `Permission` catalog + `profile_permissions`
 > join, `Profile.default_screen_id`, the `is_active`/`is_enabled` lifecycle
-> columns; `profile_screens` repurposed to pure membership) and
-> `profile_delete_restrict` (no-cascade FKs on the guarded deletes). `pnpm seeddb`
+> columns; `profile_screens` repurposed to pure membership),
+> `profile_delete_restrict` (no-cascade FKs on the guarded deletes) and
+> `rbac_fine_grained_action_key` (`Permission.action` enum → free string key +
+> the gym phantom-screen collapse). `pnpm seeddb`
 > also seeds the module/screen catalog, three system profiles and three demo
 > users (see _Access control_ below).
 
@@ -184,7 +186,7 @@ boot if any variable is invalid (Zod validation in `src/env`).
 | `GET`    | `/check-ins/history`             | Bearer         | –                                  | Paginated check-in history                                                                    |
 | `GET`    | `/check-ins/metrics`             | Bearer         | –                                  | Total check-ins count                                                                         |
 | `POST`   | `/gyms/:gymId/check-ins`         | Bearer         | –                                  | Create a check-in (`400` too far · `403` inactive gym · `409` already checked in today)       |
-| `PATCH`  | `/check-ins/:checkInId/validate` | Bearer         | `gym.validations` · create         | Validate a check-in (`409` past the 20-min window)                                            |
+| `PATCH`  | `/check-ins/:checkInId/validate` | Bearer         | `gym.check-ins` · edit_validate    | Validate a check-in (`409` past the 20-min window)                                            |
 | `POST`   | `/users/send-verification`       | Bearer         | –                                  | Send verification email (link + OTP)                                                          |
 | `GET`    | `/users/verify-email`            | –              | –                                  | Verify email via link token (`?token=`)                                                       |
 | `POST`   | `/users/verify-email/otp`        | Bearer         | –                                  | Verify email via OTP code                                                                     |
@@ -245,19 +247,21 @@ drives RBAC UI — both read fresh from the DB, not the token):
 }
 ```
 
-`GET /me/permissions` → `200` (drives the sidebar and the `can()` UI gate; an
-`ADMIN` gets every screen with all actions `true`):
+`GET /me/permissions` → `200` (drives the sidebar and the `can()` UI gate; each
+screen carries the granted action KEYS — bare CRUD families plus composed
+`family_name` keys; an `ADMIN` gets every screen with the base families):
 
 ```json
 {
 	"role": "USER",
 	"screens": [
 		{
-			"screen_key": "gym.check-in",
-			"view": true,
-			"create": true,
-			"edit": false,
-			"delete": false
+			"screen_key": "gym.gyms",
+			"actions": ["view", "create_checkin"]
+		},
+		{
+			"screen_key": "gym.check-ins",
+			"actions": ["view"]
 		}
 	],
 	"menu": [

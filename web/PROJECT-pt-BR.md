@@ -332,12 +332,17 @@ Além do `role` grosso, a app tem um modelo de **RBAC híbrido**: um papel fixo
 (`ADMIN` ignora tudo, `USER` segue os grants) mais **Profiles** dinâmicos. Um
 profile é **membership** (quais telas aparecem na sidebar) + **permissões
 concedidas** (por tela) + uma **tela de destino**. As permissões são um
-**catálogo curado por tela com rótulos amigáveis e editáveis** — ex.: Check-in
-oferece "View" + "Check in"; `gym.gyms` e `access-control.users` de propósito não
-têm `delete` (desativam pelo switch Active). O enum de ação
-(`view`/`create`/`edit`/`delete`) permanece o **contrato de código** fixo que o
-`can(screenKey, action)` checa; o rótulo é **só apresentação**. `view` agora é um
-**grant explícito** (não mais true por padrão). **Modules** agrupam **Screens**;
+**catálogo curado por tela com rótulos amigáveis e editáveis** — ex.: `gym.gyms`
+oferece "View" + "Add" + "Check in"; `gym.gyms` e `access-control.users` de
+propósito não têm `delete` (desativam pelo switch Active). Uma ação é uma **CHAVE
+string livre** — família CRUD pura (`create`) ou composta `family_name`
+(`create_checkin`, `edit_validate`); a família (antes do primeiro `_`) tem que ser
+uma de `view`/`create`/`edit`/`delete`. O `can(screenKey, action)` checa a chave;
+o rótulo é **só apresentação**. Uma op extra vive na sua tela real em vez de criar
+uma tela-fantasma — então o botão **Check in** na página de Gyms é gateado por
+`gym.gyms.create_checkin`, e **Validate** em Check-ins por
+`gym.check-ins.edit_validate`. `view` agora é um **grant explícito** (não mais
+true por padrão). **Modules** agrupam **Screens**;
 um profile carrega `is_default` (anexado ao usuário no registro), e profiles,
 modules e screens carregam `is_system` (protegido — a key não muda e não pode ser
 apagado). As screens carregam ainda `is_active` (ciclo de vida) e `is_enabled`
@@ -409,12 +414,14 @@ sistema. Um usuário pode ter vários profiles; seus grants **se mesclam** (OR).
       perder uma seleção válida).
     - **Editor de permissões por tela** (`screens/permissions-editor/`) — um
       editor estilo todo aberto por um botão clipboard-pen em cada linha de
-      Screens. Lista as permissões curadas da tela (cada uma um **Badge** de op +
-      seu **rótulo** amigável); você **adiciona** uma linha (`Select` de op +
-      `Input` de rótulo — o Select esconde as ações já usadas, já que a tela
-      oferece cada op no máximo uma vez), **renomeia** um rótulo inline (lápis →
-      confirmar) e **apaga** uma linha não-system (confirmar). O enum da op é o
-      contrato de código; o rótulo é texto livre. `409`s do backend viram toasts;
+      Screens. Lista as permissões curadas da tela (cada uma um **Badge** de op —
+      família pura mostra "View"/"Create"…, chave composta mostra o `family_name`
+      cru — + seu **rótulo** amigável); você **adiciona** uma linha (`Select` de
+      Operação com as quatro famílias + **`Other…`**, que revela um `Select` de
+      Família + um `Input` de Nome com preview ao vivo da chave composta; as
+      famílias puras já usadas na tela ficam escondidas), **renomeia** um rótulo
+      inline (lápis → confirmar) e **apaga** uma linha não-system (confirmar). A
+      chave de ação é o contrato de código; o rótulo é texto livre. `409`s do backend viram toasts;
       o catálogo é invalidado sob o prefixo `['permissions']` para o picker do
       profile-detail também atualizar.
     - **Profiles** (`/admin/profiles`) — CRUD de profiles (com badges
@@ -662,8 +669,8 @@ de fio nunca vazam além de `src/api`. Construa contra o mock primeiro; a API re
 - RBAC lido fresco de `/me/permissions` (`can()` + `RequireScreen`); `Forbidden`
   renderizado no lugar, não confiado de um token. Modelo híbrido: papel fixo +
   profiles dinâmicos = membership + um catálogo de permissões curado por tela
-  (rótulos amigáveis sobre o contrato de código `view/create/edit/delete`) + uma
-  tela de destino; a sidebar (membership) e a tela de destino são dirigidas por
+  (rótulos amigáveis sobre chaves de ação livres — famílias CRUD puras ou
+  compostas `family_name`) + uma tela de destino; a sidebar (membership) e a tela de destino são dirigidas por
   dados do mesmo payload, com um kill switch por tela exposto por
   `isScreenEnabled`.
 - A camada tipada `src/api` é o único lugar onde formatos de fio (snake_case)

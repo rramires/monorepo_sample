@@ -327,7 +327,8 @@ locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do monorepo e
   factory_). Ele lê as **permissões efetivas do banco** (por `request.user.sub`,
   via `GetUserPermissionsUseCase` — o mesmo use-case do `GET /me/permissions`) e
   libera a requisição só quando o usuário `can()` executar `action`
-  (`view`/`create`/`edit`/`delete`) na `screenKey` **e** a tela não está morta
+  (uma CHAVE de ação livre — família CRUD pura como `create` ou composta
+  `family_name` como `create_checkin`) na `screenKey` **e** a tela não está morta
   (`Screen.is_enabled=false` → `403 "This screen is temporarily unavailable."`
   para não-admins). Um `ADMIN` ignora toda checagem. Os claims `role`/grants
   assinados nunca são confiados para autorização, então uma mudança de grant,
@@ -366,7 +367,7 @@ locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do monorepo e
 | GET    | `/check-ins/history`             |     ✅     | —                                  | histórico próprio                                                  |
 | GET    | `/check-ins/metrics`             |     ✅     | —                                  | total próprio                                                      |
 | POST   | `/gyms/:gymId/check-ins`         |     ✅     | —                                  | check-in (e-mail verificado se flag ligada; `403` se inativa)      |
-| PATCH  | `/check-ins/:checkInId/validate` |     ✅     | `gym.validations` · create         | validar check-in                                                   |
+| PATCH  | `/check-ins/:checkInId/validate` |     ✅     | `gym.check-ins` · edit_validate    | validar check-in                                                   |
 | POST   | `/users/send-verification`       |     ✅     | —                                  | enviar e-mail de verificação (link + OTP)                          |
 | GET    | `/users/verify-email`            |     ❌     | —                                  | verificar e-mail via link token (`?token=`)                        |
 | POST   | `/users/verify-email/otp`        |     ✅     | —                                  | verificar e-mail via código OTP                                    |
@@ -552,10 +553,10 @@ módulo/tela/perfil).
   Autenticado-mas-sem-grant → `403 { "message": "Forbidden." }`; um usuário
   desconhecido (`ResourceNotFoundError`) → `401`.
 - **Permissões efetivas** (`get-user-permissions-use-case.ts`): para um não-admin,
-  as ações por tela (`view`/`create`/`edit`/`delete`) são o **OR de todos os
-  grants dos perfis do usuário** — `view` agora é uma permissão concedida
-  explícita (não mais default-true). Para um `ADMIN`, toda tela do catálogo volta
-  com as quatro ações `true`.
+  o `actions: string[]` de cada tela é a **união das chaves de ação concedidas em
+  todos os grants dos perfis do usuário** — `view` é uma chave concedida explícita
+  (não mais default-true), ops extras são chaves compostas (`create_checkin`). Para
+  um `ADMIN`, toda tela volta com as famílias CRUD base (o bypass por papel vale).
 - **`GET /me/permissions`** retorna `{ role, screens, menu, default_screen_key }`:
     - `screens` — os grants efetivos por tela (alimenta o gate `can()` do frontend).
     - `menu` — as telas de **membership** do usuário que têm `path` (`screen_key`,
@@ -726,11 +727,13 @@ projeto-clone adiciona um `company_id` em `Profile`/`Module`):
   e 1—N `ProfileScreen` (membership; o lado da tela é `onDelete: Restrict`, então
   uma tela ainda membro em algum lugar não pode ser excluída) (tabela `screens`).
   `is_system` protege as telas access-control do seed.
-- `Permission` (`id` uuid, `screen_id` FK `onDelete: Cascade`, `action` enum
-  (`view`/`create`/`edit`/`delete`), `label` (amigável, editável), `is_system` bool
-  — espelha a tela dona; **`@@unique([screen_id, action])`**) (tabela
-  `permissions`). O catálogo curado de ops que uma tela oferece; permissões
-  `is_system` não podem ser excluídas e sua `action` é travada. Uma tela deletável
+- `Permission` (`id` uuid, `screen_id` FK `onDelete: Cascade`, `action` chave
+  string livre — família CRUD pura ou composta `family_name` (`create_checkin`); a
+  família deve ser uma de view/create/edit/delete — `label` (amigável, editável),
+  `is_system` bool — espelha a tela dona; **`@@unique([screen_id, action])`**, então
+  uma tela pode ter várias ops da mesma família) (tabela `permissions`). O catálogo
+  curado de ops que uma tela oferece; permissões `is_system` não podem ser
+  excluídas e sua `action` é travada. Uma tela deletável
   cascateia suas permissões (não concedidas); uma concedida é `Restrict`ada (o lado
   permissão do join), então não pode ser excluída enquanto concedida.
 - `Profile` (`id` uuid, **`key` único**, `name`, `description?`, `is_system`
