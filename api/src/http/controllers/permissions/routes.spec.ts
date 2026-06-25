@@ -81,6 +81,25 @@ describe('Permissions routes (e2e)', () => {
 		expect(del.statusCode).toEqual(204)
 	})
 
+	it('accepts a composed free-key (Other) op and rejects a bad family', async () => {
+		const screen = await makeScreen()
+
+		// Composed key with a CRUD family prefix → 201.
+		const ok = await request(app.server)
+			.post(`/screens/${screen.id}/permissions`)
+			.set('Authorization', `Bearer ${token}`)
+			.send({ action: 'create_checkin', label: 'Check in' })
+		expect(ok.statusCode).toEqual(201)
+		expect(ok.body.permission.action).toEqual('create_checkin')
+
+		// A key whose family isn't view/create/edit/delete → 400 (schema reject).
+		const bad = await request(app.server)
+			.post(`/screens/${screen.id}/permissions`)
+			.set('Authorization', `Bearer ${token}`)
+			.send({ action: 'frobnicate', label: 'Nope' })
+		expect(bad.statusCode).toEqual(400)
+	})
+
 	it('protects a system permission from deletion', async () => {
 		const screen = await makeScreen(true)
 		const permission = await prisma.permission.create({
@@ -150,5 +169,9 @@ describe('Permissions routes (e2e)', () => {
 		)
 		expect(entry).toBeDefined()
 		expect(entry.is_enabled).toBe(true)
+
+		// Effective screens now carry an actions[] (admin → base CRUD families).
+		expect(Array.isArray(res.body.screens)).toBe(true)
+		expect(res.body.screens[0].actions).toContain('view')
 	})
 })
