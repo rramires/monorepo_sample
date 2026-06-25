@@ -8,6 +8,7 @@ import {
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 import { useUsersPM } from './use-users-pm'
 
@@ -87,23 +88,29 @@ export function AdminUsers() {
 					description='Manage member and admin accounts.'
 				/>
 
-				{pm.status === 'loading' && (
-					<p className='text-muted-foreground text-sm'>Loading…</p>
-				)}
+				<Card>
+					<CardContent>
+						{pm.status === 'loading' && (
+							<p className='text-muted-foreground text-sm'>
+								Loading…
+							</p>
+						)}
 
-				{pm.status === 'empty' && (
-					<p className='text-muted-foreground text-sm'>
-						No users found.
-					</p>
-				)}
+						{pm.status === 'empty' && (
+							<p className='text-muted-foreground text-sm'>
+								No users found.
+							</p>
+						)}
 
-				{pm.status === 'list' && (
-					<ResponsiveList
-						rows={pm.rows}
-						columns={columns}
-						getRowKey={(row) => String(row.id)}
-					/>
-				)}
+						{pm.status === 'list' && (
+							<ResponsiveList
+								rows={pm.rows}
+								columns={columns}
+								getRowKey={(row) => String(row.id)}
+							/>
+						)}
+					</CardContent>
+				</Card>
 
 				<div className='flex items-center justify-end gap-2'>
 					<Button

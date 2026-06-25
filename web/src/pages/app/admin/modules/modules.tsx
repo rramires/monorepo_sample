@@ -9,6 +9,7 @@ import {
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 import { ModuleDialog } from './module-dialog'
 import { useModulesPM } from './use-modules-pm'
@@ -114,20 +115,26 @@ export function AdminModules() {
 					)}
 				</PageHeader>
 
-				{pm.isLoading ? (
-					<p className='text-muted-foreground text-sm'>Loading…</p>
-				) : (
-					<ResponsiveList
-						rows={pm.modules}
-						columns={columns}
-						getRowKey={(module) => String(module.id)}
-						empty={
+				<Card>
+					<CardContent>
+						{pm.isLoading ? (
 							<p className='text-muted-foreground text-sm'>
-								No modules found.
+								Loading…
 							</p>
-						}
-					/>
-				)}
+						) : (
+							<ResponsiveList
+								rows={pm.modules}
+								columns={columns}
+								getRowKey={(module) => String(module.id)}
+								empty={
+									<p className='text-muted-foreground text-sm'>
+										No modules found.
+									</p>
+								}
+							/>
+						)}
+					</CardContent>
+				</Card>
 			</div>
 		</>
 	)

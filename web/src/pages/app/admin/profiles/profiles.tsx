@@ -10,6 +10,7 @@ import {
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 import { ProfileDialog } from './profile-dialog'
 import { useProfilesPM } from './use-profiles-pm'
@@ -112,20 +113,26 @@ export function AdminProfiles() {
 					)}
 				</PageHeader>
 
-				{pm.isLoading ? (
-					<p className='text-muted-foreground text-sm'>Loading…</p>
-				) : (
-					<ResponsiveList
-						rows={pm.profiles}
-						columns={columns}
-						getRowKey={(profile) => String(profile.id)}
-						empty={
+				<Card>
+					<CardContent>
+						{pm.isLoading ? (
 							<p className='text-muted-foreground text-sm'>
-								No profiles found.
+								Loading…
 							</p>
-						}
-					/>
-				)}
+						) : (
+							<ResponsiveList
+								rows={pm.profiles}
+								columns={columns}
+								getRowKey={(profile) => String(profile.id)}
+								empty={
+									<p className='text-muted-foreground text-sm'>
+										No profiles found.
+									</p>
+								}
+							/>
+						)}
+					</CardContent>
+				</Card>
 			</div>
 		</>
 	)

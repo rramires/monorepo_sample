@@ -41,17 +41,17 @@ export function Gyms() {
 					)}
 				</PageHeader>
 
-				<div className='flex flex-wrap items-center gap-4'>
+				<div className='grid items-center gap-4 sm:grid-cols-2'>
 					<Input
 						placeholder='Search gyms by name…'
 						value={pm.query}
 						onChange={(event) =>
 							pm.handleQueryChange(event.target.value)
 						}
-						className='w-full sm:w-1/2'
+						className='w-full'
 					/>
 					{pm.canManage && (
-						<div className='flex items-center gap-4'>
+						<div className='flex flex-wrap items-center gap-4'>
 							<Label className='text-muted-foreground flex items-center gap-2 text-sm font-normal'>
 								<Checkbox
 									checked={pm.nearbyMode}
