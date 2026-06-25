@@ -2,23 +2,96 @@ import { Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { PageHeader } from '@/components/page-header'
+import {
+	ResponsiveList,
+	type ResponsiveListColumn,
+} from '@/components/responsive-list/responsive-list'
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from '@/components/ui/table'
 
 import { ModuleDialog } from './module-dialog'
 import { useModulesPM } from './use-modules-pm'
 
+type ModuleRow = ReturnType<typeof useModulesPM>['modules'][number]
+
+function nameWithFlag(module: ModuleRow) {
+	return (
+		<>
+			{module.name}
+			{module.isSystem && <Badge variant='outline'>System</Badge>}
+		</>
+	)
+}
+
 export function AdminModules() {
 	const pm = useModulesPM()
+
+	const actions = (module: ModuleRow) => (
+		<>
+			{pm.canEdit && (
+				<ModuleDialog
+					module={module}
+					trigger={
+						<Button variant='outline' size='sm'>
+							<Pencil />
+						</Button>
+					}
+				/>
+			)}
+			{pm.canDelete && !module.isSystem && (
+				<ConfirmDialog
+					title='Delete module'
+					description={`Delete "${module.name}"? Screens must be removed first.`}
+					confirmLabel='Delete'
+					onConfirm={() => pm.deleteModule(module.id)}
+					trigger={
+						<Button variant='outline' size='sm'>
+							<Trash2 />
+						</Button>
+					}
+				/>
+			)}
+		</>
+	)
+
+	const columns: ResponsiveListColumn<ModuleRow>[] = [
+		{
+			key: 'key',
+			header: 'Key',
+			cell: (module) => module.key,
+			className: 'font-mono text-xs',
+			card: 'top',
+		},
+		{
+			key: 'name',
+			header: 'Name',
+			cell: nameWithFlag,
+			className: 'space-x-1 font-medium',
+			card: 'top',
+		},
+		{
+			key: 'order',
+			header: 'Order',
+			cell: (module) => module.order,
+			card: 'bottom-right',
+		},
+		{
+			key: 'description',
+			header: 'Description',
+			cell: (module) => module.description,
+			className: 'text-muted-foreground',
+			card: 'bottom',
+		},
+		{
+			key: 'actions',
+			header: 'Actions',
+			cell: actions,
+			className: 'space-x-2 text-right',
+			headClassName: 'text-right',
+			card: 'actions',
+		},
+	]
 
 	return (
 		<>
@@ -44,78 +117,16 @@ export function AdminModules() {
 				{pm.isLoading ? (
 					<p className='text-muted-foreground text-sm'>Loading…</p>
 				) : (
-					<div className='rounded-md border'>
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Key</TableHead>
-									<TableHead>Name</TableHead>
-									<TableHead>Order</TableHead>
-									<TableHead>Description</TableHead>
-									<TableHead className='text-right'>
-										Actions
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{pm.modules.map((module) => (
-									<TableRow key={module.id}>
-										<TableCell className='font-mono text-xs'>
-											{module.key}
-										</TableCell>
-										<TableCell className='space-x-1 font-medium'>
-											{module.name}
-											{module.isSystem && (
-												<Badge variant='outline'>
-													System
-												</Badge>
-											)}
-										</TableCell>
-										<TableCell>{module.order}</TableCell>
-										<TableCell className='text-muted-foreground'>
-											{module.description}
-										</TableCell>
-										<TableCell className='space-x-2 text-right'>
-											{pm.canEdit && (
-												<ModuleDialog
-													module={module}
-													trigger={
-														<Button
-															variant='outline'
-															size='sm'
-														>
-															<Pencil />
-														</Button>
-													}
-												/>
-											)}
-											{pm.canDelete &&
-												!module.isSystem && (
-													<ConfirmDialog
-														title='Delete module'
-														description={`Delete "${module.name}"? Screens must be removed first.`}
-														confirmLabel='Delete'
-														onConfirm={() =>
-															pm.deleteModule(
-																module.id,
-															)
-														}
-														trigger={
-															<Button
-																variant='outline'
-																size='sm'
-															>
-																<Trash2 />
-															</Button>
-														}
-													/>
-												)}
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					</div>
+					<ResponsiveList
+						rows={pm.modules}
+						columns={columns}
+						getRowKey={(module) => String(module.id)}
+						empty={
+							<p className='text-muted-foreground text-sm'>
+								No modules found.
+							</p>
+						}
+					/>
 				)}
 			</div>
 		</>

@@ -1,19 +1,78 @@
 import { Link } from 'react-router'
 
 import { PageHeader } from '@/components/page-header'
+import {
+	ResponsiveList,
+	type ResponsiveListColumn,
+} from '@/components/responsive-list/responsive-list'
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from '@/components/ui/table'
 
 import { useUsersPM } from './use-users-pm'
+
+type UserRow = ReturnType<typeof useUsersPM>['rows'][number]
+
+function roleBadge(row: UserRow) {
+	return (
+		<Badge variant={row.role === 'ADMIN' ? 'default' : 'secondary'}>
+			{row.role === 'ADMIN' ? 'Admin' : 'Member'}
+		</Badge>
+	)
+}
+
+function statusBadges(row: UserRow) {
+	return (
+		<>
+			<Badge variant={row.verified ? 'default' : 'outline'}>
+				{row.verified ? 'Verified' : 'Unverified'}
+			</Badge>
+			{!row.active && <Badge variant='destructive'>Inactive</Badge>}
+		</>
+	)
+}
+
+function editButton(row: UserRow) {
+	return (
+		<Button asChild variant='outline' size='sm'>
+			<Link to={`/admin/users/${row.id}`}>Edit</Link>
+		</Button>
+	)
+}
+
+const columns: ResponsiveListColumn<UserRow>[] = [
+	{
+		key: 'username',
+		header: 'Username',
+		cell: (row) => row.username,
+		className: 'font-medium',
+		card: 'top',
+	},
+	{ key: 'email', header: 'Email', cell: (row) => row.email, card: 'top' },
+	{ key: 'role', header: 'Role', cell: roleBadge, card: 'top' },
+	{
+		key: 'status',
+		header: 'Status',
+		cell: statusBadges,
+		className: 'space-x-1',
+		card: 'bottom',
+	},
+	{
+		key: 'created',
+		header: 'Created',
+		cell: (row) => row.created,
+		className: 'text-muted-foreground',
+		card: 'bottom',
+	},
+	{
+		key: 'actions',
+		header: 'Actions',
+		cell: editButton,
+		className: 'text-right',
+		headClassName: 'text-right',
+		card: 'actions',
+	},
+]
 
 export function AdminUsers() {
 	const pm = useUsersPM()
@@ -39,79 +98,11 @@ export function AdminUsers() {
 				)}
 
 				{pm.status === 'list' && (
-					<div className='rounded-md border'>
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Username</TableHead>
-									<TableHead>Email</TableHead>
-									<TableHead>Role</TableHead>
-									<TableHead>Status</TableHead>
-									<TableHead>Created</TableHead>
-									<TableHead className='text-right'>
-										Actions
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{pm.rows.map((row) => (
-									<TableRow key={row.id}>
-										<TableCell className='font-medium'>
-											{row.username}
-										</TableCell>
-										<TableCell>{row.email}</TableCell>
-										<TableCell>
-											<Badge
-												variant={
-													row.role === 'ADMIN'
-														? 'default'
-														: 'secondary'
-												}
-											>
-												{row.role === 'ADMIN'
-													? 'Admin'
-													: 'Member'}
-											</Badge>
-										</TableCell>
-										<TableCell className='space-x-1'>
-											<Badge
-												variant={
-													row.verified
-														? 'default'
-														: 'outline'
-												}
-											>
-												{row.verified
-													? 'Verified'
-													: 'Unverified'}
-											</Badge>
-											{!row.active && (
-												<Badge variant='destructive'>
-													Inactive
-												</Badge>
-											)}
-										</TableCell>
-										<TableCell className='text-muted-foreground'>
-											{row.created}
-										</TableCell>
-										<TableCell className='text-right'>
-											<Button
-												asChild
-												variant='outline'
-												size='sm'
-											>
-												<Link
-													to={`/admin/users/${row.id}`}
-												>
-													Edit
-												</Link>
-											</Button>
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					</div>
+					<ResponsiveList
+						rows={pm.rows}
+						columns={columns}
+						getRowKey={(row) => String(row.id)}
+					/>
 				)}
 
 				<div className='flex items-center justify-end gap-2'>

@@ -46,7 +46,10 @@ export function AppSidebar() {
 											isActive={pm.isActive(item.to)}
 											tooltip={item.label}
 										>
-											<Link to={item.to}>
+											<Link
+												to={item.to}
+												onClick={pm.closeMobile}
+											>
 												<item.icon />
 												<span>{item.label}</span>
 											</Link>
@@ -88,6 +91,7 @@ export function AppSidebar() {
 								to='/account'
 								aria-label='Account'
 								title='Account'
+								onClick={pm.closeMobile}
 							>
 								<UserRoundPen />
 							</Link>

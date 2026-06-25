@@ -12,6 +12,7 @@ import { useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 
 import { useAuth } from '@/components/auth/auth-hooks'
+import { useSidebar } from '@/components/ui/sidebar'
 import { usePermissions } from '@/hooks/use-permissions'
 
 // The screens that have a real page today, with their nav icon + a short menu
@@ -56,6 +57,7 @@ export interface NavSection {
 export function useAppSidebarPM() {
 	const { user, signOut } = useAuth()
 	const { isLoading: permsLoading, permissions } = usePermissions()
+	const { setOpenMobile } = useSidebar()
 	const navigate = useNavigate()
 	const location = useLocation()
 
@@ -102,5 +104,9 @@ export function useAppSidebarPM() {
 		isLoading: permsLoading,
 		isActive: (to: string) => isItemActive(location.pathname, to),
 		handleSignOut,
+		// On mobile the sidebar is an overlay Sheet — navigating should dismiss
+		// it so the chosen screen is visible (no-op on tablet/desktop). Lives in
+		// the PM so the view stays logic-free.
+		closeMobile: () => setOpenMobile(false),
 	}
 }
