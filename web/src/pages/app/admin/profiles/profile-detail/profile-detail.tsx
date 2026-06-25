@@ -59,16 +59,21 @@ export function ProfileDetail() {
 		header: 'Screen',
 		cell: (s) => (
 			<div className='flex flex-col'>
-				<span
-					className={cn(
-						'flex items-center gap-2 font-medium',
-						!s.isActive && 'text-muted-foreground',
-					)}
-				>
-					{s.name}
+				<span className='flex items-center gap-2 font-medium'>
+					{/* Dim the name+key (but not the badge) when disabled. */}
+					<span className={cn(!s.isActive && 'opacity-50')}>
+						{s.name}
+					</span>
 					{!s.isActive && <Badge variant='outline'>Disabled</Badge>}
 				</span>
-				<span className='text-muted-foreground text-xs'>{s.key}</span>
+				<span
+					className={cn(
+						'text-muted-foreground text-xs',
+						!s.isActive && 'opacity-50',
+					)}
+				>
+					{s.key}
+				</span>
 			</div>
 		),
 	}
@@ -77,7 +82,12 @@ export function ProfileDetail() {
 		key: 'module',
 		header: 'Module',
 		cell: (s) => (
-			<span className='text-muted-foreground text-sm'>
+			<span
+				className={cn(
+					'text-muted-foreground text-sm',
+					!s.isActive && 'opacity-50',
+				)}
+			>
 				{s.moduleName}
 			</span>
 		),
@@ -102,7 +112,12 @@ export function ProfileDetail() {
 				}))
 				if (options.length === 0) {
 					return (
-						<span className='text-muted-foreground text-xs'>
+						<span
+							className={cn(
+								'text-muted-foreground text-xs',
+								!s.isActive && 'opacity-50',
+							)}
+						>
 							No permissions defined.
 						</span>
 					)
@@ -112,7 +127,8 @@ export function ProfileDetail() {
 						options={options}
 						selected={pm.grants[s.id] ?? []}
 						onChange={(ids) => pm.setScreenPermissions(s.id, ids)}
-						disabled={!pm.canEdit}
+						// A disabled screen is on its way out — lock its permissions.
+						disabled={!pm.canEdit || !s.isActive}
 						placeholder='No permissions'
 						searchPlaceholder='Search permissions…'
 						emptyText='No permissions.'
@@ -128,8 +144,10 @@ export function ProfileDetail() {
 				<Checkbox
 					checked={pm.defaultScreenId === s.id}
 					onCheckedChange={() => pm.setDefault(s.id)}
-					// Only a viewable screen can be the landing.
-					disabled={!pm.canEdit || !pm.isViewable(s.id)}
+					// Only a viewable, active screen can be the landing.
+					disabled={
+						!pm.canEdit || !pm.isViewable(s.id) || !s.isActive
+					}
 					aria-label={`${s.key} landing`}
 				/>
 			),
