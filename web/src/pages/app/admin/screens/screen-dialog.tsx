@@ -8,6 +8,7 @@ import { z } from 'zod'
 
 import type { ModuleModel } from '@/api/modules'
 import { createScreen, type ScreenModel, updateScreen } from '@/api/screens'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import {
 	Dialog,
@@ -27,6 +28,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { useConfirmDeactivate } from '@/hooks/use-confirm-deactivate'
 
 const screenForm = z.object({
 	module_id: z.string().min(1, 'Module is required.'),
@@ -37,6 +40,9 @@ const screenForm = z.object({
 	order: z
 		.number({ message: 'Order must be a number.' })
 		.int('Order must be an integer.'),
+	// Lifecycle (disable) + kill switch (On) — only editable, default true.
+	is_active: z.boolean(),
+	is_enabled: z.boolean(),
 })
 type ScreenForm = z.infer<typeof screenForm>
 
@@ -55,6 +61,10 @@ export function ScreenDialog({
 	// A system screen's identity (module/key/path) is locked; the backend
 	// rejects changing them with a 409, so the inputs are read-only here.
 	const locked = editing && !!screen?.isSystem
+
+	// Confirm-on-off for the two lifecycle switches (the house soft-delete pattern).
+	const activeConfirm = useConfirmDeactivate()
+	const killConfirm = useConfirmDeactivate()
 
 	const {
 		register,
@@ -76,19 +86,34 @@ export function ScreenDialog({
 
 	const save = useMutation({
 		mutationFn: (data: ScreenForm) => {
-			const body = {
+			if (editing) {
+				return updateScreen(screen.id, {
+					module_id: data.module_id,
+					key: data.key,
+					name: data.name,
+					path: data.path || null,
+					description: data.description || null,
+					order: data.order,
+					is_active: data.is_active,
+					is_enabled: data.is_enabled,
+				})
+			}
+			return createScreen({
 				module_id: data.module_id,
 				key: data.key,
 				name: data.name,
 				path: data.path || null,
 				description: data.description || null,
 				order: data.order,
-			}
-			return editing ? updateScreen(screen.id, body) : createScreen(body)
+			})
 		},
 		onSuccess: async () => {
 			toast.success(editing ? 'Screen updated.' : 'Screen created.')
+			// Lifecycle/kill changes can shift the menu + guards for everyone.
 			await queryClient.invalidateQueries({ queryKey: ['screens'] })
+			await queryClient.invalidateQueries({
+				queryKey: ['me-permissions'],
+			})
 			setOpen(false)
 		},
 		onError: (err) => {
@@ -98,6 +123,29 @@ export function ScreenDialog({
 			)
 		},
 	})
+
+	// Route a save through the right confirm: deactivating (Active ON→OFF) or
+	// killing (On ON→OFF) prompts first; anything else saves straight through.
+	function submit(data: ScreenForm) {
+		const run = () => save.mutate(data)
+		if (editing && screen.isActive && !data.is_active) {
+			activeConfirm.guardSave({
+				wasActive: true,
+				willBeActive: false,
+				save: run,
+			})
+			return
+		}
+		if (editing && screen.isEnabled && !data.is_enabled) {
+			killConfirm.guardSave({
+				wasActive: true,
+				willBeActive: false,
+				save: run,
+			})
+			return
+		}
+		run()
+	}
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -118,10 +166,7 @@ export function ScreenDialog({
 					)}
 				</DialogHeader>
 
-				<form
-					onSubmit={handleSubmit((data) => save.mutate(data))}
-					noValidate
-				>
+				<form onSubmit={handleSubmit(submit)} noValidate>
 					<div className='flex flex-col gap-4'>
 						<div className='grid gap-2'>
 							<Label>Module</Label>
@@ -196,6 +241,56 @@ export function ScreenDialog({
 							/>
 						</Field>
 
+						{editing && (
+							<>
+								<div className='flex items-center justify-between gap-4 border-t pt-4'>
+									<div>
+										<Label htmlFor='is_active'>
+											Active
+										</Label>
+										<p className='text-muted-foreground text-xs'>
+											Inactive screens are hidden from the
+											"add" pickers; existing assignments
+											keep working.
+										</p>
+									</div>
+									<Controller
+										control={control}
+										name='is_active'
+										render={({ field }) => (
+											<Switch
+												id='is_active'
+												checked={field.value}
+												onCheckedChange={field.onChange}
+											/>
+										)}
+									/>
+								</div>
+
+								<div className='flex items-center justify-between gap-4'>
+									<div>
+										<Label htmlFor='is_enabled'>On</Label>
+										<p className='text-destructive/80 text-xs'>
+											Emergency kill switch — turning this
+											off blocks the screen for everyone
+											(except admins) right away.
+										</p>
+									</div>
+									<Controller
+										control={control}
+										name='is_enabled'
+										render={({ field }) => (
+											<Switch
+												id='is_enabled'
+												checked={field.value}
+												onCheckedChange={field.onChange}
+											/>
+										)}
+									/>
+								</div>
+							</>
+						)}
+
 						<DialogFooter>
 							<Button type='submit' disabled={isSubmitting}>
 								{editing ? 'Save changes' : 'Create screen'}
@@ -203,6 +298,19 @@ export function ScreenDialog({
 						</DialogFooter>
 					</div>
 				</form>
+
+				<ConfirmDialog
+					{...activeConfirm.dialogProps}
+					title='Deactivate screen'
+					description={`Deactivate "${screen?.name}"? It will be hidden from the add pickers; current assignments keep working until removed.`}
+					confirmLabel='Deactivate'
+				/>
+				<ConfirmDialog
+					{...killConfirm.dialogProps}
+					title='Turn screen off'
+					description={`Turn "${screen?.name}" off? It stops working immediately for everyone except admins.`}
+					confirmLabel='Turn off'
+				/>
 			</DialogContent>
 		</Dialog>
 	)
@@ -216,6 +324,8 @@ function defaults(screen?: ScreenModel): ScreenForm {
 		path: screen?.path ?? '',
 		description: screen?.description ?? '',
 		order: screen?.order ?? 0,
+		is_active: screen?.isActive ?? true,
+		is_enabled: screen?.isEnabled ?? true,
 	}
 }
 
