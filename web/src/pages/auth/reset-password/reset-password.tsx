@@ -21,7 +21,7 @@ export function ResetPassword() {
 		<>
 			<PageTitle title='Reset password' />
 
-			<div className='flex flex-1 items-center justify-center p-8'>
+			<div className='flex flex-1 items-center justify-center p-4 sm:p-8'>
 				<Card className='w-full max-w-sm'>
 					<CardHeader>
 						<CardTitle>Reset your password</CardTitle>

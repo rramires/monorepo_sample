@@ -26,7 +26,7 @@ export function ProfileDetail() {
 
 	if (pm.isLoading) {
 		return (
-			<div className='flex flex-1 items-center justify-center p-8'>
+			<div className='flex flex-1 items-center justify-center p-4 sm:p-8'>
 				<LoaderCircle className='text-muted-foreground size-6 animate-spin' />
 			</div>
 		)
@@ -34,7 +34,7 @@ export function ProfileDetail() {
 
 	if (pm.notFound || !pm.profile) {
 		return (
-			<div className='flex flex-1 flex-col gap-4 p-8'>
+			<div className='flex flex-1 flex-col gap-4 p-4 sm:p-8'>
 				<p className='text-muted-foreground text-sm'>
 					Profile not found.
 				</p>
@@ -139,7 +139,7 @@ export function ProfileDetail() {
 					)}
 				</PageHeader>
 
-				<div className='grid gap-4 sm:grid-cols-2'>
+				<div className='grid gap-4 lg:grid-cols-2'>
 					<div className='grid gap-2'>
 						<Label htmlFor='profile-name'>Name</Label>
 						<Input
@@ -191,7 +191,7 @@ export function ProfileDetail() {
 					{/* Mirror the TransferTable's columns so the filter lines up
 					    with the Available search: flex-1 + the move-button
 					    column (w-8) + the Granted panel (flex-1). */}
-					<div className='flex flex-col gap-3 sm:flex-row'>
+					<div className='flex flex-col gap-3 lg:flex-row'>
 						<div className='flex min-w-0 flex-1 flex-col gap-1.5'>
 							<Label className='text-muted-foreground text-xs'>
 								Filter available by module
@@ -205,9 +205,9 @@ export function ProfileDetail() {
 								emptyText='No modules.'
 							/>
 						</div>
-						<div className='hidden w-8 sm:block' aria-hidden />
+						<div className='hidden w-8 lg:block' aria-hidden />
 						<div
-							className='hidden min-w-0 flex-1 sm:block'
+							className='hidden min-w-0 flex-1 lg:block'
 							aria-hidden
 						/>
 					</div>

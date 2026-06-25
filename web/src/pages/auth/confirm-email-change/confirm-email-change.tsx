@@ -20,7 +20,7 @@ export function ConfirmEmailChange() {
 		<>
 			<PageTitle title='Confirm email change' />
 
-			<div className='flex flex-1 items-center justify-center p-8'>
+			<div className='flex flex-1 items-center justify-center p-4 sm:p-8'>
 				<Card className='w-full max-w-sm text-center'>
 					{pm.status === 'verifying' && (
 						<CardHeader>

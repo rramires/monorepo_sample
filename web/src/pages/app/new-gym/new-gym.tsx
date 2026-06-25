@@ -21,7 +21,7 @@ export function NewGym() {
 		<>
 			<PageTitle title='New gym' />
 
-			<div className='flex flex-1 justify-center p-8'>
+			<div className='flex flex-1 justify-center p-4 sm:p-8'>
 				<Card className='w-full max-w-lg'>
 					<CardHeader>
 						<CardTitle>New gym</CardTitle>
@@ -70,7 +70,7 @@ export function NewGym() {
 									)}
 								</div>
 
-								<div className='grid grid-cols-2 gap-4'>
+								<div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
 									<div className='grid gap-2'>
 										<Label htmlFor='latitude'>
 											Latitude
