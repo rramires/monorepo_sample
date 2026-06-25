@@ -4,7 +4,9 @@ import { useMemo } from 'react'
 import { getMePermissions } from '@/api/get-me-permissions'
 import { useAuth } from '@/components/auth/auth-hooks'
 
-export type ScreenAction = 'view' | 'create' | 'edit' | 'delete'
+// An action key — a free string now (bare CRUD family or a composed `family_name`
+// like `create_checkin`). The four bare families stay the common case.
+export type ScreenAction = string
 
 // Loads the current user's effective permissions and exposes a `can()` helper.
 // Server state, so it's a TanStack Query (keyed by user id → a different demo
@@ -21,9 +23,9 @@ export function usePermissions() {
 	})
 
 	const byKey = useMemo(() => {
-		const map = new Map<string, (action: ScreenAction) => boolean>()
+		const map = new Map<string, Set<string>>()
 		for (const s of query.data?.screens ?? []) {
-			map.set(s.screenKey, (action) => s[action])
+			map.set(s.screenKey, new Set(s.actions))
 		}
 		return map
 	}, [query.data])
@@ -44,7 +46,7 @@ export function usePermissions() {
 		if (isAdmin) {
 			return true
 		}
-		return byKey.get(screenKey)?.(action) ?? false
+		return byKey.get(screenKey)?.has(action) ?? false
 	}
 
 	// The screen kill switch (Screen.is_enabled). Admin ignores it; unknown

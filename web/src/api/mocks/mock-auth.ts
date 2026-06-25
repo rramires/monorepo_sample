@@ -1,4 +1,4 @@
-import type { MePermissions, ScreenPermission } from '@root/contracts'
+import type { MePermissions } from '@root/contracts'
 import { HttpResponse } from 'msw'
 
 import {
@@ -134,33 +134,55 @@ export function requireAuth(authHeader: string | null) {
 	return null
 }
 
+// Add an action KEY to a screen's set in the actions-by-screen map.
+function addAction(
+	map: Map<string, Set<string>>,
+	screenKey: string,
+	action: string,
+) {
+	let set = map.get(screenKey)
+	if (!set) {
+		set = new Set<string>()
+		map.set(screenKey, set)
+	}
+	set.add(action)
+}
+
 // Effective permissions for a user: ADMIN bypasses (every screen, every action);
 // otherwise the membership (menu) + the OR of the user's granted permissions
-// (effective ops), keyed by screen key. `view` is an explicit grant now and the
-// kill switch is NOT folded into `view` (it rides on the menu as `is_enabled`).
+// (effective ops as action keys), keyed by screen key. `view` is an explicit
+// grant now and the kill switch is NOT folded into it (it rides on the menu as
+// `is_enabled`).
 export function computePermissions(userId: string): MePermissions | null {
 	const user = findUser(userId)
 	if (!user) {
 		return null
 	}
 
+	const screenById = new Map(screens.map((s) => [s.id, s]))
+
 	if (user.role === 'ADMIN') {
 		const allKeys = new Set(screens.map((s) => s.key))
+		// Admin carries every screen's full catalog of action keys (`can()`
+		// bypasses regardless). Group the catalog by screen key.
+		const actionsByKey = new Map<string, Set<string>>()
+		for (const p of permissions) {
+			const key = screenById.get(p.screen_id)?.key
+			if (key) {
+				addAction(actionsByKey, key, p.action)
+			}
+		}
 		return {
 			role: 'ADMIN',
 			screens: screens.map((s) => ({
 				screen_key: s.key,
-				view: true,
-				create: true,
-				edit: true,
-				delete: true,
+				actions: [...(actionsByKey.get(s.key) ?? [])],
 			})),
 			menu: buildMenu(allKeys),
 			default_screen_key: resolveDefaultScreen(userId, allKeys),
 		}
 	}
 
-	const screenById = new Map(screens.map((s) => [s.id, s]))
 	const permById = new Map(permissions.map((p) => [p.id, p]))
 
 	const myProfileIds = userProfiles
@@ -180,39 +202,31 @@ export function computePermissions(userId: string): MePermissions | null {
 		}
 	}
 
-	const merged = new Map<string, ScreenPermission>()
-	function bump(screenKey: string) {
-		let entry = merged.get(screenKey)
-		if (!entry) {
-			entry = {
-				screen_key: screenKey,
-				view: false,
-				create: false,
-				edit: false,
-				delete: false,
-			}
-			merged.set(screenKey, entry)
-		}
-		return entry
-	}
+	// Effective ops per screen = the union of granted permission action keys.
+	const actionsByKey = new Map<string, Set<string>>()
 	for (const permId of grantedPermIds) {
 		const perm = permById.get(permId)
 		const screen = perm && screenById.get(perm.screen_id)
 		if (!perm || !screen) {
 			continue
 		}
-		bump(screen.key)[perm.action] = true
+		addAction(actionsByKey, screen.key, perm.action)
 	}
 
 	const membershipKeys = new Set(
 		[...membershipIds].map((id) => screenById.get(id)?.key).filter(Boolean),
 	) as Set<string>
 	const viewableKeys = new Set(
-		[...merged.values()].filter((s) => s.view).map((s) => s.screen_key),
+		[...actionsByKey.entries()]
+			.filter(([, set]) => set.has('view'))
+			.map(([key]) => key),
 	)
 	return {
 		role: 'USER',
-		screens: [...merged.values()],
+		screens: [...actionsByKey.entries()].map(([screen_key, set]) => ({
+			screen_key,
+			actions: [...set],
+		})),
 		menu: buildMenu(membershipKeys),
 		default_screen_key: resolveDefaultScreen(userId, viewableKeys),
 	}

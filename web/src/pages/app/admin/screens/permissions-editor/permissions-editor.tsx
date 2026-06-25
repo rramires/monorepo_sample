@@ -1,4 +1,4 @@
-import type { PermissionAction } from '@root/contracts'
+import type { PermissionFamily } from '@root/contracts'
 import { Check, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 
@@ -26,6 +26,7 @@ import {
 
 import {
 	ACTION_LABEL,
+	opBadge,
 	usePermissionsEditorPM,
 } from './use-permissions-editor-pm'
 
@@ -63,7 +64,7 @@ export function PermissionsEditor({
 						<Select
 							value={pm.newAction}
 							onValueChange={(v) =>
-								pm.setNewAction(v as PermissionAction)
+								pm.setNewAction(v as PermissionFamily)
 							}
 							disabled={noneLeft}
 						>
@@ -122,9 +123,9 @@ export function PermissionsEditor({
 							>
 								<Badge
 									variant='secondary'
-									className='w-16 justify-center'
+									className='justify-center'
 								>
-									{ACTION_LABEL[perm.action]}
+									{opBadge(perm.action)}
 								</Badge>
 
 								{pm.editingId === perm.id ? (

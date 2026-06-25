@@ -1,6 +1,5 @@
 import {
 	type CreatePermissionBody,
-	type PermissionAction,
 	permissionSchema,
 	type UpdatePermissionBody,
 } from '@root/contracts'
@@ -8,12 +7,13 @@ import { z } from 'zod'
 
 import { api } from '@/lib/api'
 
-// The app-side permission model (camelCase). `action` is the fixed code contract;
-// `label` is the friendly, editable display name shown as a badge.
+// The app-side permission model (camelCase). `action` is the free-key code
+// contract (bare CRUD family or a composed `family_name`); `label` is the
+// friendly, editable display name shown as a badge.
 export interface PermissionModel {
 	id: string
 	screenId: string
-	action: PermissionAction
+	action: string
 	label: string
 	isSystem: boolean
 }

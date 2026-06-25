@@ -1,4 +1,8 @@
-import type { PermissionAction } from '@root/contracts'
+import {
+	actionFamily,
+	PERMISSION_FAMILIES,
+	type PermissionFamily,
+} from '@root/contracts'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { useMemo, useState } from 'react'
@@ -11,19 +15,25 @@ import {
 	updatePermission,
 } from '@/api/permissions'
 
-// The fixed code-contract actions + how the op Select labels them (distinct from
-// the user's friendly grant label, which is free text).
-export const ALL_ACTIONS: PermissionAction[] = [
-	'view',
-	'create',
-	'edit',
-	'delete',
-]
-export const ACTION_LABEL: Record<PermissionAction, string> = {
+// The four CRUD families + how the op Select labels them (distinct from the
+// user's friendly grant label, which is free text). A screen's action can also be
+// a composed key (`create_checkin`) — see `opBadge` for how those render.
+export const ALL_ACTIONS: readonly PermissionFamily[] = PERMISSION_FAMILIES
+export const ACTION_LABEL: Record<PermissionFamily, string> = {
 	view: 'View',
 	create: 'Create',
 	edit: 'Edit',
 	delete: 'Delete',
+}
+
+// The badge text for a permission's action key: a bare family shows its friendly
+// op label (`create` → "Create"); a composed key shows the raw key
+// (`create_checkin`) so its extra-op nature is visible at a glance.
+export function opBadge(action: string): string {
+	const family = actionFamily(action)
+	return action === family
+		? (ACTION_LABEL[family as PermissionFamily] ?? action)
+		: action
 }
 
 function message(err: unknown, fallback: string): string {
@@ -44,7 +54,7 @@ export function usePermissionsEditorPM(screenId: string, enabled: boolean) {
 	})
 
 	// Add-row draft.
-	const [newAction, setNewAction] = useState<PermissionAction | ''>('')
+	const [newAction, setNewAction] = useState<PermissionFamily | ''>('')
 	const [newLabel, setNewLabel] = useState('')
 	// Inline edit: the unlocked row id + its draft label.
 	const [editingId, setEditingId] = useState<string | null>(null)
@@ -65,7 +75,7 @@ export function usePermissionsEditorPM(screenId: string, enabled: boolean) {
 	const add = useMutation({
 		mutationFn: () =>
 			createPermission(screenId, {
-				action: newAction as PermissionAction,
+				action: newAction as PermissionFamily,
 				label: newLabel.trim(),
 			}),
 		onSuccess: async () => {
