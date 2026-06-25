@@ -93,17 +93,18 @@ src/
 │   ├── controllers/
 │   │   ├── auth/            # auth + self-service (login, logout, refresh, me, edit username + default_screen_key, email change)
 │   │   ├── users/           # account routes (register, email verification, password reset, email-change confirm, admin list/fetch/edit, user-profile assignment)
-│   │   ├── me/              # GET /me/permissions (effective screens + sidebar menu + default landing screen)
+│   │   ├── me/              # GET /me/permissions (effective grants + membership sidebar menu + default landing screen)
 │   │   ├── modules/         # access-control: module CRUD (access-control.modules screen)
 │   │   ├── screens/         # access-control: screen CRUD (access-control.screens screen)
-│   │   ├── profiles/        # access-control: profile CRUD + grant assignment (access-control.profiles screen)
+│   │   ├── permissions/     # access-control: permission-catalog CRUD (access-control.screens screen)
+│   │   ├── profiles/        # access-control: profile CRUD + membership/grant assignment (access-control.profiles screen)
 │   │   ├── gyms/            # gym routes + controllers (create, edit, search, nearby)
 │   │   ├── check-ins/       # check-in routes + controllers
 │   │   └── health/          # healthcheck (/hello)
 │   ├── middlewares/
 │   │   ├── verify-jwt-middleware.ts   # authentication + denylist check + is_active re-check
 │   │   ├── verify-user-role.ts        # legacy role guard (RBAC; reads role from DB; 403 on wrong role)
-│   │   ├── require-screen.ts          # access-control guard: requireScreen(screenKey, action); reads effective grants from DB; ADMIN bypasses
+│   │   ├── require-screen.ts          # access-control guard: requireScreen(screenKey, action); reads effective grants from DB; blocks killed screens; ADMIN bypasses
 │   │   ├── verify-email-verified.ts   # blocks unverified users (REQUIRE_EMAIL_VERIFICATION)
 │   │   └── rate-limit.ts              # strict limit for auth routes
 │   └── schemas/
@@ -325,10 +326,12 @@ username `transform`) stay local. See the monorepo
   factory_). It reads the authenticated user's **effective permissions from the
   database** (by `request.user.sub`, via `GetUserPermissionsUseCase` — the same
   use-case as `GET /me/permissions`) and allows the request only when the user
-  `can()` perform `action` (`view`/`create`/`edit`/`delete`) on `screenKey`. An
-  `ADMIN` bypasses every check. The signed `role`/grant claims are never trusted
-  for access control, so a grant, profile, or role change takes effect on the next
-  request. Runs after `verifyJwtMiddleware`. Full model in §5.7.
+  `can()` perform `action` (`view`/`create`/`edit`/`delete`) on `screenKey` **and**
+  that screen isn't killed (`Screen.is_enabled=false` → `403 "This screen is
+temporarily unavailable."` for non-admins). An `ADMIN` bypasses every check. The
+  signed `role`/grant claims are never trusted for access control, so a grant,
+  profile, or role change takes effect on the next request. Runs after
+  `verifyJwtMiddleware`. Full model in §5.7.
 - `verifyUserRole(role)` is the legacy plain-role guard (reads the role from the
   DB and compares it to the required role); it is retained for reference but the
   current routes use `requireScreen`.
@@ -354,7 +357,7 @@ username `transform`) stay local. See the monorepo
 | PATCH  | `/auth/me`                       |     ✅     | —                                  | self: edit own username / set `default_screen_key`               |
 | POST   | `/auth/me/email`                 |     ✅     | —                                  | self: request email change (confirm to new addr)                 |
 | POST   | `/auth/me/email/confirm`         |     ✅     | —                                  | self: confirm email change via OTP                               |
-| GET    | `/me/permissions`                |     ✅     | —                                  | effective screens + sidebar menu + default screen                |
+| GET    | `/me/permissions`                |     ✅     | —                                  | effective grants + membership menu (w/ `is_enabled`) + default   |
 | GET    | `/gyms/search`                   |     ✅     | —                                  | search by title (active only; managers: `includeInactive`)       |
 | GET    | `/gyms/nearby`                   |     ✅     | —                                  | search by proximity (active only; managers: `includeInactive`)   |
 | POST   | `/gyms`                          |     ✅     | `gym.gyms` · create                | create a gym                                                     |
@@ -370,7 +373,7 @@ username `transform`) stay local. See the monorepo
 | POST   | `/users/forgot-password`         |     ❌     | —                                  | request reset; always `202` (anti-enumeration)                   |
 | POST   | `/users/reset-password`          |     ❌     | —                                  | reset via link token or email + OTP                              |
 | GET    | `/users/confirm-email-change`    |     ❌     | —                                  | confirm email change via link token (`?token=`)                  |
-| GET    | `/users`                         |     ✅     | `access-control.users` · view      | list users (paginated, 20/page) → `{ users, total }`            |
+| GET    | `/users`                         |     ✅     | `access-control.users` · view      | list users (paginated, 20/page) → `{ users, total }`             |
 | GET    | `/users/:userId`                 |     ✅     | `access-control.users` · view      | fetch a single user by id (PublicUser)                           |
 | PATCH  | `/users/:userId`                 |     ✅     | `access-control.users` · edit      | edit a user (username/email/role/is_verified/is_active)          |
 | GET    | `/users/:userId/profiles`        |     ✅     | `access-control.users` · view      | list a user's assigned profiles                                  |
@@ -382,13 +385,17 @@ username `transform`) stay local. See the monorepo
 | GET    | `/screens`                       |     ✅     | `access-control.screens` · view    | list screens                                                     |
 | POST   | `/screens`                       |     ✅     | `access-control.screens` · create  | create a screen                                                  |
 | PATCH  | `/screens/:id`                   |     ✅     | `access-control.screens` · edit    | edit a screen (`409` changing a system screen's key/module/path) |
-| DELETE | `/screens/:id`                   |     ✅     | `access-control.screens` · delete  | delete a screen (`409` on a system screen)                       |
+| DELETE | `/screens/:id`                   |     ✅     | `access-control.screens` · delete  | delete a screen (`409` system or still assigned to a profile)    |
+| GET    | `/permissions`                   |     ✅     | `access-control.screens` · view    | list the permission catalog (optional `?screen_id`)              |
+| POST   | `/screens/:screenId/permissions` |     ✅     | `access-control.screens` · create  | add a curated op to a screen (`409` on a duplicate action)       |
+| PATCH  | `/permissions/:id`               |     ✅     | `access-control.screens` · edit    | rename/re-target a permission (`409` system action or duplicate) |
+| DELETE | `/permissions/:id`               |     ✅     | `access-control.screens` · delete  | delete a permission (`409` system or still granted)              |
 | GET    | `/profiles`                      |     ✅     | `access-control.profiles` · view   | list profiles                                                    |
 | GET    | `/profiles/:id`                  |     ✅     | `access-control.profiles` · view   | fetch a profile with its grants                                  |
 | POST   | `/profiles`                      |     ✅     | `access-control.profiles` · create | create a profile                                                 |
 | PATCH  | `/profiles/:id`                  |     ✅     | `access-control.profiles` · edit   | edit a profile (`409` on a system profile)                       |
-| DELETE | `/profiles/:id`                  |     ✅     | `access-control.profiles` · delete | delete a profile (`409` on a system profile)                     |
-| PUT    | `/profiles/:id/screens`          |     ✅     | `access-control.profiles` · edit   | replace a profile's screen grants                                |
+| DELETE | `/profiles/:id`                  |     ✅     | `access-control.profiles` · delete | delete a profile (`409` system or still assigned to a user)      |
+| PUT    | `/profiles/:id/screens`          |     ✅     | `access-control.profiles` · edit   | replace membership + grants + `default_screen_id`                |
 
 > Pattern to protect a group: `app.addHook('onRequest', verifyJwtMiddleware)`
 > at the start of the routes function. To gate a route on a screen grant: add
@@ -531,29 +538,40 @@ browsers from sending the cookie on cross-origin non-safe requests.
 
 Authorization is two-layered: the coarse `Role` (`ADMIN` bypasses everything) and
 a dynamic, screen-level grant model. The data model (§6.6) is: a `Module` groups
-`Screen`s; a `Screen` is the unit grants attach to; a `Profile` bundles per-screen
-action grants (`ProfileScreen`); a user is assigned profiles (`UserProfile`).
+`Screen`s; each `Screen` owns a **curated permission catalog** (`Permission` rows —
+the ops it really offers, each with a friendly editable `label`); a `Profile` takes
+**membership** in screens (`ProfileScreen`, now pure membership) and **grants**
+individual permissions (`ProfilePermission`); a user is assigned profiles
+(`UserProfile`). **Three axes** gate access (`ADMIN` bypasses all): the grant
+(`ProfilePermission`), the runtime **kill switch** (`Screen.is_enabled`), and the
+lifecycle **disable** (`is_active` on module/screen/profile).
 
 - **The guard — `requireScreen(screenKey, action)`** (`require-screen.ts`): on
   every request it calls `GetUserPermissionsUseCase` to compute the caller's
   **effective** permissions and allows the request only when the matching screen's
-  `action` flag is `true`. Read fresh from the DB each request (never the JWT), so
-  a grant/profile change applies on the next request. `ADMIN` returns early
-  (bypasses). Authenticated-but-ungranted → `403 { "message": "Forbidden." }`; an
-  unknown user (`ResourceNotFoundError`) → `401`.
+  `action` flag is `true` **and** the screen isn't killed (`is_enabled=false` →
+  `403 { "message": "This screen is temporarily unavailable." }` for non-admins).
+  Read fresh from the DB each request (never the JWT), so a grant/profile change
+  applies on the next request. `ADMIN` returns early (bypasses).
+  Authenticated-but-ungranted → `403 { "message": "Forbidden." }`; an unknown user
+  (`ResourceNotFoundError`) → `401`.
 - **Effective permissions** (`get-user-permissions-use-case.ts`): for a non-admin,
   the per-screen actions (`view`/`create`/`edit`/`delete`) are the **OR across all
-  the user's profile grants**. For an `ADMIN`, every catalog screen is returned
-  with all four actions `true`.
+  the user's profile grants** — `view` is now an explicit granted permission (no
+  longer default-true). For an `ADMIN`, every catalog screen is returned with all
+  four actions `true`.
 - **`GET /me/permissions`** returns `{ role, screens, menu, default_screen_key }`:
-    - `screens` — the effective per-screen actions (drives the frontend `can()` gate).
-    - `menu` — the **viewable navigable** screens (`screen_key`, `screen_name`,
-      `path`, `screen_order`, `module_key`, `module_name`, `module_order`), ordered
-      by (module order, screen order). The frontend builds its sidebar from this
-      **without** calling the admin-gated `/modules` + `/screens`.
+    - `screens` — the effective per-screen grants (drives the frontend `can()` gate).
+    - `menu` — the user's **membership** screens that have a `path` (`screen_key`,
+      `screen_name`, `path`, `screen_order`, `module_key`, `module_name`,
+      `module_order`, **`is_enabled`**), ordered by (module order, screen order).
+      Shown even without a `view` grant (staged rollout) or while killed (the
+      `is_enabled` flag lets the frontend mark it unavailable). The frontend builds
+      its sidebar from this **without** calling the admin-gated `/modules` +
+      `/screens`.
     - `default_screen_key` — resolved as: the user override
       (`User.default_screen_key`, set via `PATCH /auth/me`, if still viewable) →
-      the profile-default grant (`ProfileScreen.is_default`) with the smallest
+      the profile's landing screen (`Profile.default_screen_id`) with the smallest
       (module order, screen order) the user can view → `null`.
 - **`is_active` immediate cutoff:** `verifyJwtMiddleware` re-reads the user on
   every request and rejects (`401`) a missing or deactivated (`is_active=false`)
@@ -570,27 +588,51 @@ action grants (`ProfileScreen`); a user is assigned profiles (`UserProfile`).
   gyms. `searchMany` also lists all gyms on an empty query — the manager
   "browse all" view (non-geo, paginated). `PATCH /gyms/:gymId` toggles
   `is_active` to deactivate / reactivate.
+- **Kill switch vs. disable.** `Screen.is_enabled` is the **runtime kill switch**
+  (axis 2): flipping it off blocks every non-admin **immediately** (the guard
+  `403`s with "This screen is temporarily unavailable.") — an emergency lever, no
+  re-grant needed. `is_active` (on `Module`/`Screen`/`Profile`; `User` already had
+  it) is the **lifecycle disable** (axis 3): an inactive record is hidden from the
+  "add" pickers below it in the hierarchy, but existing assignments keep working —
+  a soft retire, not a cut-off.
 - **`is_default` / `is_system`:** the `is_default` profile is auto-attached to a
   new account on `POST /users`. **Exactly one** profile is the default at any
   time: setting a profile default (on create or update) demotes every other one
   (radio, via `clearDefaultExcept`), and turning the **current** default off is a
   `409` (`DefaultProfileRequiredError`) — to move it, promote another profile.
   `is_system` marks seeded records as protected —
-  on a profile, **module, or screen**, deleting it or editing its identity is a
-  `409` (the `key`; for a screen also its `module` and `path`); name/description/
-  order — and a profile's grants — stay editable. The seed marks all three
-  profiles and the
-  access-control module + its 4 screens as system; the gym module/screens stay
-  deletable demo content.
+  on a profile, **module, screen, or permission**, deleting it or editing its
+  identity is a `409` (the `key`; for a screen also its `module` and `path`; for a
+  permission its `action` — the code contract); name/description/order, a
+  permission's `label`, and a profile's membership/grants stay editable. A
+  permission `is_system` mirrors its owning screen. The seed marks all three
+  profiles and the access-control module + its 4 screens (and their permissions) as
+  system; the gym module/screens stay deletable demo content.
+- **No-cascade deletes.** Guarded FKs are `Restrict`, so a delete in use is a
+  `409` (counted by the use-case, never a raw DB error): a screen still in a
+  profile → "Assigned to N profile(s). Remove it from those profiles first."
+  (`ScreenInUseError`); a profile still on a user → "Assigned to N user(s).
+  Unassign it from those users first." (`ProfileInUseError`); a permission still
+  granted → "Granted to N profile(s). Remove it from those profiles first."
+  (`PermissionInUseError`); a module that still has screens → "Module still has
+  screens." (`ModuleHasScreensError`). A **deletable** screen's own (ungranted)
+  permissions `Cascade` with it. `Profile.default_screen_id` is `SetNull` if its
+  landing screen is ever removed.
 - **CRUD error mapping** (controllers, via `instanceof`): `ResourceNotFoundError`
-  → `404`; deleting a module that still has screens → `409`
-  (`ModuleHasScreensError`); editing/deleting a system profile/module/screen →
-  `409` (`SystemProfileError` / `SystemModuleError` / `SystemScreenError`);
-  turning the only default profile off → `409` (`DefaultProfileRequiredError`);
-  on `PATCH /users/:userId`, demoting/deactivating oneself → `400`
-  (`CannotChangeOwnRoleError` / `CannotDeactivateSelfError`).
-  Creates return `201`; the `PUT` grant/profile replacements return `200`.
-- **Seam:** `IPermissionsRepository` has both a Prisma and an in-memory
+  → `404`; the in-use `409`s above; editing/deleting a system
+  profile/module/screen/permission → `409` (`SystemProfileError` /
+  `SystemModuleError` / `SystemScreenError` / `SystemPermissionError`); a duplicate
+  permission action (`UNIQUE(screen_id, action)`) → `409`
+  (`DuplicatePermissionActionError`); turning the only default profile off → `409`
+  (`DefaultProfileRequiredError`); a `PUT /profiles/:id/screens` whose
+  `default_screen_id` isn't one of the assigned screens → `400`
+  (`InvalidLandingScreenError`); on `PATCH /users/:userId`, demoting/deactivating
+  oneself → `400` (`CannotChangeOwnRoleError` / `CannotDeactivateSelfError`).
+  Creates return `201`; the `PUT` grant/profile replacements return `200` (the
+  profiles `PUT` returns the updated `ProfileDetail` with `default_screen_id` and
+  per-screen `permission_ids`).
+- **Seam:** `IPermissionsRepository` (resolution) and
+  `IPermissionCatalogRepository` (management) each have a Prisma and an in-memory
   implementation, so the permission logic is unit-tested with no database.
 
 ---
@@ -676,22 +718,41 @@ The screen-grant model behind §5.7 — global (no tenant; a cloning project add
 `company_id` to `Profile`/`Module`):
 
 - `Module` (`id` uuid, **unique `key`**, `name`, `description?`, `order`,
-  `is_system` bool) 1—N `Screen` (table `modules`). Groups screens for the
-  sidebar. `is_system` protects the seeded access-control module (no delete / key
-  rename).
+  `is_system` bool, `is_active` bool default `true`) 1—N `Screen` (table
+  `modules`). Groups screens for the sidebar. `is_system` protects the seeded
+  access-control module (no delete / key rename); `is_active=false` hides it from
+  the "add" pickers.
 - `Screen` (`id` uuid, **unique `key`**, `name`, `path?` (the route the menu links
   to; `null` = not navigable), `description?`, `order`, `is_system` bool,
-  `module_id` FK `onDelete: Cascade`) 1—N `ProfileScreen` (table `screens`).
-  `is_system` protects the seeded access-control screens.
+  `is_active` bool default `true` (lifecycle disable), `is_enabled` bool default
+  `true` (runtime kill switch), `module_id` FK `onDelete: Restrict` — a module with
+  screens can't be deleted) 1—N `Permission` (its catalog, `onDelete: Cascade`) and
+  1—N `ProfileScreen` (membership; the screen side is `onDelete: Restrict`, so a
+  screen still a member somewhere can't be deleted) (table `screens`). `is_system`
+  protects the seeded access-control screens.
+- `Permission` (`id` uuid, `screen_id` FK `onDelete: Cascade`, `action` enum
+  (`view`/`create`/`edit`/`delete`), `label` (friendly, editable), `is_system`
+  bool — mirrors the owning screen; **`@@unique([screen_id, action])`**) (table
+  `permissions`). The curated catalog of ops a screen offers; `is_system`
+  permissions can't be deleted and their `action` is locked. A deletable screen
+  cascades its (ungranted) permissions; a granted one is `Restrict`ed (the join's
+  permission side), so it can't be deleted while granted.
 - `Profile` (`id` uuid, **unique `key`**, `name`, `description?`, `is_system`
-  bool, `is_default` bool, `created_at`) (table `profiles`). `is_system` protects
-  seeded profiles (no delete / key rename); `is_default` is auto-attached to new
-  users on `/register`.
-- `ProfileScreen` (composite PK `[profile_id, screen_id]`, `can_view`/`can_create`/
-  `can_edit`/`can_delete` bools, `is_default` bool — the profile's default landing
-  screen, ≤1 per profile; both FKs `onDelete: Cascade`) (table `profile_screens`).
-- `UserProfile` (composite PK `[user_id, profile_id]`, both FKs
-  `onDelete: Cascade`) (table `user_profiles`) — the N—N user ↔ profile join.
+  bool, `is_default` bool, `is_active` bool default `true`, `default_screen_id?` FK
+  → `Screen` `onDelete: SetNull` — the landing screen, replaces the old per-grant
+  `is_default`, `created_at`) (table `profiles`). `is_system` protects seeded
+  profiles (no delete / key rename); `is_default` is auto-attached to new users on
+  `/register`.
+- `ProfileScreen` (composite PK `[profile_id, screen_id]`; profile FK
+  `onDelete: Cascade`, screen FK `onDelete: Restrict`) (table `profile_screens`).
+  Pure **membership** now — the old `can_*`/`is_default` columns were dropped; a
+  member with zero granted permissions is a staged rollout.
+- `ProfilePermission` (composite PK `[profile_id, permission_id]`; profile FK
+  `onDelete: Cascade`, permission FK `onDelete: Restrict`) (table
+  `profile_permissions`) — the N—N grant join (a granted op = a row).
+- `UserProfile` (composite PK `[user_id, profile_id]`; user FK `onDelete: Cascade`,
+  profile FK `onDelete: Restrict` — a profile assigned to users can't be deleted)
+  (table `user_profiles`) — the N—N user ↔ profile join.
 
 ---
 

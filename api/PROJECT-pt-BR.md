@@ -93,17 +93,18 @@ src/
 │   ├── controllers/
 │   │   ├── auth/            # auth + self-service (login, logout, refresh, me, editar username + default_screen_key, troca de e-mail)
 │   │   ├── users/           # rotas de conta (cadastro, verificação de e-mail, reset de senha, confirmar troca de e-mail, listar/buscar/editar admin, atribuição de perfis)
-│   │   ├── me/              # GET /me/permissions (telas efetivas + menu da sidebar + tela inicial padrão)
+│   │   ├── me/              # GET /me/permissions (grants efetivos + menu por membership na sidebar + tela inicial padrão)
 │   │   ├── modules/         # controle de acesso: CRUD de módulos (tela access-control.modules)
 │   │   ├── screens/         # controle de acesso: CRUD de telas (tela access-control.screens)
-│   │   ├── profiles/        # controle de acesso: CRUD de perfis + atribuição de grants (tela access-control.profiles)
+│   │   ├── permissions/     # controle de acesso: CRUD do catálogo de permissões (tela access-control.screens)
+│   │   ├── profiles/        # controle de acesso: CRUD de perfis + atribuição de membership/grants (tela access-control.profiles)
 │   │   ├── gyms/            # rotas + controllers de academias (criar, editar, buscar, nearby)
 │   │   ├── check-ins/       # rotas + controllers de check-ins
 │   │   └── health/          # healthcheck (/hello)
 │   ├── middlewares/
 │   │   ├── verify-jwt-middleware.ts   # autenticação + checagem na denylist + recheck de is_active
 │   │   ├── verify-user-role.ts        # guard de papel legado (RBAC; lê papel do DB; 403 se papel errado)
-│   │   ├── require-screen.ts          # guard de controle de acesso: requireScreen(screenKey, action); lê grants efetivos do DB; ADMIN ignora
+│   │   ├── require-screen.ts          # guard de controle de acesso: requireScreen(screenKey, action); lê grants efetivos do DB; bloqueia telas mortas; ADMIN ignora
 │   │   ├── verify-email-verified.ts   # bloqueia não verificados (REQUIRE_EMAIL_VERIFICATION)
 │   │   └── rate-limit.ts              # limite estrito p/ rotas de auth
 │   └── schemas/
@@ -326,11 +327,12 @@ locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do monorepo e
   factory_). Ele lê as **permissões efetivas do banco** (por `request.user.sub`,
   via `GetUserPermissionsUseCase` — o mesmo use-case do `GET /me/permissions`) e
   libera a requisição só quando o usuário `can()` executar `action`
-  (`view`/`create`/`edit`/`delete`) na `screenKey`. Um `ADMIN` ignora toda
-  checagem. Os claims `role`/grants assinados nunca são confiados para
-  autorização, então uma mudança de grant, perfil ou papel passa a valer na
-  próxima requisição. Roda depois do `verifyJwtMiddleware`. Modelo completo na
-  §5.7.
+  (`view`/`create`/`edit`/`delete`) na `screenKey` **e** a tela não está morta
+  (`Screen.is_enabled=false` → `403 "This screen is temporarily unavailable."`
+  para não-admins). Um `ADMIN` ignora toda checagem. Os claims `role`/grants
+  assinados nunca são confiados para autorização, então uma mudança de grant,
+  perfil ou papel passa a valer na próxima requisição. Roda depois do
+  `verifyJwtMiddleware`. Modelo completo na §5.7.
 - `verifyUserRole(role)` é o guard de papel puro legado (lê o papel do banco e
   compara com o exigido); fica como referência, mas as rotas atuais usam
   `requireScreen`.
@@ -356,7 +358,7 @@ locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do monorepo e
 | PATCH  | `/auth/me`                       |     ✅     | —                                  | self: editar o próprio username / `default_screen_key`             |
 | POST   | `/auth/me/email`                 |     ✅     | —                                  | self: solicitar troca de e-mail (confirma novo)                    |
 | POST   | `/auth/me/email/confirm`         |     ✅     | —                                  | self: confirmar troca de e-mail via OTP                            |
-| GET    | `/me/permissions`                |     ✅     | —                                  | telas efetivas + menu da sidebar + tela padrão                     |
+| GET    | `/me/permissions`                |     ✅     | —                                  | grants efetivos + menu por membership (c/ `is_enabled`) + padrão   |
 | GET    | `/gyms/search`                   |     ✅     | —                                  | busca por título (só ativas; gestores: `includeInactive`)          |
 | GET    | `/gyms/nearby`                   |     ✅     | —                                  | busca por proximidade (só ativas; gestores: `includeInactive`)     |
 | POST   | `/gyms`                          |     ✅     | `gym.gyms` · create                | cadastrar academia                                                 |
@@ -384,13 +386,17 @@ locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do monorepo e
 | GET    | `/screens`                       |     ✅     | `access-control.screens` · view    | listar telas                                                       |
 | POST   | `/screens`                       |     ✅     | `access-control.screens` · create  | criar uma tela                                                     |
 | PATCH  | `/screens/:id`                   |     ✅     | `access-control.screens` · edit    | editar uma tela (`409` ao mudar key/módulo/path de uma de sistema) |
-| DELETE | `/screens/:id`                   |     ✅     | `access-control.screens` · delete  | excluir uma tela (`409` em tela de sistema)                        |
+| DELETE | `/screens/:id`                   |     ✅     | `access-control.screens` · delete  | excluir uma tela (`409` de sistema ou ainda atribuída a um perfil) |
+| GET    | `/permissions`                   |     ✅     | `access-control.screens` · view    | listar o catálogo de permissões (opcional `?screen_id`)            |
+| POST   | `/screens/:screenId/permissions` |     ✅     | `access-control.screens` · create  | adicionar uma op curada a uma tela (`409` em ação duplicada)       |
+| PATCH  | `/permissions/:id`               |     ✅     | `access-control.screens` · edit    | renomear/re-apontar uma permissão (`409` ação de sistema ou dup.)  |
+| DELETE | `/permissions/:id`               |     ✅     | `access-control.screens` · delete  | excluir uma permissão (`409` de sistema ou ainda concedida)        |
 | GET    | `/profiles`                      |     ✅     | `access-control.profiles` · view   | listar perfis                                                      |
 | GET    | `/profiles/:id`                  |     ✅     | `access-control.profiles` · view   | buscar um perfil com seus grants                                   |
 | POST   | `/profiles`                      |     ✅     | `access-control.profiles` · create | criar um perfil                                                    |
 | PATCH  | `/profiles/:id`                  |     ✅     | `access-control.profiles` · edit   | editar um perfil (`409` em perfil de sistema)                      |
-| DELETE | `/profiles/:id`                  |     ✅     | `access-control.profiles` · delete | excluir um perfil (`409` em perfil de sistema)                     |
-| PUT    | `/profiles/:id/screens`          |     ✅     | `access-control.profiles` · edit   | substituir os grants de tela de um perfil                          |
+| DELETE | `/profiles/:id`                  |     ✅     | `access-control.profiles` · delete | excluir um perfil (`409` de sistema ou ainda atribuído a usuário)  |
+| PUT    | `/profiles/:id/screens`          |     ✅     | `access-control.profiles` · edit   | substituir membership + grants + `default_screen_id`               |
 
 > Padrão para proteger um grupo: `app.addHook('onRequest', verifyJwtMiddleware)`
 > no início da função de rotas. Para condicionar uma rota a um grant de tela:
@@ -527,30 +533,41 @@ enviar o cookie em requisições cross-origin não seguras.
 
 A autorização tem duas camadas: o `Role` grosso (`ADMIN` ignora tudo) e um modelo
 dinâmico de grants em nível de tela. O modelo de dados (§6.6) é: um `Module`
-agrupa `Screen`s; uma `Screen` é a unidade onde os grants ficam; um `Profile`
-reúne grants de ação por tela (`ProfileScreen`); um usuário recebe perfis
-(`UserProfile`).
+agrupa `Screen`s; cada `Screen` tem um **catálogo curado de permissões** (linhas
+`Permission` — as ops que ela realmente oferece, cada uma com um `label` amigável
+e editável); um `Profile` toma **membership** em telas (`ProfileScreen`, agora pura
+membership) e **concede** permissões individuais (`ProfilePermission`); um usuário
+recebe perfis (`UserProfile`). **Três eixos** gateiam o acesso (o `ADMIN` ignora
+todos): o grant (`ProfilePermission`), o **kill switch** de runtime
+(`Screen.is_enabled`) e o **disable** de ciclo de vida (`is_active` em
+módulo/tela/perfil).
 
 - **O guard — `requireScreen(screenKey, action)`** (`require-screen.ts`): a cada
   requisição ele chama o `GetUserPermissionsUseCase` para computar as permissões
   **efetivas** do chamador e libera só quando a flag `action` da tela
-  correspondente é `true`. Lido fresh do banco a cada requisição (nunca do JWT),
-  então uma mudança de grant/perfil vale na próxima requisição. O `ADMIN` retorna
-  cedo (ignora). Autenticado-mas-sem-grant → `403 { "message": "Forbidden." }`;
-  um usuário desconhecido (`ResourceNotFoundError`) → `401`.
+  correspondente é `true` **e** a tela não está morta (`is_enabled=false` →
+  `403 { "message": "This screen is temporarily unavailable." }` para não-admins).
+  Lido fresh do banco a cada requisição (nunca do JWT), então uma mudança de
+  grant/perfil vale na próxima requisição. O `ADMIN` retorna cedo (ignora).
+  Autenticado-mas-sem-grant → `403 { "message": "Forbidden." }`; um usuário
+  desconhecido (`ResourceNotFoundError`) → `401`.
 - **Permissões efetivas** (`get-user-permissions-use-case.ts`): para um não-admin,
   as ações por tela (`view`/`create`/`edit`/`delete`) são o **OR de todos os
-  grants dos perfis do usuário**. Para um `ADMIN`, toda tela do catálogo volta com
-  as quatro ações `true`.
+  grants dos perfis do usuário** — `view` agora é uma permissão concedida
+  explícita (não mais default-true). Para um `ADMIN`, toda tela do catálogo volta
+  com as quatro ações `true`.
 - **`GET /me/permissions`** retorna `{ role, screens, menu, default_screen_key }`:
-    - `screens` — as ações efetivas por tela (alimenta o gate `can()` do frontend).
-    - `menu` — as telas **navegáveis visíveis** (`screen_key`, `screen_name`,
-      `path`, `screen_order`, `module_key`, `module_name`, `module_order`),
-      ordenadas por (ordem de módulo, ordem de tela). O frontend monta a sidebar a
-      partir disso **sem** chamar as rotas admin-gated `/modules` + `/screens`.
+    - `screens` — os grants efetivos por tela (alimenta o gate `can()` do frontend).
+    - `menu` — as telas de **membership** do usuário que têm `path` (`screen_key`,
+      `screen_name`, `path`, `screen_order`, `module_key`, `module_name`,
+      `module_order`, **`is_enabled`**), ordenadas por (ordem de módulo, ordem de
+      tela). Mostradas mesmo sem um grant `view` (rollout gradual) ou enquanto
+      mortas (o flag `is_enabled` deixa o frontend marcá-la como indisponível). O
+      frontend monta a sidebar a partir disso **sem** chamar as rotas admin-gated
+      `/modules` + `/screens`.
     - `default_screen_key` — resolvido como: o override do usuário
       (`User.default_screen_key`, definido via `PATCH /auth/me`, se ainda visível)
-      → o grant default do perfil (`ProfileScreen.is_default`) com a menor (ordem
+      → a tela inicial do perfil (`Profile.default_screen_id`) com a menor (ordem
       de módulo, ordem de tela) que o usuário pode ver → `null`.
 - **Corte imediato por `is_active`:** o `verifyJwtMiddleware` relê o usuário a
   cada requisição e rejeita (`401`) uma conta inexistente ou desativada
@@ -568,27 +585,52 @@ reúne grants de ação por tela (`ProfileScreen`); um usuário recebe perfis
   `searchMany` também lista todas as academias quando a query é vazia — a visão
   "ver todas" do gestor (sem geo, paginada). O `PATCH /gyms/:gymId` alterna
   `is_active` (desativar / reativar).
+- **Kill switch vs. disable.** O `Screen.is_enabled` é o **kill switch de runtime**
+  (eixo 2): desligá-lo bloqueia todo não-admin **na hora** (o guard `403` com "This
+  screen is temporarily unavailable.") — uma alavanca de emergência, sem precisar
+  reconceder. O `is_active` (em `Module`/`Screen`/`Profile`; o `User` já tinha) é o
+  **disable de ciclo de vida** (eixo 3): um registro inativo é escondido dos
+  pickers de "adicionar" abaixo dele na hierarquia, mas atribuições existentes
+  seguem funcionando — uma aposentadoria suave, não um corte.
 - **`is_default` / `is_system`:** o perfil `is_default` é anexado automaticamente
   a uma conta nova no `POST /users`. **Exatamente um** perfil é o default a cada
   momento: marcar um perfil como default (no create ou update) rebaixa todos os
   outros (rádio, via `clearDefaultExcept`), e desligar o default **atual** é `409`
   (`DefaultProfileRequiredError`) — para movê-lo, promova outro perfil.
   `is_system` marca registros do seed como
-  protegidos — em um perfil, **módulo ou tela**, excluir ou editar a identidade é
-  `409` (a `key`; numa tela também `module` e `path`); name/description/order — e
-  os grants de um perfil — seguem editáveis. O seed marca os três perfis e o módulo
-  access-control + suas 4 telas como de sistema; o módulo/telas gym seguem
-  deletáveis (conteúdo de demo).
+  protegidos — em um perfil, **módulo, tela ou permissão**, excluir ou editar a
+  identidade é `409` (a `key`; numa tela também `module` e `path`; numa permissão a
+  `action` — o contrato de código); name/description/order, o `label` de uma
+  permissão e a membership/grants de um perfil seguem editáveis. O `is_system` de
+  uma permissão espelha a tela dona. O seed marca os três perfis e o módulo
+  access-control + suas 4 telas (e suas permissões) como de sistema; o módulo/telas
+  gym seguem deletáveis (conteúdo de demo).
+- **Deletes sem cascade.** As FKs protegidas são `Restrict`, então um delete em uso
+  é `409` (contado pelo use-case, nunca um erro cru do banco): uma tela ainda num
+  perfil → "Assigned to N profile(s). Remove it from those profiles first."
+  (`ScreenInUseError`); um perfil ainda num usuário → "Assigned to N user(s).
+  Unassign it from those users first." (`ProfileInUseError`); uma permissão ainda
+  concedida → "Granted to N profile(s). Remove it from those profiles first."
+  (`PermissionInUseError`); um módulo que ainda tem telas → "Module still has
+  screens." (`ModuleHasScreensError`). As permissões (não concedidas) de uma tela
+  **deletável** caem em `Cascade` com ela. O `Profile.default_screen_id` é
+  `SetNull` se a sua tela inicial for removida.
 - **Mapeamento de erros do CRUD** (controllers, via `instanceof`):
-  `ResourceNotFoundError` → `404`; excluir um módulo que ainda tem telas → `409`
-  (`ModuleHasScreensError`); editar/excluir um perfil/módulo/tela de sistema →
-  `409` (`SystemProfileError` / `SystemModuleError` / `SystemScreenError`);
-  desligar o único perfil default → `409` (`DefaultProfileRequiredError`); no
-  `PATCH /users/:userId`, rebaixar/desativar a si mesmo → `400`
-  (`CannotChangeOwnRoleError` / `CannotDeactivateSelfError`).
-  Creates retornam `201`; os `PUT` de grants/perfis retornam `200`.
-- **Seam:** o `IPermissionsRepository` tem implementação Prisma e in-memory,
-  então a lógica de permissão é testada unitariamente sem banco.
+  `ResourceNotFoundError` → `404`; os `409` de em-uso acima; editar/excluir um
+  perfil/módulo/tela/permissão de sistema → `409` (`SystemProfileError` /
+  `SystemModuleError` / `SystemScreenError` / `SystemPermissionError`); uma ação de
+  permissão duplicada (`UNIQUE(screen_id, action)`) → `409`
+  (`DuplicatePermissionActionError`); desligar o único perfil default → `409`
+  (`DefaultProfileRequiredError`); um `PUT /profiles/:id/screens` cujo
+  `default_screen_id` não é uma das telas atribuídas → `400`
+  (`InvalidLandingScreenError`); no `PATCH /users/:userId`, rebaixar/desativar a si
+  mesmo → `400` (`CannotChangeOwnRoleError` / `CannotDeactivateSelfError`).
+  Creates retornam `201`; os `PUT` de grants/perfis retornam `200` (o `PUT` de
+  perfis retorna o `ProfileDetail` atualizado com `default_screen_id` e os
+  `permission_ids` por tela).
+- **Seam:** o `IPermissionsRepository` (resolução) e o
+  `IPermissionCatalogRepository` (gestão) têm cada um implementação Prisma e
+  in-memory, então a lógica de permissão é testada unitariamente sem banco.
 
 ---
 
@@ -672,22 +714,42 @@ O modelo de grants em nível de tela por trás da §5.7 — global (sem tenant; 
 projeto-clone adiciona um `company_id` em `Profile`/`Module`):
 
 - `Module` (`id` uuid, **`key` único**, `name`, `description?`, `order`,
-  `is_system` bool) 1—N `Screen` (tabela `modules`). Agrupa telas para a sidebar.
-  `is_system` protege o módulo access-control do seed (sem excluir / renomear key).
+  `is_system` bool, `is_active` bool padrão `true`) 1—N `Screen` (tabela
+  `modules`). Agrupa telas para a sidebar. `is_system` protege o módulo
+  access-control do seed (sem excluir / renomear key); `is_active=false` o esconde
+  dos pickers de "adicionar".
 - `Screen` (`id` uuid, **`key` único**, `name`, `path?` (a rota que o menu linka;
-  `null` = não navegável), `description?`, `order`, `is_system` bool, `module_id`
-  FK `onDelete: Cascade`) 1—N `ProfileScreen` (tabela `screens`). `is_system`
-  protege as telas access-control do seed.
+  `null` = não navegável), `description?`, `order`, `is_system` bool, `is_active`
+  bool padrão `true` (disable de ciclo de vida), `is_enabled` bool padrão `true`
+  (kill switch de runtime), `module_id` FK `onDelete: Restrict` — um módulo com
+  telas não pode ser excluído) 1—N `Permission` (seu catálogo, `onDelete: Cascade`)
+  e 1—N `ProfileScreen` (membership; o lado da tela é `onDelete: Restrict`, então
+  uma tela ainda membro em algum lugar não pode ser excluída) (tabela `screens`).
+  `is_system` protege as telas access-control do seed.
+- `Permission` (`id` uuid, `screen_id` FK `onDelete: Cascade`, `action` enum
+  (`view`/`create`/`edit`/`delete`), `label` (amigável, editável), `is_system` bool
+  — espelha a tela dona; **`@@unique([screen_id, action])`**) (tabela
+  `permissions`). O catálogo curado de ops que uma tela oferece; permissões
+  `is_system` não podem ser excluídas e sua `action` é travada. Uma tela deletável
+  cascateia suas permissões (não concedidas); uma concedida é `Restrict`ada (o lado
+  permissão do join), então não pode ser excluída enquanto concedida.
 - `Profile` (`id` uuid, **`key` único**, `name`, `description?`, `is_system`
-  bool, `is_default` bool, `created_at`) (tabela `profiles`). `is_system` protege
-  perfis do seed (sem excluir / renomear key); `is_default` é anexado
-  automaticamente a novos usuários no `/register`.
-- `ProfileScreen` (PK composta `[profile_id, screen_id]`, bools `can_view`/
-  `can_create`/`can_edit`/`can_delete`, `is_default` bool — a tela inicial padrão
-  do perfil, ≤1 por perfil; ambas FKs `onDelete: Cascade`) (tabela
-  `profile_screens`).
-- `UserProfile` (PK composta `[user_id, profile_id]`, ambas FKs
-  `onDelete: Cascade`) (tabela `user_profiles`) — o join N—N usuário ↔ perfil.
+  bool, `is_default` bool, `is_active` bool padrão `true`, `default_screen_id?` FK
+  → `Screen` `onDelete: SetNull` — a tela inicial, substitui o antigo `is_default`
+  por grant, `created_at`) (tabela `profiles`). `is_system` protege perfis do seed
+  (sem excluir / renomear key); `is_default` é anexado automaticamente a novos
+  usuários no `/register`.
+- `ProfileScreen` (PK composta `[profile_id, screen_id]`; FK do perfil
+  `onDelete: Cascade`, FK da tela `onDelete: Restrict`) (tabela `profile_screens`).
+  Agora pura **membership** — as antigas colunas `can_*`/`is_default` foram
+  removidas; um membro com zero permissões concedidas é um rollout gradual.
+- `ProfilePermission` (PK composta `[profile_id, permission_id]`; FK do perfil
+  `onDelete: Cascade`, FK da permissão `onDelete: Restrict`) (tabela
+  `profile_permissions`) — o join N—N de grants (uma op concedida = uma linha).
+- `UserProfile` (PK composta `[user_id, profile_id]`; FK do usuário
+  `onDelete: Cascade`, FK do perfil `onDelete: Restrict` — um perfil atribuído a
+  usuários não pode ser excluído) (tabela `user_profiles`) — o join N—N usuário ↔
+  perfil.
 
 ---
 

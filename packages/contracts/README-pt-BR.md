@@ -60,6 +60,10 @@ um artefato único que os dois apps importam.
 | `gyms.ts` | `createGymBodySchema`, `updateGymBodySchema`, `searchGymsQuerySchema`, `nearbyGymsQuerySchema` (+ tipos) |
 | `check-ins.ts` | `checkInBodySchema` (+ tipo) |
 | `responses.ts` | `publicUserSchema`, `userResponseSchema` (+ tipos) — DTOs de resposta |
+| `modules.ts` | `moduleSchema` (+ `is_active`), `createModuleBodySchema`, `updateModuleBodySchema` (+ tipos) |
+| `screens.ts` | `screenSchema` (+ `is_active`/`is_enabled`), `screenWithPermissionsSchema`, `createScreenBodySchema`, `updateScreenBodySchema`, `listScreensQuerySchema` (+ tipos) |
+| `permissions.ts` | `permissionActionSchema`, `permissionSchema`, `createPermissionBodySchema`, `updatePermissionBodySchema`, `screenPermissionSchema`, `menuScreenSchema` (carrega `is_enabled`), `mePermissionsSchema` (+ tipos) — o catálogo curado de permissões + o shape de `GET /me/permissions` |
+| `profiles.ts` | `profileSchema` (+ `is_active`), `profileScreenGrantSchema` (membership + `permission_ids`), `profileDetailSchema` (+ `default_screen_id`), `createProfileBodySchema`, `updateProfileBodySchema`, `setProfileGrantsBodySchema`, `assignUserProfilesBodySchema` (+ tipos) |
 | `index.ts` | barrel — re-exporta tudo |
 
 ## Zero-build (source exports)

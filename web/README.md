@@ -46,20 +46,34 @@ Vitest · Playwright
   interceptor refreshes-and-replays transparently.
 - **RBAC in the UI** — `ProtectedRoute` gates the authed area; `RequireScreen`
   gates each screen by a `can(screenKey, action)` check and renders `Forbidden`
-  **in place** (the layout stays). Permissions are read fresh from
-  `GET /me/permissions`, never trusted from a stale token.
+  **in place** (the layout stays). Two distinct messages: no `view` grant →
+  "You don't have access to this screen yet."; a killed screen (`is_enabled`
+  off) → "This screen is temporarily unavailable." (admin bypasses both).
+  Permissions are read fresh from `GET /me/permissions`, never trusted from a
+  stale token.
 - **Hybrid access control (RBAC)** — a fixed role (`ADMIN` bypasses everything,
-  `USER` follows grants) plus dynamic **Profiles** that bundle per-screen grants
-  (view/create/edit/delete). **Modules** group **Screens**; profiles carry
-  `is_default` (auto-attached on register), and profiles, modules and screens
-  carry `is_system` — the seeded access-control catalog is protected from
-  deletion/key rename (a System badge + no Delete in the admin tables). The
-  **sidebar is data-driven** — it builds its sections from
-  `GET /me/permissions`'s `menu`, so each user sees only the screens they may
-  view. Admin screens under `/admin` manage modules, screens, profiles (with a
-  drag-and-drop grants editor) and users (assign profiles, deactivate). A
-  per-profile **default landing screen** plus a per-user **override** decide
-  where each user lands after sign-in.
+  `USER` follows grants) plus dynamic **Profiles**. A profile is **membership**
+  (which screens show in the sidebar) + **granted permissions** (per screen) + a
+  **landing screen**. Permissions live in a **curated catalog per screen with
+  friendly, editable labels** (e.g. Check-in offers "View" + "Check in";
+  `gym.gyms` and `access-control.users` have no delete — they deactivate via an
+  Active switch). The action enum (`view`/`create`/`edit`/`delete`) stays the
+  code contract for `can(screenKey, action)`; the label is presentation only.
+  `view` is now an **explicit grant**, not default-true. **Modules** group
+  **Screens**; profiles carry `is_default` (auto-attached on register), and
+  profiles, modules and screens carry `is_system` — the seeded access-control
+  catalog is protected from deletion/key rename (a System badge + no Delete in
+  the admin tables). The **sidebar is data-driven from membership** — it builds
+  its sections from `GET /me/permissions`'s `menu`, so a screen assigned with
+  zero permissions still appears (staged rollout). Admin screens under `/admin`
+  manage modules, screens (with a todo-style **permission editor** per screen),
+  profiles (a `TransferTable` of membership + a per-screen permissions
+  `MultiSelect` + a Landing pick) and users (assign profiles, deactivate).
+  Modules, screens and profiles each have an **Active** switch (deactivate, kept
+  out of the "add" pickers), and a screen also has an **On** kill switch
+  (emergency, blocks the screen for everyone but admins). A per-profile
+  **default landing screen** plus a per-user **override** decide where each user
+  lands after sign-in.
 - **Email-verification gate** — an unverified user sees a banner and the
   check-in action is blocked; verifying clears the banner without a re-login
   (`reloadUser` refetches `/auth/me`).
@@ -120,10 +134,10 @@ Sign in as **`admin`** to get an admin token and reach every screen (admin
 bypasses all grants). The seed also ships three profiled members, each landing on
 a different sidebar:
 
-- **`johndoe`** — `gym-member` profile (Dashboard, Gyms, Check-ins).
-- **`manager`** — `gym-manager` profile (the gym screens + creating gyms + the
-  Users admin screen).
-- **`support`** — `support` profile (the access-control Profiles/Screens/Users
+- **`johndoe`** — `gym-member` profile (Dashboard, Gyms, Check-in, History).
+- **`manager`** — `gym-manager` profile (the gym screens + creating/editing gyms
+    - Validate Check-ins + the Users admin screen).
+- **`support`** — `support` profile (the access-control Profiles/Users/Screens
   screens, no gym screens).
 
 Any other identifier is a plain member with no profile. The same RBAC behaviour
@@ -193,26 +207,26 @@ index `/` resolves to the user's landing
 screen via `LandingRoute`, and each screen is gated by
 `RequireScreen screen='<key>' [action]` (the same `can()` the menu uses).
 
-| Path                          | Guard                     | Page               | Notes                                                                 |
-| ----------------------------- | ------------------------- | ------------------ | --------------------------------------------------------------------- |
-| `/`                           | Protected                 | LandingRoute       | Resolves to the user's landing screen (dashboard/first)               |
-| `/gyms`                       | `gym.gyms`                | Gyms               | Nearby (geolocation) + search by name                                 |
-| `/check-ins`                  | `gym.check-in`            | CheckIns           | History; ADMIN sees **Validate**                                      |
-| `/account`                    | Protected                 | Account            | Edit username · change email · pick landing screen                    |
-| `/gyms/new`                   | `gym.gyms` (create)       | NewGym             | Create a gym                                                          |
-| `/admin/users`                | `access-control.users`    | AdminUsers         | Paginated users table                                                 |
-| `/admin/users/:userId`        | `access-control.users`    | UserEdit           | Edit username/email/role/`is_verified`/`is_active` + profiles         |
-| `/admin/modules`              | `access-control.modules`  | AdminModules       | Modules CRUD                                                          |
-| `/admin/screens`              | `access-control.screens`  | AdminScreens       | Screens CRUD (per module)                                             |
-| `/admin/profiles`             | `access-control.profiles` | AdminProfiles      | Profiles CRUD                                                         |
-| `/admin/profiles/:profileId`  | `access-control.profiles` | ProfileDetail      | Grants editor (TransferTable) + module filter/column + default screen |
-| `/sign-in`                    | public (auth)             | SignIn             |                                                                       |
-| `/register`                   | public                    | Register           |                                                                       |
-| `/forgot-password`            | public (auth)             | ForgotPassword     |                                                                       |
-| `/users/reset-password`       | public (auth)             | ResetPassword      | Token via `?token=` or email + OTP                                    |
-| `/users/verify-email`         | public (auth)             | VerifyEmail        | Link landing (`?token=`) + OTP                                        |
-| `/users/confirm-email-change` | public (auth)             | ConfirmEmailChange | Email-change link landing                                             |
-| `*`                           | —                         | NotFound           | 404                                                                   |
+| Path                          | Guard                     | Page               | Notes                                                              |
+| ----------------------------- | ------------------------- | ------------------ | ------------------------------------------------------------------ |
+| `/`                           | Protected                 | LandingRoute       | Resolves to the user's landing screen (dashboard/first)            |
+| `/gyms`                       | `gym.gyms`                | Gyms               | Nearby (geolocation) + search by name                              |
+| `/check-ins`                  | `gym.check-in`            | CheckIns           | History; ADMIN sees **Validate**                                   |
+| `/account`                    | Protected                 | Account            | Edit username · change email · pick landing screen                 |
+| `/gyms/new`                   | `gym.gyms` (create)       | NewGym             | Create a gym                                                       |
+| `/admin/users`                | `access-control.users`    | AdminUsers         | Paginated users table                                              |
+| `/admin/users/:userId`        | `access-control.users`    | UserEdit           | Edit username/email/role/`is_verified`/`is_active` + profiles      |
+| `/admin/modules`              | `access-control.modules`  | AdminModules       | Modules CRUD                                                       |
+| `/admin/screens`              | `access-control.screens`  | AdminScreens       | Screens CRUD + per-screen permission editor (curated ops + labels) |
+| `/admin/profiles`             | `access-control.profiles` | AdminProfiles      | Profiles CRUD                                                      |
+| `/admin/profiles/:profileId`  | `access-control.profiles` | ProfileDetail      | Membership (TransferTable) + per-screen Permissions + Landing pick |
+| `/sign-in`                    | public (auth)             | SignIn             |                                                                    |
+| `/register`                   | public                    | Register           |                                                                    |
+| `/forgot-password`            | public (auth)             | ForgotPassword     |                                                                    |
+| `/users/reset-password`       | public (auth)             | ResetPassword      | Token via `?token=` or email + OTP                                 |
+| `/users/verify-email`         | public (auth)             | VerifyEmail        | Link landing (`?token=`) + OTP                                     |
+| `/users/confirm-email-change` | public (auth)             | ConfirmEmailChange | Email-change link landing                                          |
+| `*`                           | —                         | NotFound           | 404                                                                |
 
 The API contract these pages consume (routes, roles, error shapes) is documented
 in [`solid_api_sample`'s README](../api/README.md). Each page's
@@ -274,14 +288,20 @@ pnpm dev:test    # http://localhost:5001
    the table reflects it. Editing **yourself** shows a read-only role badge.
    Toggle a member's **Active** switch off and confirm they can no longer sign in.
    Move a profile in the user's **profiles** card and Save.
-6. **Admin → Profiles** → open a profile → in the **grants editor** narrow the
-   **Available** list with the **module** chips filter, drag (or use `>>`/`<<`)
-   screens between Available and Granted (each row shows its **Module**), tick
-   view/create/edit/delete, pick the profile's **Default** screen → Save.
-   **Modules** and **Screens** offer the same CRUD for the catalog.
+6. **Admin → Profiles** → open a profile → narrow the **Available** list with
+   the **module** chips filter, drag (or use `>>`/`<<`) screens between Available
+   and Granted (each row shows its **Module**), open the **Permissions**
+   `MultiSelect` per granted screen to pick its curated ops, pick the profile's
+   **Landing** screen → Save. A **disabled** granted screen shows muted with a
+   "Disabled" badge and is removable one-way (it can't be re-added until
+   re-enabled). **Modules** and **Screens** offer the same CRUD for the catalog;
+   on **Screens**, the clipboard-pen button opens the per-screen **permission
+   editor** (add a curated op + friendly label, rename a row, delete a
+   non-system one), and the screen edit dialog carries the **Active** and **On**
+   switches.
 7. Sign out and sign in as **`johndoe`**, **`manager`**, **`support`** in turn —
-   each sees a **different sidebar** built from its profile's grants; admin sees
-   every section. Visiting a screen you lack renders **Forbidden** in place.
+   each sees a **different sidebar** built from its profile's membership; admin
+   sees every section. Visiting a screen you lack renders **Forbidden** in place.
 
 For a **real-backend** smoke, run `pnpm dev` against `solid_api_sample` and walk
 the same flow (register first; verify email via the link/OTP printed to the API
