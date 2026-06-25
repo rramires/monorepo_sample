@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/page-header'
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 
 import { useCheckInsPM } from './use-check-ins-pm'
 
@@ -34,55 +35,59 @@ export function CheckIns() {
 				)}
 
 				{pm.status === 'list' && (
-					<ul className='divide-y rounded-md border'>
-						{pm.items.map((item) => (
-							<li
-								key={item.id}
-								className='flex items-center justify-between gap-4 p-4'
-							>
-								<div className='flex items-center gap-3'>
-									{item.validated ? (
-										<CircleCheck className='size-5 shrink-0 text-emerald-600' />
-									) : (
-										<Clock className='text-muted-foreground size-5 shrink-0' />
-									)}
-									<span className='text-sm'>{item.date}</span>
-								</div>
+					<Card className='py-0'>
+						<ul className='divide-y'>
+							{pm.items.map((item) => (
+								<li
+									key={item.id}
+									className='flex items-center justify-between gap-4 p-4'
+								>
+									<div className='flex items-center gap-3'>
+										{item.validated ? (
+											<CircleCheck className='size-5 shrink-0 text-emerald-600' />
+										) : (
+											<Clock className='text-muted-foreground size-5 shrink-0' />
+										)}
+										<span className='text-sm'>
+											{item.date}
+										</span>
+									</div>
 
-								<div className='flex items-center gap-3'>
-									<Badge
-										variant={
-											item.validated
-												? 'default'
-												: 'outline'
-										}
-									>
-										{item.validated
-											? 'Validated'
-											: 'Pending'}
-									</Badge>
-
-									{pm.canValidate && !item.validated && (
-										<Button
-											size='sm'
-											variant='outline'
-											disabled={
-												pm.validatingId === item.id
-											}
-											onClick={() =>
-												pm.validateCheckIn(item.id)
+									<div className='flex items-center gap-3'>
+										<Badge
+											variant={
+												item.validated
+													? 'default'
+													: 'outline'
 											}
 										>
-											{pm.validatingId === item.id ? (
-												<LoaderCircle className='size-4 animate-spin' />
-											) : null}
-											Validate
-										</Button>
-									)}
-								</div>
-							</li>
-						))}
-					</ul>
+											{item.validated
+												? 'Validated'
+												: 'Pending'}
+										</Badge>
+
+										{pm.canValidate && !item.validated && (
+											<Button
+												size='sm'
+												variant='outline'
+												disabled={
+													pm.validatingId === item.id
+												}
+												onClick={() =>
+													pm.validateCheckIn(item.id)
+												}
+											>
+												{pm.validatingId === item.id ? (
+													<LoaderCircle className='size-4 animate-spin' />
+												) : null}
+												Validate
+											</Button>
+										)}
+									</div>
+								</li>
+							))}
+						</ul>
+					</Card>
 				)}
 
 				{pm.status === 'list' && (pm.hasPrevPage || pm.hasNextPage) && (

@@ -9,6 +9,7 @@ import {
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 import { ScreenDialog } from './screen-dialog'
 import { useScreensPM } from './use-screens-pm'
@@ -34,7 +35,11 @@ export function AdminScreens() {
 					screen={screen}
 					modules={pm.modules}
 					trigger={
-						<Button variant='outline' size='sm'>
+						<Button
+							variant='outline'
+							size='sm'
+							className='w-16 lg:w-auto'
+						>
 							<Pencil />
 						</Button>
 					}
@@ -47,7 +52,11 @@ export function AdminScreens() {
 					confirmLabel='Delete'
 					onConfirm={() => pm.deleteScreen(screen.id)}
 					trigger={
-						<Button variant='outline' size='sm'>
+						<Button
+							variant='outline'
+							size='sm'
+							className='w-16 lg:w-auto'
+						>
 							<Trash2 />
 						</Button>
 					}
@@ -116,20 +125,26 @@ export function AdminScreens() {
 					)}
 				</PageHeader>
 
-				{pm.isLoading ? (
-					<p className='text-muted-foreground text-sm'>Loading…</p>
-				) : (
-					<ResponsiveList
-						rows={pm.rows}
-						columns={columns}
-						getRowKey={(screen) => String(screen.id)}
-						empty={
+				<Card>
+					<CardContent>
+						{pm.isLoading ? (
 							<p className='text-muted-foreground text-sm'>
-								No screens found.
+								Loading…
 							</p>
-						}
-					/>
-				)}
+						) : (
+							<ResponsiveList
+								rows={pm.rows}
+								columns={columns}
+								getRowKey={(screen) => String(screen.id)}
+								empty={
+									<p className='text-muted-foreground text-sm'>
+										No screens found.
+									</p>
+								}
+							/>
+						)}
+					</CardContent>
+				</Card>
 			</div>
 		</>
 	)

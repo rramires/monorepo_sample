@@ -9,6 +9,7 @@ import {
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 import { ModuleDialog } from './module-dialog'
 import { useModulesPM } from './use-modules-pm'
@@ -33,7 +34,11 @@ export function AdminModules() {
 				<ModuleDialog
 					module={module}
 					trigger={
-						<Button variant='outline' size='sm'>
+						<Button
+							variant='outline'
+							size='sm'
+							className='w-16 lg:w-auto'
+						>
 							<Pencil />
 						</Button>
 					}
@@ -46,7 +51,11 @@ export function AdminModules() {
 					confirmLabel='Delete'
 					onConfirm={() => pm.deleteModule(module.id)}
 					trigger={
-						<Button variant='outline' size='sm'>
+						<Button
+							variant='outline'
+							size='sm'
+							className='w-16 lg:w-auto'
+						>
 							<Trash2 />
 						</Button>
 					}
@@ -114,20 +123,26 @@ export function AdminModules() {
 					)}
 				</PageHeader>
 
-				{pm.isLoading ? (
-					<p className='text-muted-foreground text-sm'>Loading…</p>
-				) : (
-					<ResponsiveList
-						rows={pm.modules}
-						columns={columns}
-						getRowKey={(module) => String(module.id)}
-						empty={
+				<Card>
+					<CardContent>
+						{pm.isLoading ? (
 							<p className='text-muted-foreground text-sm'>
-								No modules found.
+								Loading…
 							</p>
-						}
-					/>
-				)}
+						) : (
+							<ResponsiveList
+								rows={pm.modules}
+								columns={columns}
+								getRowKey={(module) => String(module.id)}
+								empty={
+									<p className='text-muted-foreground text-sm'>
+										No modules found.
+									</p>
+								}
+							/>
+						)}
+					</CardContent>
+				</Card>
 			</div>
 		</>
 	)

@@ -78,6 +78,10 @@ export class InMemoryUsersRepository implements IUsersRepository {
 			.map(toPublic)
 	}
 
+	async countMany(): Promise<number> {
+		return this.items.length
+	}
+
 	async update(
 		id: string,
 		data: {

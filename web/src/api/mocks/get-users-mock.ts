@@ -18,5 +18,8 @@ export const getUsersMock = http.get('/users', ({ request }) => {
 	const page = Number(url.searchParams.get('page') ?? '1')
 	const start = (page - 1) * PAGE_SIZE
 
-	return HttpResponse.json({ users: users.slice(start, start + PAGE_SIZE) })
+	return HttpResponse.json({
+		users: users.slice(start, start + PAGE_SIZE),
+		total: users.length,
+	})
 })

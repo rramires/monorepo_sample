@@ -15,7 +15,7 @@ export async function listController(
 	const { page } = querySchema.parse(request.query)
 
 	const fetchUsersUseCase = makeFetchUsersUseCase()
-	const { users } = await fetchUsersUseCase.execute({ page })
+	const { users, total } = await fetchUsersUseCase.execute({ page })
 
-	return reply.status(200).send({ users })
+	return reply.status(200).send({ users, total })
 }

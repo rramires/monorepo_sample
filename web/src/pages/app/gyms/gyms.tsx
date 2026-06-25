@@ -1,14 +1,8 @@
-import {
-	ChevronLeft,
-	ChevronRight,
-	ChevronsLeft,
-	ChevronsRight,
-	LoaderCircle,
-	Plus,
-} from 'lucide-react'
+import { LoaderCircle, Plus } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { PageHeader } from '@/components/page-header'
+import { Pager } from '@/components/pager/pager'
 import { PageTitle } from '@/components/title/page-title'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -41,17 +35,17 @@ export function Gyms() {
 					)}
 				</PageHeader>
 
-				<div className='flex flex-wrap items-center gap-4'>
+				<div className='grid items-center gap-4 sm:grid-cols-2'>
 					<Input
 						placeholder='Search gyms by name…'
 						value={pm.query}
 						onChange={(event) =>
 							pm.handleQueryChange(event.target.value)
 						}
-						className='max-w-md'
+						className='w-full'
 					/>
 					{pm.canManage && (
-						<>
+						<div className='flex flex-wrap items-center gap-4'>
 							<Label className='text-muted-foreground flex items-center gap-2 text-sm font-normal'>
 								<Checkbox
 									checked={pm.nearbyMode}
@@ -70,7 +64,7 @@ export function Gyms() {
 								/>
 								Show deactivated
 							</Label>
-						</>
+						</div>
 					)}
 				</div>
 
@@ -115,48 +109,17 @@ export function Gyms() {
 				{pm.pager && pm.status === 'list' && (
 					<>
 						<Separator />
-						<div className='flex items-center justify-end gap-2'>
-							<span className='text-muted-foreground mr-2 text-sm'>
-								{pm.pager.from} to {pm.pager.to} of{' '}
-								{pm.pager.total}
-							</span>
-							<Button
-								variant='outline'
-								size='icon'
-								onClick={pm.firstPage}
-								disabled={!pm.pager.canPrev}
-								aria-label='First page'
-							>
-								<ChevronsLeft />
-							</Button>
-							<Button
-								variant='outline'
-								size='icon'
-								onClick={pm.prevPage}
-								disabled={!pm.pager.canPrev}
-								aria-label='Previous page'
-							>
-								<ChevronLeft />
-							</Button>
-							<Button
-								variant='outline'
-								size='icon'
-								onClick={pm.nextPage}
-								disabled={!pm.pager.canNext}
-								aria-label='Next page'
-							>
-								<ChevronRight />
-							</Button>
-							<Button
-								variant='outline'
-								size='icon'
-								onClick={pm.lastPage}
-								disabled={!pm.pager.canNext}
-								aria-label='Last page'
-							>
-								<ChevronsRight />
-							</Button>
-						</div>
+						<Pager
+							from={pm.pager.from}
+							to={pm.pager.to}
+							total={pm.pager.total}
+							canPrev={pm.pager.canPrev}
+							canNext={pm.pager.canNext}
+							onFirst={pm.firstPage}
+							onPrev={pm.prevPage}
+							onNext={pm.nextPage}
+							onLast={pm.lastPage}
+						/>
 					</>
 				)}
 			</div>

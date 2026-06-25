@@ -1,6 +1,8 @@
+import { Pencil } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { PageHeader } from '@/components/page-header'
+import { Pager } from '@/components/pager/pager'
 import {
 	ResponsiveList,
 	type ResponsiveListColumn,
@@ -8,6 +10,7 @@ import {
 import { PageTitle } from '@/components/title/page-title'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 import { useUsersPM } from './use-users-pm'
 
@@ -34,8 +37,10 @@ function statusBadges(row: UserRow) {
 
 function editButton(row: UserRow) {
 	return (
-		<Button asChild variant='outline' size='sm'>
-			<Link to={`/admin/users/${row.id}`}>Edit</Link>
+		<Button asChild variant='outline' size='sm' className='w-16 lg:w-auto'>
+			<Link to={`/admin/users/${row.id}`} aria-label='Edit'>
+				<Pencil />
+			</Link>
 		</Button>
 	)
 }
@@ -87,45 +92,43 @@ export function AdminUsers() {
 					description='Manage member and admin accounts.'
 				/>
 
-				{pm.status === 'loading' && (
-					<p className='text-muted-foreground text-sm'>Loading…</p>
-				)}
+				<Card>
+					<CardContent>
+						{pm.status === 'loading' && (
+							<p className='text-muted-foreground text-sm'>
+								Loading…
+							</p>
+						)}
 
-				{pm.status === 'empty' && (
-					<p className='text-muted-foreground text-sm'>
-						No users found.
-					</p>
-				)}
+						{pm.status === 'empty' && (
+							<p className='text-muted-foreground text-sm'>
+								No users found.
+							</p>
+						)}
+
+						{pm.status === 'list' && (
+							<ResponsiveList
+								rows={pm.rows}
+								columns={columns}
+								getRowKey={(row) => String(row.id)}
+							/>
+						)}
+					</CardContent>
+				</Card>
 
 				{pm.status === 'list' && (
-					<ResponsiveList
-						rows={pm.rows}
-						columns={columns}
-						getRowKey={(row) => String(row.id)}
+					<Pager
+						from={pm.from}
+						to={pm.to}
+						total={pm.total}
+						canPrev={pm.hasPrevPage}
+						canNext={pm.hasNextPage}
+						onFirst={pm.firstPage}
+						onPrev={pm.prevPage}
+						onNext={pm.nextPage}
+						onLast={pm.lastPage}
 					/>
 				)}
-
-				<div className='flex items-center justify-end gap-2'>
-					<Button
-						variant='outline'
-						size='sm'
-						onClick={pm.prevPage}
-						disabled={!pm.hasPrevPage}
-					>
-						Previous
-					</Button>
-					<span className='text-muted-foreground text-sm'>
-						Page {pm.page}
-					</span>
-					<Button
-						variant='outline'
-						size='sm'
-						onClick={pm.nextPage}
-						disabled={!pm.hasNextPage}
-					>
-						Next
-					</Button>
-				</div>
 			</div>
 		</>
 	)

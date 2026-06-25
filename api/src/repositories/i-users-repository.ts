@@ -12,6 +12,8 @@ export interface IUsersRepository {
 	findByEmail(email: string): Promise<User | null>
 	findByUsername(username: string): Promise<User | null>
 	findMany(page: number): Promise<PublicUser[]>
+	// Total user count, for the admin listing's pager.
+	countMany(): Promise<number>
 	update(
 		id: string,
 		data: {

@@ -8,14 +8,19 @@ import {
 	useSensors,
 } from '@dnd-kit/core'
 import {
+	ChevronDown,
 	ChevronLeft,
 	ChevronRight,
+	ChevronsDown,
 	ChevronsLeft,
 	ChevronsRight,
+	ChevronsUp,
+	ChevronUp,
 } from 'lucide-react'
 import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { useLayoutBand } from '@/hooks/use-layout-band'
 
 import { TransferPanel } from './transfer-panel'
 import type { TransferSide, TransferTableProps } from './types'
@@ -30,6 +35,14 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 		props
 	const pm = useTransferTable(props)
 	const [activeId, setActiveId] = useState<string | null>(null)
+
+	// Below lg the two panels stack (available on top, granted below), so the
+	// move buttons point up/down instead of left/right (assigned = down).
+	const compact = useLayoutBand() !== 'desktop'
+	const ToAssignedIcon = compact ? ChevronDown : ChevronRight
+	const AllToAssignedIcon = compact ? ChevronsDown : ChevronsRight
+	const AllToAvailableIcon = compact ? ChevronsUp : ChevronsLeft
+	const ToAvailableIcon = compact ? ChevronUp : ChevronLeft
 
 	// A few px of movement before a drag starts, so clicks on the handle still
 	// behave and checkbox clicks never turn into drags.
@@ -56,7 +69,7 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 			onDragEnd={handleDragEnd}
 			onDragCancel={() => setActiveId(null)}
 		>
-			<div className='flex flex-col items-stretch gap-3 sm:flex-row'>
+			<div className='flex flex-col items-stretch gap-3 lg:flex-row'>
 				<TransferPanel
 					side='available'
 					title={labels?.available ?? 'Available'}
@@ -73,7 +86,7 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 					totalCount={pm.availableCount}
 				/>
 
-				<div className='flex flex-row justify-center gap-2 sm:flex-col sm:justify-center'>
+				<div className='flex flex-row justify-center gap-2 lg:flex-col lg:justify-center'>
 					<Button
 						type='button'
 						variant='outline'
@@ -83,7 +96,7 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 						aria-label='Move selected right'
 						title='Move selected'
 					>
-						<ChevronRight />
+						<ToAssignedIcon />
 					</Button>
 					<Button
 						type='button'
@@ -93,7 +106,7 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 						aria-label='Move all right'
 						title='Move all'
 					>
-						<ChevronsRight />
+						<AllToAssignedIcon />
 					</Button>
 					<Button
 						type='button'
@@ -103,7 +116,7 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 						aria-label='Move all left'
 						title='Remove all'
 					>
-						<ChevronsLeft />
+						<AllToAvailableIcon />
 					</Button>
 					<Button
 						type='button'
@@ -114,7 +127,7 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 						aria-label='Move selected left'
 						title='Remove selected'
 					>
-						<ChevronLeft />
+						<ToAvailableIcon />
 					</Button>
 				</div>
 

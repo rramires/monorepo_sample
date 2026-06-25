@@ -75,6 +75,10 @@ export class PrismaUsersRepository implements IUsersRepository {
 		return users
 	}
 
+	async countMany() {
+		return prisma.user.count()
+	}
+
 	async update(
 		id: string,
 		data: {

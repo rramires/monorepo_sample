@@ -21,7 +21,7 @@ export function SignIn() {
 		<>
 			<PageTitle title='Sign In' />
 
-			<div className='flex flex-1 items-center justify-center p-8'>
+			<div className='flex flex-1 items-center justify-center p-4 sm:p-8'>
 				<Card className='w-full max-w-sm'>
 					<CardHeader>
 						<CardTitle>Sign in</CardTitle>
