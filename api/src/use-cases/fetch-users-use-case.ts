@@ -6,6 +6,7 @@ interface FetchUsersUseCaseRequest {
 
 interface FetchUsersUseCaseResponse {
 	users: PublicUser[]
+	total: number
 }
 
 export class FetchUsersUseCase {
@@ -14,10 +15,14 @@ export class FetchUsersUseCase {
 	async execute({
 		page,
 	}: FetchUsersUseCaseRequest): Promise<FetchUsersUseCaseResponse> {
-		const users = await this.usersRepository.findMany(page)
+		const [users, total] = await Promise.all([
+			this.usersRepository.findMany(page),
+			this.usersRepository.countMany(),
+		])
 
 		return {
 			users,
+			total,
 		}
 	}
 }

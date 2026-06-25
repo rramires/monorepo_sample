@@ -14,11 +14,12 @@ describe('Fetch Users Use Case', () => {
 	})
 
 	it('should return an empty list when there are no users', async () => {
-		const { users } = await sut.execute({ page: 1 })
+		const { users, total } = await sut.execute({ page: 1 })
 		expect(users).toHaveLength(0)
+		expect(total).toBe(0)
 	})
 
-	it('should paginate at 20 per page', async () => {
+	it('should paginate at 20 per page and report the full total', async () => {
 		for (let i = 1; i <= 22; i++) {
 			await usersRepository.create({
 				username: `user_${i}`,
@@ -32,6 +33,9 @@ describe('Fetch Users Use Case', () => {
 
 		expect(page1.users).toHaveLength(20)
 		expect(page2.users).toHaveLength(2)
+		// The total is the full count, independent of the page slice.
+		expect(page1.total).toBe(22)
+		expect(page2.total).toBe(22)
 	})
 
 	it('should never expose password_hash', async () => {

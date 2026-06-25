@@ -40,6 +40,9 @@ describe('List Users (e2e)', () => {
 		expect(Array.isArray(response.body.users)).toBe(true)
 		expect(response.body.users.length).toBeGreaterThanOrEqual(2)
 		expect(response.body.users[0]).not.toHaveProperty('password_hash')
+		// The pager needs the full count alongside the page slice.
+		expect(typeof response.body.total).toBe('number')
+		expect(response.body.total).toBeGreaterThanOrEqual(2)
 	})
 
 	it('should forbid a non-admin (403)', async () => {
