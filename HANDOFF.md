@@ -6,92 +6,64 @@ never copies). Architecture: [`PROJECT.md`](./PROJECT.md).
 
 ## Resume prompt (cole numa sessão nova, após compactar)
 
-> Sessão de **execução**. Lê `PLAN.md` (raiz — spec completa, local/gitignored) +
-> `HANDOFF.md` + `CLAUDE.md` do monorepo `monorepo_sample`. Tarefa: **RBAC
-> permissions redesign** — labels amigáveis + ops **curadas por tela** + **3
-> eixos** (grant RBAC / kill switch `Screen.is_enabled` / disable `is_active`) +
-> **delete sem cascade** (409 quando em uso). Modelo: tabela `permissions`
-> (`screen_id, action, label`) + junção `profile_permissions` + `profile_screens`
-> vira **membership** + `Profile.default_screen_id`. Admin bypassa tudo.
+> Sessão de **discussão/brainstorm** — **não executar código ainda**. Lê
+> `HANDOFF.md` + `CLAUDE.md` do monorepo `monorepo_sample` (+ a memória
+> `refactor-rbac-fine-grained-ops`, mesma máquina). **Tema: refatorar o RBAC para
+> permissões FINAS (N operações por tela).**
 >
-> **Frontend-first com MSW**, depois API espelha (status/`message` verbatim).
-> Executa **fase a fase do PLAN** (G0 contracts → G1–G4 web+MSW → G5–G8 api → G9
-> docs → Final), **gate verde + commit por fase** (web: `pnpm -C web lint:fix &&
-> pnpm -C web format` antes; gates no `CLAUDE.md`). Branch local
-> `feat/rbac-permissions` off `master`. **NÃO pushar** (só o usuário). **PARA** no
-> Final pro teste no browser + merge `--no-ff`. Confirma antes de irreversível.
-> Responde em pt-BR; UI em inglês. `web/docs/TUTORIAL_*` congelado. Backlog
-> separado (NÃO agora): fresta do `RequireScreen` (`isFetching`).
+> Hoje é **coarse**: `permission = (screen, action enum view|create|edit|delete,
+> label amigável)`, com **UNIQUE(screen_id, action)** → no máx. 1 create/edit/
+> delete por tela → operações extras viram **telas próprias** (o check-in é a tela
+> `gym.check-in`) → **ações cross-screen** (o botão "Check in" fica no `/gyms` mas a
+> permissão é `gym.check-in.create`). Isso confundiu no teste.
+>
+> Duas abordagens a decidir: **(A)** do usuário — `action` ganha **"other"** + um
+> **3º campo `unique_id`** (antes do Label), obrigatório quando `other`. **(B)**
+> recomendada — `action` vira **chave-string livre** com `UNIQUE(screen_id,
+> action)`: as 4 CRUD viram chaves convencionais, ops extras são só mais chaves
+> (`import`, `export`…), **sem `unique_id` nem constraint condicional** (constraint
+> condicional **não é cross-DB** no Prisma: MySQL não tem índice parcial; CHECK não
+> é modelado/uniforme).
+>
+> Escopo provável: contracts (enum→string), api (`Permission.action` String +
+> migration, `requireScreen`/`can` com chaves arbitrárias, validação no editor,
+> seed), web (`ScreenAction`→string, editor "Other"/chave-livre, `can()`), **+ fix
+> cross-screen**: gatear o botão Check-in do gym-card por `can('gym.check-in',
+> 'create')` (hoje **sempre renderiza** — ignora o grant), docs EN+PT.
+>
+> **Brainstorm primeiro** (1 pergunta por vez, pt-BR), depois escreve `PLAN.md`
+> (gitignored) e executa numa sessão de execução. Branch local off `master`;
+> **NÃO pushar** (só o usuário). UI em inglês; `web/docs/TUTORIAL_*` congelado.
 
 ## Current state
 
-- **Branch:** `master` — clean, **all pushed** (responsive pass + its docs).
-  Stamp: 2026-06-25.
-- **▶ NEXT (planned, not started): RBAC permissions redesign.** Design **locked
-  with the user**; full execution spec in **`PLAN.md`** (root, gitignored — local
-  only). Build **frontend-first with MSW**, then mirror the API. Start at **G0
-  (contracts)**, one local branch `feat/rbac-permissions`, gate+commit per phase,
-  STOP at Final for browser test + merge. Gist:
-  - New `permissions` table (`screen_id`, `action`, `label`) + `profile_permissions`
-    M:N; `profile_screens` → **membership**; `Profile.default_screen_id` replaces
-    the per-grant `is_default`. **Friendly labels** + **curated ops** per screen
-    (e.g. Check-in = view + "Check in" only — no phantom Edit/Delete).
-  - **3 axes:** grant (RBAC) · **kill switch** `Screen.is_enabled` (runtime, "This
-    screen is temporarily unavailable.") · **disable** `is_active` on
-    Module/Screen/Profile (lifecycle: hidden from "add" below, existing keep).
-    Admin bypasses all. `view` becomes an explicit grant (no more default-true).
-  - **Delete = no cascade** → 409 when in use (+ `is_system`); else Disable.
-  - Two Forbidden messages: no-view → "You don't have access to this screen yet.";
-    killed → "This screen is temporarily unavailable."
-  - Backlog (separate, not in this package): `RequireScreen` `isFetching` gap.
-- **Done + merged + pushed — access-control follow-up package COMPLETE (G0–G6):**
-  - **G0** web e2e scripts → `test:e2e`. **G1** `is_system` on Module+Screen
-    (delete/key-rename → 409; screen locks module+path; read-only edit fields).
-    **G2** reusable confirm-on-deactivate (`useConfirmDeactivate` + controlled
-    `ConfirmDialog`) + user-edit retrofit. **G3** gym soft-delete
-    (`Gym.is_active`; check-in inactive → 403; member active-only; manager full
-    non-geo list + Nearby/Show-deactivated toggles + pager page-size 8).
-  - **G4** header breadcrumb (`components/breadcrumb/`; static trail + dynamic
-    leaf via `useSetBreadcrumb`; lone top-level crumb muted) + sidebar active
-    segment-match (`isItemActive`) + shared **`PageHeader`** (`text-xl`) on all
-    pages.
-  - **G5** grants module filter — lean **`MultiSelect`** (`ui/multi-select.tsx` =
-    radix Popover + `ui/command.tsx`/cmdk + Badge) above the untouched
-    `TransferTable`, wired to the Available side; **Module column on both sides**;
-    rows enriched with `moduleKey`/`moduleName` (`ScreenRow` in
-    `use-profile-detail-pm.ts`). Empty filter = no filter; granted screens always
-    kept so Granted never loses rows.
-  - **G6** closed `api/PROJECT.md` §4.1 request-lifecycle graph (steps 10–13) +
-    final EN+PT doc sweep (no drift).
-- **After the package — also done + merged + pushed:**
-  - `feat/form-autofocus` (web) — forms autofocus their first field on mount
-    (auth screens + new-gym / user-edit / profile-detail; admin dialogs already
-    do via Radix's focus scope) and the sign-in "Forgot your password?" link
-    moved below the Sign in button (tab order identifier → password → Sign in →
-    Forgot). Docs EN+PT.
-  - `feat/default-profile-invariant` (api + web) — exactly one `is_default`
-    profile: setting one demotes the rest (radio, `clearDefaultExcept`), turning
-    the current default off → 409 (`DefaultProfileRequiredError`); the
-    profile-detail Default switch is disabled when already default and confirms
-    before replacing the current default on promote. Specs/e2e + docs EN+PT.
-  - `chore/sidebar-module-order` — the data-driven sidebar lists **Gym before
-    Access Control** (swapped module `order` in the backend seed + MSW mock;
-    landing unaffected).
-- **Responsive pass (web) — DONE + merged.** 3 bands (mobile `<md` · tablet
-  `md–lg` · desktop `≥lg`) via `useLayoutBand`. Shipped: band-driven sidebar
-  default (rail tablet / expanded desktop, re-snap on cross) + mobile drawer
-  closes on nav; reusable `<ResponsiveList>` (shadcn Table `≥lg` / column-driven
-  `Label: value` cards `<lg`) across the 4 admin lists; list pages wrapped in a
-  `Card`; forms/wide responsive (TransferTable stacks `<lg` with ↑/↓; new-gym
-  lat/lng; auth padding); profile-detail two-card layout; gyms search aligned to
-  the card grid; shared `<Pager>` (gyms full + users) with mobile-wide buttons;
-  `GET /users` now returns `{ users, total }` (api) for the users pager; uniform
-  admin action-button sizing. **Full-screen dialogs on phones were tried and
-  reverted** (looked off) — dialogs stay centered. Design ref: memory
-  `ref-backtoyou-design`. `PLAN.md` removed (plan complete).
-- **Backlog:** empty.
-- **Demo (mock + seed):** users `admin` / `manager` / `support` / `johndoe`,
-  senha `Password1!`. Mock seed has 24 gyms (2 inactive) to show pagination.
+- **Branch:** `master` — clean. Stamp: `931431c 2026-06-25` (Merge
+  `feat/rbac-permissions`).
+- **RBAC permissions redesign — DONE + merged (`--no-ff`), PUSH PENDING.** The
+  user pushes `master` (origin/master is behind by the 9 feature commits + the
+  merge). After the push: delete the local branch (`git branch -d
+  feat/rbac-permissions`). The old `PLAN.md` was removed (plan complete +
+  verified). Gist of what shipped:
+  - New `permissions` catalog (`screen_id`, `action` enum, friendly `label`,
+    `is_system`, UNIQUE(screen_id, action)) + `profile_permissions` grant join;
+    `profile_screens` → **membership**; `Profile.default_screen_id` landing;
+    `is_active` (module/screen/profile) + `is_enabled` (screen kill switch).
+  - **3 axes** (admin bypasses): grant · kill `is_enabled` ("This screen is
+    temporarily unavailable.") · disable `is_active`. **No-cascade deletes** →
+    409 in use (FKs Restrict). `view` is an explicit grant. Two Forbidden
+    messages (no-view vs killed). Built frontend-first (MSW); API mirrors verbatim.
+  - **Verified:** all gates green (web lint/build/test:run + e2e; api lint/compile/
+    test + e2e; contracts typecheck) **and** a 10/10 manual browser battery
+    (single-user + concurrent two-browser).
+- **▶ NEXT (own session): RBAC fine-grained refactor discussion** — see the resume
+  prompt above + memory `refactor-rbac-fine-grained-ops`. Brainstorm → PLAN → execute.
+- **Backlog (deferred, separate fixes):**
+  - **Cross-screen button-gating:** gym-card "Check in" button ignores
+    `can('gym.check-in','create')` (always renders). Fold into the refactor.
+  - **`RequireScreen` `isFetching`:** stale `can()` flash on background refetch
+    (mock-only; backend re-checks per request).
+  - **Auth boot refresh × StrictMode:** boot `refresh()` fires 2× in dev →
+    single-use rotation 401s → intermittent F5 logout (prod-safe; own branch).
 
 ## Working rules (pointer + guardrails)
 
@@ -101,7 +73,7 @@ safety belt (do not violate):
 
 - **Never `git push`** — only the user pushes.
 - **Never commit without the gate green**; commit per phase, stage narrowly.
-- Before each commit: `lint:fix` **and** `format` on the touched app.
+- Before each web commit: `pnpm -C web lint:fix` **and** `format`.
 - **One branch per group off `master`** (`--no-ff` merge); docs-only may go
   straight to `master`.
 - **STOP at each group's end** for the user's browser test + merge authorization.
@@ -111,7 +83,6 @@ safety belt (do not violate):
 
 Claude harness memory (same machine only):
 `~/.claude/projects/-home-user--Dev-samples-monorepo-sample/memory/` — see
-`MEMORY.md` (esp. `backlog-plan-package` for the full delivered package +
-remaining backlog, `project-state`, `feedback-run-format-before-commit`,
-`tutorials-frozen-narrative`, `autonomous-phase-execution`). A cache — this file
-is the source of truth for state.
+`MEMORY.md` (esp. `refactor-rbac-fine-grained-ops`, `rbac-permissions-redesign`,
+`project-state`, the two `backlog-*` web fixes, `autonomous-phase-execution`,
+`tutorials-frozen-narrative`). A cache — this file is the source of truth for state.
