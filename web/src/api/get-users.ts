@@ -15,6 +15,7 @@ export interface PublicUser {
 
 interface GetUsersResponse {
 	users: PublicUser[]
+	total: number
 }
 
 export interface GetUsersParams {
@@ -22,10 +23,11 @@ export interface GetUsersParams {
 }
 
 // Admin-only listing (20/page). A non-admin gets 403 from the backend guard.
+// Returns the page slice plus the full total (for the pager).
 export async function getUsers({ page = 1 }: GetUsersParams = {}) {
 	const response = await api.get<GetUsersResponse>('/users', {
 		params: { page },
 	})
 
-	return response.data.users
+	return response.data
 }

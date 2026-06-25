@@ -37,7 +37,7 @@ function statusBadges(row: UserRow) {
 
 function editButton(row: UserRow) {
 	return (
-		<Button asChild variant='outline' size='icon' className='w-16 lg:w-8'>
+		<Button asChild variant='outline' size='sm' className='w-16 lg:w-auto'>
 			<Link to={`/admin/users/${row.id}`} aria-label='Edit'>
 				<Pencil />
 			</Link>
@@ -118,11 +118,15 @@ export function AdminUsers() {
 
 				{pm.status === 'list' && (
 					<Pager
-						page={pm.page}
+						from={pm.from}
+						to={pm.to}
+						total={pm.total}
 						canPrev={pm.hasPrevPage}
 						canNext={pm.hasNextPage}
+						onFirst={pm.firstPage}
 						onPrev={pm.prevPage}
 						onNext={pm.nextPage}
+						onLast={pm.lastPage}
 					/>
 				)}
 			</div>

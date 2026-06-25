@@ -26,10 +26,14 @@ export interface UserRow {
 export function useUsersPM() {
 	const [page, setPage] = useState(1)
 
-	const { data: users = [], isLoading } = useQuery({
+	const { data, isLoading } = useQuery({
 		queryKey: ['users', page],
 		queryFn: () => getUsers({ page }),
 	})
+
+	const users = data?.users ?? []
+	const total = data?.total ?? 0
+	const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
 	const rows: UserRow[] = users.map((user) => ({
 		id: user.id,
@@ -54,9 +58,14 @@ export function useUsersPM() {
 		rows,
 		status,
 		page,
+		total,
+		from: total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1,
+		to: Math.min(page * PAGE_SIZE, total),
 		hasPrevPage: page > 1,
-		hasNextPage: users.length === PAGE_SIZE,
-		nextPage: () => setPage((current) => current + 1),
+		hasNextPage: page < totalPages,
+		firstPage: () => setPage(1),
+		lastPage: () => setPage(totalPages),
+		nextPage: () => setPage((current) => Math.min(totalPages, current + 1)),
 		prevPage: () => setPage((current) => Math.max(1, current - 1)),
 	}
 }

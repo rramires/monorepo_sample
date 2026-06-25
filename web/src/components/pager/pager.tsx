@@ -7,9 +7,9 @@ import {
 
 import { Button } from '@/components/ui/button'
 
-// Phones get wider, taller buttons (easier to tap); from md up they return to
-// the compact icon size.
-const PAGER_BUTTON = 'h-11 w-16 md:h-8 md:w-8'
+// Phones get double-width buttons (easier to tap); from md up they return to
+// the compact square icon size. Height stays the standard icon height.
+const PAGER_BUTTON = 'w-16 md:w-8'
 
 type PagerProps = {
 	canPrev: boolean
