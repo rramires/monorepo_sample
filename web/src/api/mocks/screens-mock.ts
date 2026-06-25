@@ -5,7 +5,11 @@ import {
 } from '@root/contracts'
 import { http, HttpResponse } from 'msw'
 
-import { profileScreens, screens } from './data/access-control-seed'
+import {
+	permissions,
+	profileScreens,
+	screens,
+} from './data/access-control-seed'
 import { requireAuth } from './mock-auth'
 
 let seq = 0
@@ -38,8 +42,15 @@ export const createScreenMock = http.post('/screens', async ({ request }) => {
 		)
 	}
 
-	// is_system is never client-settable; created screens are always false.
-	const screen: Screen = { id: nextId(), ...parsed.data, is_system: false }
+	// is_system is never client-settable; new screens start active + enabled with
+	// an empty permission catalog (curate the ops afterwards in the editor).
+	const screen: Screen = {
+		id: nextId(),
+		...parsed.data,
+		is_system: false,
+		is_active: true,
+		is_enabled: true,
+	}
 	screens.push(screen)
 	return HttpResponse.json({ screen }, { status: 201 })
 })
@@ -69,7 +80,7 @@ export const updateScreenMock = http.patch<{ id: string }>(
 		}
 
 		// A system screen's identity (key, module, path) is protected; only
-		// name/description/order stay editable.
+		// name/description/order + the Active/On switches stay editable.
 		if (screen.is_system) {
 			const d = parsed.data
 			const changesIdentity =
@@ -117,12 +128,26 @@ export const deleteScreenMock = http.delete<{ id: string }>(
 			)
 		}
 
-		// Deleting a screen also drops any profile grants pointing at it.
-		const [removed] = screens.splice(index, 1)
-		for (const profileId of Object.keys(profileScreens)) {
-			profileScreens[profileId] = profileScreens[profileId].filter(
-				(g) => g.screen_id !== removed.id,
+		// No cascade: a screen that's a member of profiles can't be deleted —
+		// remove it from those profiles (or disable it) first.
+		const assigned = Object.values(profileScreens).filter((ids) =>
+			ids.includes(screens[index].id),
+		).length
+		if (assigned > 0) {
+			return HttpResponse.json(
+				{
+					message: `Assigned to ${assigned} profile(s). Remove it from those profiles first.`,
+				},
+				{ status: 409 },
 			)
+		}
+
+		// Safe to delete: drop the screen and its own (ungranted) permissions.
+		const [removed] = screens.splice(index, 1)
+		for (let i = permissions.length - 1; i >= 0; i--) {
+			if (permissions[i].screen_id === removed.id) {
+				permissions.splice(i, 1)
+			}
 		}
 		return new HttpResponse(null, { status: 204 })
 	},

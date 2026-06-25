@@ -51,13 +51,15 @@ test('system modules and screens show a badge and hide Delete', async ({
 		.getByRole('row')
 		.filter({ hasText: 'access-control.profiles' })
 	await expect(systemScreenRow.getByText('System')).toBeVisible()
-	await expect(systemScreenRow.getByRole('button')).toHaveCount(1)
+	// System screen: permission editor + Edit (no Delete).
+	await expect(systemScreenRow.getByRole('button')).toHaveCount(2)
 
 	const gymScreenRow = page
 		.getByRole('row')
 		.filter({ hasText: 'gym.dashboard' })
 	await expect(gymScreenRow.getByText('System')).toHaveCount(0)
-	await expect(gymScreenRow.getByRole('button')).toHaveCount(2)
+	// Gym screen: permission editor + Edit + Delete.
+	await expect(gymScreenRow.getByRole('button')).toHaveCount(3)
 
 	await waitForUIInspection(page)
 })
@@ -76,10 +78,11 @@ test('admin edits a profile’s grants and saves', async ({ page }) => {
 		.click()
 	await expect(page).toHaveURL(/\/admin\/profiles\/.+/)
 
-	// The TransferTable is present (Granted side carries action columns).
+	// The TransferTable is present (Granted side carries a Permissions column of
+	// badges instead of the old per-action checkboxes).
 	await expect(page.getByText('Screen grants')).toBeVisible()
 	await expect(
-		page.getByRole('columnheader', { name: 'View' }),
+		page.getByRole('columnheader', { name: 'Permissions' }),
 	).toBeVisible()
 
 	await page.getByRole('button', { name: 'Save changes' }).click()
@@ -99,6 +102,161 @@ test('support lands on a permitted screen, not Forbidden', async ({ page }) => {
 		page.getByRole('link', { name: 'Users', exact: true }),
 	).toBeVisible()
 	await expect(page.getByText('Forbidden')).toHaveCount(0)
+
+	await waitForUIInspection(page)
+})
+
+test('admin curates a screen’s permissions in the editor', async ({ page }) => {
+	await signIn(page, 'admin')
+
+	await page.getByRole('link', { name: 'Screens', exact: true }).click()
+	await expect(page).toHaveURL('/admin/screens')
+
+	// Open the todo-style permission editor for the Dashboard screen.
+	await page
+		.getByRole('row')
+		.filter({ hasText: 'gym.dashboard' })
+		.getByRole('button', { name: 'Edit Dashboard permissions' })
+		.click()
+
+	const dialog = page.getByRole('dialog')
+	await expect(dialog.getByText('Permissions — Dashboard')).toBeVisible()
+	// Seeded with just the View op (op badge + its friendly label both read "View").
+	await expect(dialog.getByText('View').first()).toBeVisible()
+
+	// Add an "Edit" op with a friendly label.
+	await dialog.getByRole('combobox').click()
+	await page.getByRole('option', { name: 'Edit' }).click()
+	await dialog.getByPlaceholder('e.g. Check in').fill('Tweak')
+	await dialog.getByRole('button', { name: 'Add permission' }).click()
+
+	await expect(page.getByText('Permission added.')).toBeVisible()
+	await expect(dialog.getByText('Tweak')).toBeVisible()
+
+	await waitForUIInspection(page)
+})
+
+test('admin turns a screen off via the kill switch (confirm)', async ({
+	page,
+}) => {
+	await signIn(page, 'admin')
+
+	await page.getByRole('link', { name: 'Screens', exact: true }).click()
+
+	// Open the edit dialog (pencil) for the Dashboard screen.
+	await page
+		.getByRole('row')
+		.filter({ hasText: 'gym.dashboard' })
+		.getByRole('button')
+		.nth(1)
+		.click()
+
+	const dialog = page.getByRole('dialog')
+	await expect(dialog.getByText('Edit screen')).toBeVisible()
+
+	// Flip the On (kill) switch off and save → a confirm appears first.
+	await dialog.getByRole('switch', { name: 'On' }).click()
+	await dialog.getByRole('button', { name: 'Save changes' }).click()
+
+	await expect(page.getByText(/Turn "Dashboard" off\?/)).toBeVisible()
+	await page.getByRole('button', { name: 'Turn off' }).click()
+
+	await expect(page.getByText('Screen updated.')).toBeVisible()
+
+	await waitForUIInspection(page)
+})
+
+test('a disabled screen is marked in a profile and confirms on removal', async ({
+	page,
+}) => {
+	await signIn(page, 'admin')
+
+	// Disable the Check-in History screen (gym.history) via its edit dialog.
+	await page.getByRole('link', { name: 'Screens', exact: true }).click()
+	await page
+		.getByRole('row')
+		.filter({ hasText: 'gym.history' })
+		.getByRole('button')
+		.nth(1)
+		.click()
+	const screenDialog = page.getByRole('dialog')
+	await expect(screenDialog.getByText('Edit screen')).toBeVisible()
+	await screenDialog.getByRole('switch', { name: 'Active' }).click()
+	await screenDialog.getByRole('button', { name: 'Save changes' }).click()
+	await expect(page.getByText(/Deactivate "Check-in History"\?/)).toBeVisible()
+	await page.getByRole('button', { name: 'Deactivate' }).click()
+	await expect(page.getByText('Screen updated.')).toBeVisible()
+
+	// Open gym-member's grants — the disabled screen still sits on the Granted
+	// side, marked "Disabled".
+	await page.getByRole('link', { name: 'Profiles', exact: true }).click()
+	await page
+		.getByRole('row')
+		.filter({ hasText: 'gym-member' })
+		.getByRole('link', { name: 'Grants' })
+		.click()
+	await expect(page).toHaveURL(/\/admin\/profiles\/.+/)
+
+	const grantedRow = page.getByRole('row').filter({ hasText: 'gym.history' })
+	await expect(grantedRow.getByText('Disabled')).toBeVisible()
+
+	// Removing it (one-way) prompts a confirm first.
+	await grantedRow.getByRole('checkbox', { name: 'Select row' }).check()
+	await page.getByRole('button', { name: 'Move selected left' }).click()
+	await expect(page.getByText('Remove disabled screen')).toBeVisible()
+
+	await waitForUIInspection(page)
+})
+
+test('admin deactivates a profile (confirm) and the list marks it Inactive', async ({
+	page,
+}) => {
+	await signIn(page, 'admin')
+
+	await page.getByRole('link', { name: 'Profiles', exact: true }).click()
+	await page
+		.getByRole('row')
+		.filter({ hasText: 'support' })
+		.getByRole('link', { name: 'Grants' })
+		.click()
+	await expect(page).toHaveURL(/\/admin\/profiles\/.+/)
+
+	// Turn the profile's Active switch off → confirm → save.
+	await page.getByRole('switch', { name: 'Active' }).click()
+	await page.getByRole('button', { name: 'Save changes' }).click()
+	await expect(page.getByText(/Deactivate "Support"\?/)).toBeVisible()
+	await page.getByRole('button', { name: 'Deactivate' }).click()
+
+	await expect(page.getByText('Profile saved.')).toBeVisible()
+	await expect(page).toHaveURL('/admin/profiles')
+	await expect(
+		page
+			.getByRole('row')
+			.filter({ hasText: 'support' })
+			.getByText('Inactive'),
+	).toBeVisible()
+
+	await waitForUIInspection(page)
+})
+
+test('deleting a module that still has screens is blocked with a message', async ({
+	page,
+}) => {
+	await signIn(page, 'admin')
+
+	await page.getByRole('link', { name: 'Modules', exact: true }).click()
+
+	// gym is a non-system module (Edit + Delete) and still owns screens.
+	await page
+		.getByRole('row')
+		.filter({ hasText: 'gym' })
+		.getByRole('button')
+		.nth(1)
+		.click()
+	await expect(page.getByText(/Delete "Gym"\?/)).toBeVisible()
+	await page.getByRole('button', { name: 'Delete' }).click()
+
+	await expect(page.getByText('Module still has screens.')).toBeVisible()
 
 	await waitForUIInspection(page)
 })

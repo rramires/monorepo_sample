@@ -193,7 +193,7 @@ src/
 │       ├── verified-state.ts# flag compartilhada do mock (verificação de e-mail)
 │       └── index.ts         # setupWorker(...handlers) + enableMSW() (só no modo test)
 ├── components/
-│   ├── auth/                # AuthContext/Provider/hooks · ProtectedRoute · RequireScreen · LandingRoute · Forbidden · verify-email-banner/
+│   ├── auth/                # AuthContext/Provider/hooks · ProtectedRoute · RequireScreen (grant de view + kill-switch) · LandingRoute · Forbidden · verify-email-banner/
 │   ├── theme/               # ThemeContext/Provider/hooks · mode-toggle
 │   ├── title/               # TitleContext/Provider · page-title (document.title por página)
 │   ├── breadcrumb/          # BreadcrumbContext/Provider/hooks · breadcrumbs (trilha no header) + use-breadcrumbs-pm
@@ -206,7 +206,7 @@ src/
 ├── hooks/
 │   ├── use-mobile.ts        # useIsMobile (matchMedia)
 │   ├── use-layout-band.ts   # useLayoutBand → 'mobile' | 'tablet' | 'desktop' (md/lg)
-│   ├── use-permissions.ts   # usePermissions() + can(screenKey, action); ADMIN ignora tudo
+│   ├── use-permissions.ts   # usePermissions() + can(screenKey, action) + isScreenEnabled; ADMIN ignora tudo
 │   └── use-check-in.ts      # mutation de check-in compartilhada (geo + POST + invalidate)
 ├── lib/
 │   ├── api.ts               # instância Axios + interceptors (anexa token, refresh single-flight no 401)
@@ -217,7 +217,7 @@ src/
 │   └── utils.ts             # cn() (clsx + tailwind-merge)
 └── pages/
     ├── _layouts/            # app-layout/ · auth-layout · register-layout
-    ├── app/                 # área autenticada: home/ (dashboard) · gyms/ · check-ins/ · account/ · new-gym/ · admin/{modules,screens,profiles/(+profile-detail/),users/(+user-edit/)}
+    ├── app/                 # área autenticada: home/ (dashboard) · gyms/ · check-ins/ · account/ · new-gym/ · admin/{modules,screens/(+permissions-editor/),profiles/(+profile-detail/),users/(+user-edit/)}
     ├── auth/                # sign-in/ · forgot-password/ · reset-password/ · verify-email/ · confirm-email-change/
     ├── register/
     ├── e404.tsx · error.tsx
@@ -329,38 +329,53 @@ sem novo login, espelhando a leitura fresca-do-banco do backend.
 ### 5.5 Controle de acesso (RBAC)
 
 Além do `role` grosso, a app tem um modelo de **RBAC híbrido**: um papel fixo
-(`ADMIN` ignora tudo, `USER` segue os grants) mais **Profiles** dinâmicos que
-agrupam **grants por tela** (`view`/`create`/`edit`/`delete`). **Modules**
-agrupam **Screens**; um profile carrega `is_default` (anexado ao usuário no
-registro), e profiles, modules e screens carregam `is_system` (protegido — a key
-não muda e não pode ser apagado). O seed marca o módulo access-control + suas
-screens (e os três profiles) como de sistema. Um usuário pode ter vários
-profiles; seus grants **se mesclam** (OR).
+(`ADMIN` ignora tudo, `USER` segue os grants) mais **Profiles** dinâmicos. Um
+profile é **membership** (quais telas aparecem na sidebar) + **permissões
+concedidas** (por tela) + uma **tela de destino**. As permissões são um
+**catálogo curado por tela com rótulos amigáveis e editáveis** — ex.: Check-in
+oferece "View" + "Check in"; `gym.gyms` e `access-control.users` de propósito não
+têm `delete` (desativam pelo switch Active). O enum de ação
+(`view`/`create`/`edit`/`delete`) permanece o **contrato de código** fixo que o
+`can(screenKey, action)` checa; o rótulo é **só apresentação**. `view` agora é um
+**grant explícito** (não mais true por padrão). **Modules** agrupam **Screens**;
+um profile carrega `is_default` (anexado ao usuário no registro), e profiles,
+modules e screens carregam `is_system` (protegido — a key não muda e não pode ser
+apagado). As screens carregam ainda `is_active` (ciclo de vida) e `is_enabled`
+(um **kill switch** de emergência); modules e profiles carregam `is_active`. O
+seed marca o módulo access-control + suas screens (e os três profiles) como de
+sistema. Um usuário pode ter vários profiles; seus grants **se mesclam** (OR).
 
-- **`usePermissions()` / `can()`** (`hooks/use-permissions.ts`) — carrega
-  `GET /me/permissions` como **estado de servidor** (TanStack Query, com chave por
-  id de usuário, então um usuário diferente refaz a busca) e expõe
-  `can(screenKey, action='view')`. ADMIN curto-circuita para `true`; durante o
-  carregamento, `can()` é conservadoramente `false` para nada piscar antes dos
-  grants resolverem. O modelo de permissão (`get-me-permissions.ts`) carrega
-  `screens` (os grants), `menu` (o catálogo de navegação) e `defaultScreenKey`.
+- **`usePermissions()` / `can()` / `isScreenEnabled()`** (`hooks/use-permissions.ts`)
+  — carrega `GET /me/permissions` como **estado de servidor** (TanStack Query,
+  com chave por id de usuário, então um usuário diferente refaz a busca) e expõe
+  `can(screenKey, action='view')` e `isScreenEnabled(screenKey)` (o kill switch
+  por tela). ADMIN curto-circuita os dois para `true`; durante o carregamento,
+  `can()` é conservadoramente `false` para nada piscar antes dos grants
+  resolverem. O modelo de permissão (`get-me-permissions.ts`) carrega `screens`
+  (os grants), `menu` (o catálogo de membership, cada entrada com `isEnabled`) e
+  `defaultScreenKey`.
 - **`RequireScreen screen='<chave>' [action]`** (`components/auth/require-screen.tsx`)
   — o espelho a nível de rota do `can()`. Fica **dentro** do `ProtectedRoute`;
   renderiza a rota filha só quando o usuário `can()` a ação, senão **`Forbidden` no
-  lugar** (o layout permanece). O backend aplica o mesmo com `requireScreen`
-  (defesa em profundidade). Isso **substitui** o antigo `RoleRoute` (só por papel)
-  nas rotas protegidas por tela.
+  lugar** (o layout permanece) com **uma de duas mensagens**: sem grant de `view`
+  → "You don't have access to this screen yet."; uma tela concedida-mas-desligada
+  (`isScreenEnabled` false) → "This screen is temporarily unavailable." (o admin
+  ignora as duas). O backend aplica o mesmo com `requireScreen` (defesa em
+  profundidade). Isso **substitui** o antigo `RoleRoute` (só por papel) nas rotas
+  protegidas por tela.
 - **`LandingRoute`** (`components/auth/landing-route.tsx`) — o resolvedor do índice
   (`/`): manda o usuário para o `defaultScreenKey` preferido → o Dashboard de
   academia se visível → sua primeira tela disponível → renderiza Home. Evita um
   Forbidden no login.
-- **Sidebar dirigida por dados** (`app-sidebar/use-app-sidebar-pm.ts`) — monta suas
-  seções a partir de `permissions.menu` (já só as telas visíveis, agrupadas e
-  ordenadas por ordem de module/screen), interseccionado com `NAV_ENTRIES` (as
-  telas que têm página real + ícone/label). Ela **não busca mais** `/modules` +
-  `/screens`; o menu cresce conforme mais páginas são construídas. O estado ativo
-  usa **match por segmento** (`isItemActive`), não igualdade exata, então o item
-  pai continua aceso nas sub-rotas (ex.: "Gyms" em `/gyms/new`, "Users" ao editar
+- **Sidebar dirigida pela membership** (`app-sidebar/use-app-sidebar-pm.ts`) —
+  monta suas seções a partir de `permissions.menu` (as telas de **membership** do
+  usuário, agrupadas e ordenadas por ordem de module/screen), interseccionado com
+  `NAV_ENTRIES` (as telas que têm página real + ícone/label). Uma tela atribuída
+  com **zero permissões ainda aparece** (rollout faseado) — a membership, não o
+  grant de `view`, dirige o menu. Ela **não busca mais** `/modules` + `/screens`;
+  o menu cresce conforme mais páginas são construídas. O estado ativo usa **match
+  por segmento** (`isItemActive`), não igualdade exata, então o item pai continua
+  aceso nas sub-rotas (ex.: "Gyms" em `/gyms/new`, "Users" ao editar
   `/admin/users/:id`); o Dashboard (`/`) casa só consigo mesmo.
 - **Breadcrumb no header** (`breadcrumb/`) — o header do `app-layout` preenche seu
   espaço com uma trilha de breadcrumb. Um PM pequeno (`use-breadcrumbs-pm`) deriva
@@ -382,18 +397,42 @@ profiles; seus grants **se mesclam** (OR).
   por sua screen key `access-control.*`:
     - **Modules** (`/admin/modules`) e **Screens** (`/admin/screens`) — CRUD do
       catálogo (dialogs de criar/editar; apagar uma screen cascateia seus grants).
-      Linhas de sistema mostram um badge **System** e escondem o Delete; o dialog
-      de edição deixa a identidade do registro read-only (a `key`, e o `module` /
-      `path` de uma screen) — o backend também retorna `409`.
+      Linhas de sistema mostram um badge **System** e escondem o Delete; linhas
+      desativadas mostram um badge **Inactive**. O dialog de edição deixa a
+      identidade do registro de sistema read-only (a `key`, e o `module` / `path`
+      de uma screen) — o backend também retorna `409`. O dialog de **module**
+      ganhou um switch **Active**; o de **screen** ganhou dois: **Active**
+      (`is_active` — escondido dos pickers de "adicionar"; confirm-on-deactivate
+      via `useConfirmDeactivate`) e **On** (`is_enabled` — o kill switch de
+      emergência; confirm-on-off). Um module desativado some do Select de module
+      do dialog de screen (o module atual da screen é mantido para a edição nunca
+      perder uma seleção válida).
+    - **Editor de permissões por tela** (`screens/permissions-editor/`) — um
+      editor estilo todo aberto por um botão clipboard-pen em cada linha de
+      Screens. Lista as permissões curadas da tela (cada uma um **Badge** de op +
+      seu **rótulo** amigável); você **adiciona** uma linha (`Select` de op +
+      `Input` de rótulo — o Select esconde as ações já usadas, já que a tela
+      oferece cada op no máximo uma vez), **renomeia** um rótulo inline (lápis →
+      confirmar) e **apaga** uma linha não-system (confirmar). O enum da op é o
+      contrato de código; o rótulo é texto livre. `409`s do backend viram toasts;
+      o catálogo é invalidado sob o prefixo `['permissions']` para o picker do
+      profile-detail também atualizar.
     - **Profiles** (`/admin/profiles`) — CRUD de profiles (com badges
-      `is_default`/`is_system`); **ProfileDetail** (`/admin/profiles/:profileId`)
-      edita um profile e seus grants via a **`TransferTable`** — o lado atribuído
-      tem checkboxes por ação (view/create/edit/delete) e um radio **Default** que
-      escolhe a tela de destino padrão do profile. Cada linha de screen é unida ao
-      seu module para mostrar uma coluna **Module** nos dois lados, e um
-      **`MultiSelect`** em chips acima da tabela filtra o lado **Available** por
-      module (screens já concedidas sempre permanecem, então o lado Granted nunca
-      perde linhas); a busca da tabela também casa com o nome do module. O switch
+      `is_default`/`is_system`, mais um badge **Inactive** quando desativado);
+      **ProfileDetail** (`/admin/profiles/:profileId`) edita um profile via a
+      **`TransferTable`** (membership: quais telas caem na sidebar). O lado Granted
+      substitui as antigas colunas de checkbox por ação por **uma coluna
+      `Permissions`** — um **`MultiSelect`** em chips por tela escolhendo quais das
+      permissões curadas daquela tela são concedidas — mais um checkbox **Landing**
+      (o `default_screen_id` do profile, habilitado só para uma tela visível). Cada
+      linha de screen mostra uma coluna **Module** nos dois lados, e um
+      `MultiSelect` em chips acima da tabela filtra o lado **Available** por module
+      (screens já concedidas sempre permanecem, então o lado Granted nunca perde
+      linhas); a busca da tabela também casa com o nome do module. Uma screen
+      **desabilitada** ainda concedida aparece esmaecida com um badge **Disabled** e
+      é **removível em mão única** (confirm-on-remove; não dá para re-adicionar até
+      ser reabilitada), enquanto o lado Available esconde as screens desabilitadas.
+      O profile tem também um switch **Active** (confirm-on-deactivate). O switch
       **Default profile** garante o invariante de default único: fica
       **desabilitado quando o profile já é o default** (promova outro para movê-lo),
       e promover um profile não-default abre um confirm dialog nomeando o default
@@ -402,21 +441,24 @@ profiles; seus grants **se mesclam** (OR).
     - **Users** (`/admin/users`) — tabela paginada; **UserEdit**
       (`/admin/users/:userId`) edita username/email/role/`is_verified` mais um
       switch **Active** (`is_active`; auto-desativação bloqueada) e um card de
-      **profiles** (uma `TransferTable` atribuindo profiles; para admins mostra uma
-      nota somente-leitura). Desativar um usuário bloqueia o login e corta o acesso
-      na próxima requisição; salvar com Active desligado abre antes um dialog de
-      confirmação (o padrão confirm-on-deactivate abaixo).
+      **profiles** (uma `TransferTable` atribuindo profiles — profiles desativados
+      ficam escondidos do picker a menos que já estejam atribuídos; para admins
+      mostra uma nota somente-leitura). Desativar um usuário bloqueia o login e
+      corta o acesso na próxima requisição; salvar com Active desligado abre antes
+      um dialog de confirmação (o padrão confirm-on-deactivate abaixo).
 - **Tela de destino padrão por usuário** (`pages/app/account/landing-card.tsx`) —
   deixa o usuário escolher em qual das _suas_ telas cair após o login; "Automatic"
   limpa o override (`default_screen_key: null` via `PATCH /auth/me`), voltando ao
   padrão do profile. Salvar invalida `['me-permissions']`.
 
 O mock MSW espelha o backend fielmente: `mocks/data/access-control-seed.ts` é o
-dataset único (modules, screens, profiles + grants, vínculos user↔profile);
-`mocks/mock-auth.ts` guarda `computePermissions` (mescla os grants dos profiles do
-usuário; ADMIN recebe tudo), `resolveDefaultScreen`, `buildMenu` e o mapeamento
-token↔user; os handlers `*-mock.ts` servem `/modules`, `/screens`, `/profiles`,
-`/users/:id/profiles` e `/me/permissions`.
+dataset único (modules, screens, o **catálogo de permissões por tela**, profiles
+com membership + ids das permissões concedidas + uma tela de destino, e vínculos
+user↔profile); `mocks/mock-auth.ts` guarda `computePermissions` (mescla os grants
+dos profiles do usuário; ADMIN recebe tudo), `resolveDefaultScreen`, `buildMenu`
+e o mapeamento token↔user; os handlers `*-mock.ts` servem `/modules`, `/screens`,
+`/permissions` (+ `/screens/:id/permissions`), `/profiles`, `/users/:id/profiles`
+e `/me/permissions`.
 
 ---
 
@@ -619,8 +661,11 @@ de fio nunca vazam além de `src/api`. Construa contra o mock primeiro; a API re
   refresh; refresh single-flight com replay no 401.
 - RBAC lido fresco de `/me/permissions` (`can()` + `RequireScreen`); `Forbidden`
   renderizado no lugar, não confiado de um token. Modelo híbrido: papel fixo +
-  profiles dinâmicos agrupando grants por tela; a sidebar e a tela de destino são
-  dirigidas por dados do mesmo payload.
+  profiles dinâmicos = membership + um catálogo de permissões curado por tela
+  (rótulos amigáveis sobre o contrato de código `view/create/edit/delete`) + uma
+  tela de destino; a sidebar (membership) e a tela de destino são dirigidas por
+  dados do mesmo payload, com um kill switch por tela exposto por
+  `isScreenEnabled`.
 - A camada tipada `src/api` é o único lugar onde formatos de fio (snake_case)
   mapeiam para modelos da app (camelCase).
 - Tailwind v4 (config em CSS) + cascata shadcn + tematização por tokens (dark mode

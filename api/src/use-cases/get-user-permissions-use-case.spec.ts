@@ -49,23 +49,11 @@ describe('Get User Permissions Use Case', () => {
 			{ user_id: user.id, profile_id: 'p1' },
 			{ user_id: user.id, profile_id: 'p2' },
 		]
+		// One granted permission row per (profile, screen, action).
 		permissionsRepository.grants = [
-			{
-				profile_id: 'p1',
-				screen_key: 'gym.gyms',
-				can_view: true,
-				can_create: false,
-				can_edit: false,
-				can_delete: false,
-			},
-			{
-				profile_id: 'p2',
-				screen_key: 'gym.gyms',
-				can_view: true,
-				can_create: true,
-				can_edit: false,
-				can_delete: false,
-			},
+			{ profile_id: 'p1', screen_key: 'gym.gyms', action: 'view' },
+			{ profile_id: 'p2', screen_key: 'gym.gyms', action: 'view' },
+			{ profile_id: 'p2', screen_key: 'gym.gyms', action: 'create' },
 		]
 
 		const { role, screens } = await sut.execute({ userId: user.id })

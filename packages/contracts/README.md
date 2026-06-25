@@ -59,6 +59,10 @@ error string is only caught at runtime, in production. This package makes the
 | `gyms.ts` | `createGymBodySchema`, `updateGymBodySchema`, `searchGymsQuerySchema`, `nearbyGymsQuerySchema` (+ types) |
 | `check-ins.ts` | `checkInBodySchema` (+ type) |
 | `responses.ts` | `publicUserSchema`, `userResponseSchema` (+ types) — response DTOs |
+| `modules.ts` | `moduleSchema` (+ `is_active`), `createModuleBodySchema`, `updateModuleBodySchema` (+ types) |
+| `screens.ts` | `screenSchema` (+ `is_active`/`is_enabled`), `screenWithPermissionsSchema`, `createScreenBodySchema`, `updateScreenBodySchema`, `listScreensQuerySchema` (+ types) |
+| `permissions.ts` | `permissionActionSchema`, `permissionSchema`, `createPermissionBodySchema`, `updatePermissionBodySchema`, `screenPermissionSchema`, `menuScreenSchema` (carries `is_enabled`), `mePermissionsSchema` (+ types) — the curated permission catalog + the `GET /me/permissions` shape |
+| `profiles.ts` | `profileSchema` (+ `is_active`), `profileScreenGrantSchema` (membership + `permission_ids`), `profileDetailSchema` (+ `default_screen_id`), `createProfileBodySchema`, `updateProfileBodySchema`, `setProfileGrantsBodySchema`, `assignUserProfilesBodySchema` (+ types) |
 | `index.ts` | barrel — re-exports everything |
 
 ## Zero-build (source exports)

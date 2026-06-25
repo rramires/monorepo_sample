@@ -9,8 +9,12 @@ export const moduleSchema = z.object({
 	description: z.string().nullish(),
 	order: z.number().int(),
 	// Seeded system modules are protected (no delete / no key rename); never
-	// client-settable, so it stays out of the create/update bodies below.
+	// client-settable on create, so it stays out of the create body below.
 	is_system: z.boolean(),
+	// Lifecycle (disable). Inactive modules are hidden from the "add" pickers
+	// below (no new screens target them); existing screens keep working. Toggled
+	// via the edit dialog's Active switch.
+	is_active: z.boolean(),
 })
 export type Module = z.infer<typeof moduleSchema>
 
@@ -23,6 +27,9 @@ export const createModuleBodySchema = z.object({
 })
 export type CreateModuleBody = z.infer<typeof createModuleBodySchema>
 
-// PATCH /modules/:id — update; every field optional.
-export const updateModuleBodySchema = createModuleBodySchema.partial()
+// PATCH /modules/:id — update; every field optional. Adds the Active switch on
+// top of the editable create fields.
+export const updateModuleBodySchema = createModuleBodySchema.partial().extend({
+	is_active: z.boolean().optional(),
+})
 export type UpdateModuleBody = z.infer<typeof updateModuleBodySchema>

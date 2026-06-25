@@ -190,7 +190,7 @@ src/
 │       ├── verified-state.ts# shared mock flag (email verification)
 │       └── index.ts         # setupWorker(...handlers) + enableMSW() (test mode only)
 ├── components/
-│   ├── auth/                # AuthContext/Provider/hooks · ProtectedRoute · RequireScreen · LandingRoute · Forbidden · verify-email-banner/
+│   ├── auth/                # AuthContext/Provider/hooks · ProtectedRoute · RequireScreen (view grant + kill-switch) · LandingRoute · Forbidden · verify-email-banner/
 │   ├── theme/               # ThemeContext/Provider/hooks · mode-toggle
 │   ├── title/               # TitleContext/Provider · page-title (per-page document.title)
 │   ├── breadcrumb/          # BreadcrumbContext/Provider/hooks · breadcrumbs (header trail) + use-breadcrumbs-pm
@@ -203,7 +203,7 @@ src/
 ├── hooks/
 │   ├── use-mobile.ts        # useIsMobile (matchMedia)
 │   ├── use-layout-band.ts   # useLayoutBand → 'mobile' | 'tablet' | 'desktop' (md/lg)
-│   ├── use-permissions.ts   # usePermissions() + can(screenKey, action); ADMIN bypasses
+│   ├── use-permissions.ts   # usePermissions() + can(screenKey, action) + isScreenEnabled; ADMIN bypasses
 │   └── use-check-in.ts      # shared check-in mutation (geo + POST + invalidate)
 ├── lib/
 │   ├── api.ts               # Axios instance + interceptors (token attach, 401 single-flight refresh)
@@ -214,7 +214,7 @@ src/
 │   └── utils.ts             # cn() (clsx + tailwind-merge)
 └── pages/
     ├── _layouts/            # app-layout/ · auth-layout · register-layout
-    ├── app/                 # authed area: home/ (dashboard) · gyms/ · check-ins/ · account/ · new-gym/ · admin/{modules,screens,profiles/(+profile-detail/),users/(+user-edit/)}
+    ├── app/                 # authed area: home/ (dashboard) · gyms/ · check-ins/ · account/ · new-gym/ · admin/{modules,screens/(+permissions-editor/),profiles/(+profile-detail/),users/(+user-edit/)}
     ├── auth/                # sign-in/ · forgot-password/ · reset-password/ · verify-email/ · confirm-email-change/
     ├── register/
     ├── e404.tsx · error.tsx
@@ -325,34 +325,50 @@ banner clears — no re-login, mirroring the backend's fresh-from-DB read.
 ### 5.5 Access control (RBAC)
 
 Beyond the coarse `role`, the app has a **hybrid RBAC** model: a fixed role
-(`ADMIN` bypasses everything, `USER` follows grants) plus dynamic **Profiles**
-that bundle **per-screen grants** (`view`/`create`/`edit`/`delete`). **Modules**
-group **Screens**; a profile carries `is_default` (auto-attached to a user on
-register), and profiles, modules and screens carry `is_system` (protected — the
-key can't change and it can't be deleted). The seed marks the access-control
-module + its screens (and all three profiles) as system. A user may hold several
-profiles; their grants **merge** (OR).
+(`ADMIN` bypasses everything, `USER` follows grants) plus dynamic **Profiles**.
+A profile is **membership** (which screens show in the sidebar) + **granted
+permissions** (per screen) + a **landing screen**. Permissions are a **curated
+catalog per screen with friendly, editable labels** — e.g. Check-in offers
+"View" + "Check in"; `gym.gyms` and `access-control.users` deliberately have no
+`delete` (they deactivate via an Active switch). The action enum
+(`view`/`create`/`edit`/`delete`) stays the fixed **code contract** that
+`can(screenKey, action)` checks; the label is **presentation only**. `view` is
+now an **explicit grant** (not default-true). **Modules** group **Screens**; a
+profile carries `is_default` (auto-attached to a user on register), and profiles,
+modules and screens carry `is_system` (protected — the key can't change and it
+can't be deleted). Screens additionally carry `is_active` (lifecycle) and
+`is_enabled` (an emergency **kill switch**); modules and profiles carry
+`is_active`. The seed marks the access-control module + its screens (and all
+three profiles) as system. A user may hold several profiles; their grants
+**merge** (OR).
 
-- **`usePermissions()` / `can()`** (`hooks/use-permissions.ts`) — loads
-  `GET /me/permissions` as **server state** (TanStack Query, keyed by user id, so
-  a different user refetches), exposes `can(screenKey, action='view')`. ADMIN
-  short-circuits to `true`; while loading, `can()` is conservatively `false` so
-  nothing flashes before grants resolve. The permission model (`get-me-permissions.ts`)
-  carries `screens` (the grants), `menu` (the nav catalog) and `defaultScreenKey`.
+- **`usePermissions()` / `can()` / `isScreenEnabled()`** (`hooks/use-permissions.ts`)
+  — loads `GET /me/permissions` as **server state** (TanStack Query, keyed by
+  user id, so a different user refetches), exposes `can(screenKey, action='view')`
+  and `isScreenEnabled(screenKey)` (the per-screen kill switch). ADMIN
+  short-circuits both to `true`; while loading, `can()` is conservatively `false`
+  so nothing flashes before grants resolve. The permission model
+  (`get-me-permissions.ts`) carries `screens` (the grants), `menu` (the
+  membership catalog, each entry with `isEnabled`) and `defaultScreenKey`.
 - **`RequireScreen screen='<key>' [action]`** (`components/auth/require-screen.tsx`)
   — the route-level mirror of `can()`. Sits **inside** `ProtectedRoute`; renders
   the child route only when the user `can()` the action, else **`Forbidden` in
-  place** (layout stays). The backend enforces the same with `requireScreen`
-  (defense in depth). This **replaces** the older role-only `RoleRoute` for the
-  screen-gated routes.
+  place** (layout stays) with **one of two messages**: no `view` grant → "You
+  don't have access to this screen yet."; a granted-but-killed screen
+  (`isScreenEnabled` false) → "This screen is temporarily unavailable." (admin
+  bypasses both). The backend enforces the same with `requireScreen` (defense in
+  depth). This **replaces** the older role-only `RoleRoute` for the screen-gated
+  routes.
 - **`LandingRoute`** (`components/auth/landing-route.tsx`) — the index (`/`)
   resolver: sends the user to their preferred `defaultScreenKey` → the gym
   Dashboard if viewable → their first available screen → renders Home. Avoids a
   Forbidden on login.
-- **Data-driven sidebar** (`app-sidebar/use-app-sidebar-pm.ts`) — builds its
-  sections from `permissions.menu` (already only the viewable screens, grouped and
-  ordered by module/screen order), intersected with `NAV_ENTRIES` (the screens that
-  have a real page + their icon/label). It **no longer fetches** `/modules` +
+- **Membership-driven sidebar** (`app-sidebar/use-app-sidebar-pm.ts`) — builds
+  its sections from `permissions.menu` (the user's **membership** screens,
+  grouped and ordered by module/screen order), intersected with `NAV_ENTRIES`
+  (the screens that have a real page + their icon/label). A screen assigned with
+  **zero permissions still appears** (staged rollout) — membership, not the
+  `view` grant, drives the menu. It **no longer fetches** `/modules` +
   `/screens`; the menu grows as more pages get built. Active state uses a
   **segment match** (`isItemActive`), not exact equality, so a parent item stays
   lit on its sub-routes (e.g. "Gyms" while on `/gyms/new`, "Users" while editing
@@ -377,26 +393,49 @@ profiles; their grants **merge** (OR).
   `access-control.*` screen key:
     - **Modules** (`/admin/modules`) and **Screens** (`/admin/screens`) — CRUD the
       catalog (dialogs for create/edit; deleting a screen cascades its grants).
-      System rows show a **System** badge and hide Delete; the edit dialog makes
-      a system record's identity read-only (the `key`, and a screen's `module` /
-      `path`) — the backend also returns `409`.
+      System rows show a **System** badge and hide Delete; deactivated rows show
+      an **Inactive** badge. The edit dialog makes a system record's identity
+      read-only (the `key`, and a screen's `module` / `path`) — the backend also
+      returns `409`. The **module** dialog gained an **Active** switch; the
+      **screen** dialog gained two: **Active** (`is_active` — hidden from the
+      "add" pickers; confirm-on-deactivate via `useConfirmDeactivate`) and **On**
+      (`is_enabled` — the emergency kill switch; confirm-on-off). A disabled
+      module is hidden from the screen dialog's module Select (the screen's
+      current module is kept so editing never drops a valid selection).
+    - **Per-screen permission editor** (`screens/permissions-editor/`) — a
+      todo-style editor opened by a clipboard-pen button per Screens row. It lists
+      the screen's curated permissions (each an op **Badge** + its friendly
+      **label**); you **add** a row (op `Select` + label `Input` — the Select
+      hides already-used actions, since a screen offers each op at most once),
+      **rename** a label inline (pencil → confirm), and **delete** a non-system
+      row (confirm). The op enum is the code contract; the label is free text.
+      Backend `409`s surface as toasts; the catalog is invalidated under the
+      `['permissions']` prefix so the profile-detail picker refreshes too.
     - **Profiles** (`/admin/profiles`) — CRUD profiles (with `is_default`/`is_system`
-      badges); **ProfileDetail** (`/admin/profiles/:profileId`) edits one profile
-      and its grants via the **`TransferTable`** — the assigned side has per-action
-      checkboxes (view/create/edit/delete) and a **Default** radio picking the
-      profile's default landing screen. Each screen row is joined with its module
-      to show a **Module** column on both sides, and a chips **`MultiSelect`** above
-      the table filters the **Available** side by module (already-granted screens
+      badges, plus an **Inactive** badge when deactivated); **ProfileDetail**
+      (`/admin/profiles/:profileId`) edits one profile via the **`TransferTable`**
+      (membership: which screens land in the sidebar). The Granted side replaces
+      the old per-action checkbox columns with **one `Permissions` column** — a
+      chips **`MultiSelect`** per screen choosing which of that screen's curated
+      permissions are granted — plus a **Landing** checkbox (the profile's
+      `default_screen_id`, enabled only for a viewable screen). Each screen row
+      shows a **Module** column on both sides, and a chips `MultiSelect` above the
+      table filters the **Available** side by module (already-granted screens
       always stay, so the Granted side never loses rows); the table search also
-      matches the module name. The **Default profile** switch enforces the
-      single-default invariant: it is **disabled when this profile is already the
-      default** (promote another to move it), and promoting a non-default profile
-      opens a confirm dialog naming the current default before saving (the backend
-      demotes the old one and rejects turning the last default off with `409`).
+      matches the module name. A **disabled** screen still granted shows muted
+      with a **Disabled** badge and is **removable one-way** (confirm-on-remove;
+      can't be re-added until re-enabled), while the Available side hides disabled
+      screens. The profile also has an **Active** switch (confirm-on-deactivate).
+      The **Default profile** switch enforces the single-default invariant: it is
+      **disabled when this profile is already the default** (promote another to
+      move it), and promoting a non-default profile opens a confirm dialog naming
+      the current default before saving (the backend demotes the old one and
+      rejects turning the last default off with `409`).
     - **Users** (`/admin/users`) — paginated table; **UserEdit**
       (`/admin/users/:userId`) edits username/email/role/`is_verified` plus an
       **Active** switch (`is_active`; self-deactivation blocked) and a **profiles**
-      card (a `TransferTable` assigning profiles; admins show a read-only note).
+      card (a `TransferTable` assigning profiles — disabled profiles are hidden
+      from the picker unless already assigned; admins show a read-only note).
       Deactivating a user blocks login and cuts access on the next request;
       saving with Active turned off prompts a confirm dialog first (the
       confirm-on-deactivate pattern below).
@@ -406,10 +445,12 @@ profiles; their grants **merge** (OR).
   back to the profile's default. Saving invalidates `['me-permissions']`.
 
 The MSW mock mirrors the backend verbatim: `mocks/data/access-control-seed.ts` is
-the single dataset (modules, screens, profiles + grants, user↔profile links);
-`mocks/mock-auth.ts` holds `computePermissions` (merge a user's profile grants;
-ADMIN gets all), `resolveDefaultScreen`, `buildMenu` and the token↔user mapping;
-the `*-mock.ts` handlers serve `/modules`, `/screens`, `/profiles`,
+the single dataset (modules, screens, the **per-screen permission catalog**,
+profiles with membership + granted permission ids + a landing screen, and
+user↔profile links); `mocks/mock-auth.ts` holds `computePermissions` (merge a
+user's profile grants; ADMIN gets all), `resolveDefaultScreen`, `buildMenu` and
+the token↔user mapping; the `*-mock.ts` handlers serve `/modules`, `/screens`,
+`/permissions` (+ `/screens/:id/permissions`), `/profiles`,
 `/users/:id/profiles` and `/me/permissions`.
 
 ---
@@ -605,8 +646,10 @@ leak past `src/api`. Build against the mock first; the real API is wired last.
   cookie; single-flight 401 refresh-and-replay.
 - RBAC read fresh from `/me/permissions` (`can()` + `RequireScreen`); `Forbidden`
   rendered in place, not trusted from a token. Hybrid model: fixed role + dynamic
-  profiles bundling per-screen grants; the sidebar and landing screen are
-  data-driven from the same payload.
+  profiles = membership + a curated per-screen permission catalog (friendly
+  labels over the `view/create/edit/delete` code contract) + a landing screen;
+  the sidebar (membership) and landing screen are data-driven from the same
+  payload, with a per-screen kill switch surfaced by `isScreenEnabled`.
 - Typed `src/api` layer is the single place wire shapes (snake_case) map to app
   models (camelCase).
 - Tailwind v4 (CSS-config) + shadcn cascade + token-based theming (one-class

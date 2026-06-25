@@ -2,11 +2,13 @@ import { CreateProfileBody, UpdateProfileBody } from '@root/contracts'
 
 import { Profile } from '@/prisma-client'
 import {
-	GrantRow,
 	IProfilesRepository,
+	ProfileScreenGrant,
 } from '@/repositories/i-profiles-repository'
 
 import { DefaultProfileRequiredError } from './errors/default-profile-required-error'
+import { InvalidLandingScreenError } from './errors/invalid-landing-screen-error'
+import { ProfileInUseError } from './errors/profile-in-use-error'
 import { ResourceNotFoundError } from './errors/resource-not-found-error'
 import { SystemProfileError } from './errors/system-profile-error'
 
@@ -17,7 +19,9 @@ export class ProfilesUseCase {
 		return this.profilesRepository.list()
 	}
 
-	async getDetail(id: string): Promise<Profile & { screens: GrantRow[] }> {
+	async getDetail(
+		id: string,
+	): Promise<Profile & { screens: ProfileScreenGrant[] }> {
 		const detail = await this.profilesRepository.findDetail(id)
 		if (!detail) {
 			throw new ResourceNotFoundError()
@@ -52,7 +56,9 @@ export class ProfilesUseCase {
 			body.key !== undefined &&
 			body.key !== existing.key
 		) {
-			throw new SystemProfileError()
+			throw new SystemProfileError(
+				'A system profile key cannot be changed.',
+			)
 		}
 
 		// Single-default invariant: never leave zero defaults. Turning the
@@ -76,22 +82,37 @@ export class ProfilesUseCase {
 		}
 
 		if (existing.is_system) {
-			throw new SystemProfileError()
+			throw new SystemProfileError('A system profile cannot be deleted.')
+		}
+
+		// No cascade: a profile still assigned to users can't be deleted.
+		const users = await this.profilesRepository.countUsers(id)
+		if (users > 0) {
+			throw new ProfileInUseError(users)
 		}
 
 		await this.profilesRepository.delete(id)
 	}
 
-	async setScreens(
+	async setGrants(
 		id: string,
-		grants: GrantRow[],
-	): Promise<Profile & { screens: GrantRow[] }> {
+		grants: ProfileScreenGrant[],
+		defaultScreenId: string | null,
+	): Promise<Profile & { screens: ProfileScreenGrant[] }> {
 		const existing = await this.profilesRepository.findById(id)
 		if (!existing) {
 			throw new ResourceNotFoundError()
 		}
 
-		await this.profilesRepository.setScreens(id, grants)
+		// The landing screen must be one of the assigned screens.
+		if (
+			defaultScreenId !== null &&
+			!grants.some((g) => g.screen_id === defaultScreenId)
+		) {
+			throw new InvalidLandingScreenError()
+		}
+
+		await this.profilesRepository.setGrants(id, grants, defaultScreenId)
 
 		// Return the fresh detail (guaranteed present — existence checked above).
 		const detail = await this.profilesRepository.findDetail(id)

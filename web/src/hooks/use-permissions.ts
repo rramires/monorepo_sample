@@ -28,6 +28,16 @@ export function usePermissions() {
 		return map
 	}, [query.data])
 
+	// Kill switch per screen, from the membership menu. A screen the user is a
+	// member of but isn't in the menu (no path) defaults to enabled.
+	const enabledByKey = useMemo(() => {
+		const map = new Map<string, boolean>()
+		for (const m of query.data?.menu ?? []) {
+			map.set(m.screenKey, m.isEnabled)
+		}
+		return map
+	}, [query.data])
+
 	const isAdmin = user?.role === 'ADMIN'
 
 	function can(screenKey: string, action: ScreenAction = 'view'): boolean {
@@ -37,8 +47,18 @@ export function usePermissions() {
 		return byKey.get(screenKey)?.(action) ?? false
 	}
 
+	// The screen kill switch (Screen.is_enabled). Admin ignores it; unknown
+	// screens are treated as enabled (the `can()` check gates access first).
+	function isScreenEnabled(screenKey: string): boolean {
+		if (isAdmin) {
+			return true
+		}
+		return enabledByKey.get(screenKey) ?? true
+	}
+
 	return {
 		can,
+		isScreenEnabled,
 		isAdmin,
 		isLoading: query.isLoading,
 		permissions: query.data,

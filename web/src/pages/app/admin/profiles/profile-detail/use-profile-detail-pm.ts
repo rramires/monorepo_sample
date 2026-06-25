@@ -5,17 +5,17 @@ import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 
 import { getModules } from '@/api/modules'
+import { getPermissions } from '@/api/permissions'
 import {
 	getProfile,
 	getProfiles,
-	type GrantModel,
-	setProfileScreens,
+	type ProfileScreenGrantModel,
+	setProfileGrants,
 	updateProfile,
 } from '@/api/profiles'
 import { getScreens, type ScreenModel } from '@/api/screens'
+import { useConfirmDeactivate } from '@/hooks/use-confirm-deactivate'
 import { usePermissions } from '@/hooks/use-permissions'
-
-type Actions = Pick<GrantModel, 'view' | 'create' | 'edit' | 'delete'>
 
 // A screen row enriched with its module's key/name, so the grants table can
 // show a module column and filter by module without a second lookup per row.
@@ -24,12 +24,8 @@ export interface ScreenRow extends ScreenModel {
 	moduleName: string
 }
 
-const VIEW_DEFAULT: Actions = {
-	view: true,
-	create: false,
-	edit: false,
-	delete: false,
-}
+// Stable display/order of curated ops.
+const ACTION_ORDER = { view: 0, create: 1, edit: 2, delete: 3 } as const
 
 export function useProfileDetailPM() {
 	const { profileId = '' } = useParams()
@@ -56,12 +52,19 @@ export function useProfileDetailPM() {
 		queryKey: ['profiles'],
 		queryFn: () => getProfiles(),
 	})
+	// The curated permission catalog — drives the per-screen permission badges.
+	const { data: permissions = [] } = useQuery({
+		queryKey: ['permissions'],
+		queryFn: () => getPermissions(),
+	})
 
 	const [name, setName] = useState('')
 	const [description, setDescription] = useState('')
 	const [isDefault, setIsDefault] = useState(false)
+	const [isActive, setIsActive] = useState(true)
 	const [assignedIds, setAssignedIds] = useState<string[]>([])
-	const [grants, setGrants] = useState<Record<string, Actions>>({})
+	// screenId → granted permission ids (subset of the screen's catalog).
+	const [grants, setGrants] = useState<Record<string, string[]>>({})
 	// The profile's default landing screen (≤1). Acts like a radio.
 	const [defaultScreenId, setDefaultScreenId] = useState<string | null>(null)
 	// Module ids chosen in the chips filter; empty = no filter (show all).
@@ -80,6 +83,20 @@ export function useProfileDetailPM() {
 		[modules],
 	)
 
+	// Permission catalog grouped per screen (ordered view→create→edit→delete).
+	const permsByScreen = useMemo(() => {
+		const map = new Map<string, typeof permissions>()
+		for (const p of permissions) {
+			const list = map.get(p.screenId) ?? []
+			list.push(p)
+			map.set(p.screenId, list)
+		}
+		for (const list of map.values()) {
+			list.sort((a, b) => ACTION_ORDER[a.action] - ACTION_ORDER[b.action])
+		}
+		return map
+	}, [permissions])
+
 	// Screens carry only a moduleId; join the module name/key for the column.
 	const screenRows = useMemo<ScreenRow[]>(
 		() =>
@@ -93,19 +110,32 @@ export function useProfileDetailPM() {
 			}),
 		[screens, modulesById],
 	)
+	const screenById = useMemo(
+		() => new Map(screenRows.map((s) => [s.id, s])),
+		[screenRows],
+	)
 
-	// The module filter narrows only the Available side: always keep already-
-	// granted screens in the universe so the Granted side stays complete (the
-	// TransferTable drops assigned rows from Available on its own).
+	// What the TransferTable sees. A disabled screen can't be newly assigned, so
+	// it's hidden from Available — but kept if it's already granted, so it still
+	// shows (muted) on the Granted side and can be removed (one-way). The module
+	// filter narrows only Available; granted screens are always kept so the
+	// Granted side stays complete.
 	const visibleScreens = useMemo(() => {
-		if (moduleFilter.length === 0) {
-			return screenRows
-		}
 		const mods = new Set(moduleFilter)
 		const assigned = new Set(assignedIds)
-		return screenRows.filter(
-			(s) => mods.has(s.moduleId) || assigned.has(s.id),
-		)
+		return screenRows.filter((s) => {
+			if (!s.isActive && !assigned.has(s.id)) {
+				return false
+			}
+			if (
+				moduleFilter.length > 0 &&
+				!mods.has(s.moduleId) &&
+				!assigned.has(s.id)
+			) {
+				return false
+			}
+			return true
+		})
 	}, [screenRows, moduleFilter, assignedIds])
 
 	// Seed local edit state from the loaded profile (runs when the profile
@@ -119,54 +149,90 @@ export function useProfileDetailPM() {
 		setName(profile.name)
 		setDescription(profile.description ?? '')
 		setIsDefault(profile.isDefault)
+		setIsActive(profile.isActive)
 		setAssignedIds(profile.screens.map((g) => g.screenId))
-		setDefaultScreenId(
-			profile.screens.find((g) => g.isDefault)?.screenId ?? null,
-		)
+		setDefaultScreenId(profile.defaultScreenId)
 		setGrants(
 			Object.fromEntries(
-				profile.screens.map((g) => [
-					g.screenId,
-					{
-						view: g.view,
-						create: g.create,
-						edit: g.edit,
-						delete: g.delete,
-					},
-				]),
+				profile.screens.map((g) => [g.screenId, g.permissionIds]),
 			),
 		)
 	}, [profile])
 	/* eslint-enable react-hooks/set-state-in-effect */
 
-	// Keep grants in sync with membership: a newly granted screen starts at
-	// view=true; a removed one drops its grant.
-	function handleAssignedChange(ids: string[]) {
+	// A screen can be the landing only when it's granted `view`.
+	function isViewable(screenId: string): boolean {
+		const viewPerm = permsByScreen
+			.get(screenId)
+			?.find((p) => p.action === 'view')
+		return !!viewPerm && (grants[screenId] ?? []).includes(viewPerm.id)
+	}
+
+	// Apply a membership change: keep grants in sync (a newly granted screen
+	// starts with no permissions; a removed one drops its grants) and drop the
+	// landing if its screen left.
+	function applyAssigned(ids: string[]) {
 		setAssignedIds(ids)
 		setGrants((prev) => {
-			const next: Record<string, Actions> = {}
+			const next: Record<string, string[]> = {}
 			for (const id of ids) {
-				next[id] = prev[id] ?? { ...VIEW_DEFAULT }
+				next[id] = prev[id] ?? []
 			}
 			return next
 		})
-		// Drop the default if its screen was removed.
 		setDefaultScreenId((prev) => (prev && ids.includes(prev) ? prev : null))
 	}
 
-	// Radio-style: pick the profile's default screen (click again to clear).
-	function setDefault(screenId: string) {
-		setDefaultScreenId((prev) => (prev === screenId ? null : screenId))
+	// Removing a disabled screen is one-way (it can't be re-added until
+	// re-enabled), so confirm first; everything else applies straight through.
+	const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false)
+	const pendingAssigned = useRef<string[] | null>(null)
+
+	function handleAssignedChange(ids: string[]) {
+		const removed = assignedIds.filter((id) => !ids.includes(id))
+		const removingDisabled = removed.some(
+			(id) => screenById.get(id)?.isActive === false,
+		)
+		if (removingDisabled) {
+			pendingAssigned.current = ids
+			setConfirmRemoveOpen(true)
+			return
+		}
+		applyAssigned(ids)
 	}
 
-	function toggleAction(screenId: string, key: keyof Actions) {
-		setGrants((prev) => {
-			const current = prev[screenId] ?? { ...VIEW_DEFAULT }
-			return {
-				...prev,
-				[screenId]: { ...current, [key]: !current[key] },
-			}
-		})
+	function onConfirmRemoveOpenChange(next: boolean) {
+		setConfirmRemoveOpen(next)
+		if (!next) {
+			pendingAssigned.current = null
+		}
+	}
+
+	function confirmRemoveDisabled() {
+		const ids = pendingAssigned.current
+		pendingAssigned.current = null
+		setConfirmRemoveOpen(false)
+		if (ids) {
+			applyAssigned(ids)
+		}
+	}
+
+	// Replace a screen's granted permissions (the per-row MultiSelect). Dropping
+	// `view` also clears the landing if it pointed here.
+	function setScreenPermissions(screenId: string, permissionIds: string[]) {
+		setGrants((prev) => ({ ...prev, [screenId]: permissionIds }))
+		const viewPerm = permsByScreen
+			.get(screenId)
+			?.find((p) => p.action === 'view')
+		const stillViewable = !!viewPerm && permissionIds.includes(viewPerm.id)
+		if (!stillViewable) {
+			setDefaultScreenId((prev) => (prev === screenId ? null : prev))
+		}
+	}
+
+	// Radio-style: pick the profile's landing screen (click again to clear).
+	function setDefault(screenId: string) {
+		setDefaultScreenId((prev) => (prev === screenId ? null : screenId))
 	}
 
 	const save = useMutation({
@@ -175,13 +241,15 @@ export function useProfileDetailPM() {
 				name,
 				description: description || null,
 				is_default: isDefault,
+				is_active: isActive,
 			})
-			const list: GrantModel[] = assignedIds.map((screenId) => ({
-				screenId,
-				...(grants[screenId] ?? VIEW_DEFAULT),
-				isDefault: screenId === defaultScreenId,
-			}))
-			await setProfileScreens(profileId, list)
+			const list: ProfileScreenGrantModel[] = assignedIds.map(
+				(screenId) => ({
+					screenId,
+					permissionIds: grants[screenId] ?? [],
+				}),
+			)
+			await setProfileGrants(profileId, list, defaultScreenId)
 		},
 		onSuccess: async () => {
 			toast.success('Profile saved.')
@@ -215,7 +283,19 @@ export function useProfileDetailPM() {
 	)
 	const isPromotingDefault = !!profile && !profile.isDefault && isDefault
 
+	// Deactivating (Active ON→OFF) confirms first; on confirm it falls through to
+	// the promote check, so both prompts can chain in the rare combined case.
+	const deactivateConfirm = useConfirmDeactivate()
+
 	function requestSave() {
+		deactivateConfirm.guardSave({
+			wasActive: profile?.isActive ?? true,
+			willBeActive: isActive,
+			save: proceedSave,
+		})
+	}
+
+	function proceedSave() {
 		if (isPromotingDefault && currentDefault) {
 			pendingSave.current = () => save.mutate()
 			setConfirmDefaultOpen(true)
@@ -252,12 +332,16 @@ export function useProfileDetailPM() {
 		setDescription,
 		isDefault,
 		setIsDefault,
+		isActive,
+		setIsActive,
 		assignedIds,
 		grants,
+		permsByScreen,
+		isViewable,
 		defaultScreenId,
 		setDefault,
+		setScreenPermissions,
 		handleAssignedChange,
-		toggleAction,
 		canEdit: can('access-control.profiles', 'edit'),
 		save: requestSave,
 		isSaving: save.isPending,
@@ -267,5 +351,11 @@ export function useProfileDetailPM() {
 			onOpenChange: onConfirmDefaultOpenChange,
 			onConfirm: confirmReplaceDefault,
 		},
+		confirmRemoveDisabled: {
+			open: confirmRemoveOpen,
+			onOpenChange: onConfirmRemoveOpenChange,
+			onConfirm: confirmRemoveDisabled,
+		},
+		confirmDeactivate: deactivateConfirm.dialogProps,
 	}
 }

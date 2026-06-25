@@ -3,6 +3,9 @@ import { HttpResponse } from 'msw'
 
 import {
 	modules,
+	permissions,
+	profileDefaultScreen,
+	profilePermissions,
 	profileScreens,
 	screens,
 	userDefaultScreen,
@@ -10,8 +13,8 @@ import {
 } from './data/access-control-seed'
 import { findUser } from './users-data'
 
-// Resolve the landing screen: user override (if viewable) → the default grant
-// with the smallest (module order, screen order) the user can view → null.
+// Resolve the landing screen: user override (if viewable) → the profile default
+// screen with the smallest (module order, screen order) the user can view → null.
 function resolveDefaultScreen(
 	userId: string,
 	viewableKeys: Set<string>,
@@ -30,38 +33,38 @@ function resolveDefaultScreen(
 	let best: string | null = null
 	let bestRank = [Infinity, Infinity]
 	for (const pid of myProfileIds) {
-		for (const grant of profileScreens[pid] ?? []) {
-			if (!grant.is_default) {
-				continue
-			}
-			const screen = screenById.get(grant.screen_id)
-			if (!screen || !viewableKeys.has(screen.key)) {
-				continue
-			}
-			const rank = [
-				moduleOrder.get(screen.module_id) ?? Infinity,
-				screen.order,
-			]
-			if (
-				rank[0] < bestRank[0] ||
-				(rank[0] === bestRank[0] && rank[1] < bestRank[1])
-			) {
-				best = screen.key
-				bestRank = rank
-			}
+		const landingId = profileDefaultScreen[pid]
+		if (!landingId) {
+			continue
+		}
+		const screen = screenById.get(landingId)
+		if (!screen || !viewableKeys.has(screen.key)) {
+			continue
+		}
+		const rank = [
+			moduleOrder.get(screen.module_id) ?? Infinity,
+			screen.order,
+		]
+		if (
+			rank[0] < bestRank[0] ||
+			(rank[0] === bestRank[0] && rank[1] < bestRank[1])
+		) {
+			best = screen.key
+			bestRank = rank
 		}
 	}
 	return best
 }
 
-// Build the menu (catalog) for a user: every navigable screen (has a `path`)
-// the user may view, grouped/ordered by (module order, screen order). Mirrors
-// the backend's GetUserPermissionsUseCase so the sidebar never fetches the
-// admin-gated /modules + /screens.
-function buildMenu(viewableKeys: Set<string>): MePermissions['menu'] {
+// Build the menu (sidebar) for a user: every navigable screen (has a `path`) the
+// user is a MEMBER of — shown even without a `view` grant (staged rollout) or
+// while killed; the kill switch travels as `is_enabled` so the guard can pick
+// the right Forbidden message. Grouped/ordered by (module order, screen order).
+// Mirrors the backend so the sidebar never fetches the admin-gated catalog.
+function buildMenu(membershipKeys: Set<string>): MePermissions['menu'] {
 	const moduleById = new Map(modules.map((m) => [m.id, m]))
 	return screens
-		.filter((s) => s.path && viewableKeys.has(s.key))
+		.filter((s) => s.path && membershipKeys.has(s.key))
 		.map((s) => {
 			const m = moduleById.get(s.module_id)
 			return {
@@ -72,6 +75,7 @@ function buildMenu(viewableKeys: Set<string>): MePermissions['menu'] {
 				module_key: m?.key ?? '',
 				module_name: m?.name ?? '',
 				module_order: m?.order ?? 0,
+				is_enabled: s.is_enabled,
 			}
 		})
 		.sort(
@@ -131,7 +135,9 @@ export function requireAuth(authHeader: string | null) {
 }
 
 // Effective permissions for a user: ADMIN bypasses (every screen, every action);
-// otherwise the OR of the user's profile grants, keyed by screen key.
+// otherwise the membership (menu) + the OR of the user's granted permissions
+// (effective ops), keyed by screen key. `view` is an explicit grant now and the
+// kill switch is NOT folded into `view` (it rides on the menu as `is_enabled`).
 export function computePermissions(userId: string): MePermissions | null {
 	const user = findUser(userId)
 	if (!user) {
@@ -154,44 +160,60 @@ export function computePermissions(userId: string): MePermissions | null {
 		}
 	}
 
-	const keyById = new Map(screens.map((s) => [s.id, s.key]))
-	const merged = new Map<string, ScreenPermission>()
+	const screenById = new Map(screens.map((s) => [s.id, s]))
+	const permById = new Map(permissions.map((p) => [p.id, p]))
 
 	const myProfileIds = userProfiles
 		.filter((up) => up.user_id === userId)
 		.map((up) => up.profile_id)
 
-	for (const profileId of myProfileIds) {
-		for (const grant of profileScreens[profileId] ?? []) {
-			const key = keyById.get(grant.screen_id)
-			if (!key) {
-				continue
-			}
-			const prev = merged.get(key) ?? {
-				screen_key: key,
+	// Membership = union of the screens the user's profiles are assigned to.
+	const membershipIds = new Set<string>()
+	// Effective ops = union of granted permission ids resolved to (screen, action).
+	const grantedPermIds = new Set<string>()
+	for (const pid of myProfileIds) {
+		for (const screenId of profileScreens[pid] ?? []) {
+			membershipIds.add(screenId)
+		}
+		for (const permId of profilePermissions[pid] ?? []) {
+			grantedPermIds.add(permId)
+		}
+	}
+
+	const merged = new Map<string, ScreenPermission>()
+	function bump(screenKey: string) {
+		let entry = merged.get(screenKey)
+		if (!entry) {
+			entry = {
+				screen_key: screenKey,
 				view: false,
 				create: false,
 				edit: false,
 				delete: false,
 			}
-			merged.set(key, {
-				screen_key: key,
-				view: prev.view || grant.can_view,
-				create: prev.create || grant.can_create,
-				edit: prev.edit || grant.can_edit,
-				delete: prev.delete || grant.can_delete,
-			})
+			merged.set(screenKey, entry)
 		}
+		return entry
+	}
+	for (const permId of grantedPermIds) {
+		const perm = permById.get(permId)
+		const screen = perm && screenById.get(perm.screen_id)
+		if (!perm || !screen) {
+			continue
+		}
+		bump(screen.key)[perm.action] = true
 	}
 
-	const screensList = [...merged.values()]
+	const membershipKeys = new Set(
+		[...membershipIds].map((id) => screenById.get(id)?.key).filter(Boolean),
+	) as Set<string>
 	const viewableKeys = new Set(
-		screensList.filter((s) => s.view).map((s) => s.screen_key),
+		[...merged.values()].filter((s) => s.view).map((s) => s.screen_key),
 	)
 	return {
 		role: 'USER',
-		screens: screensList,
-		menu: buildMenu(viewableKeys),
+		screens: [...merged.values()],
+		menu: buildMenu(membershipKeys),
 		default_screen_key: resolveDefaultScreen(userId, viewableKeys),
 	}
 }

@@ -56,6 +56,8 @@ export const ModelName = {
   Screen: 'Screen',
   Profile: 'Profile',
   ProfileScreen: 'ProfileScreen',
+  Permission: 'Permission',
+  ProfilePermission: 'ProfilePermission',
   UserProfile: 'UserProfile',
   CheckIn: 'CheckIn',
   Gym: 'Gym',
@@ -103,7 +105,8 @@ export const ModuleScalarFieldEnum = {
   name: 'name',
   description: 'description',
   order: 'order',
-  is_system: 'is_system'
+  is_system: 'is_system',
+  is_active: 'is_active'
 } as const
 
 export type ModuleScalarFieldEnum = (typeof ModuleScalarFieldEnum)[keyof typeof ModuleScalarFieldEnum]
@@ -117,6 +120,8 @@ export const ScreenScalarFieldEnum = {
   description: 'description',
   order: 'order',
   is_system: 'is_system',
+  is_active: 'is_active',
+  is_enabled: 'is_enabled',
   module_id: 'module_id'
 } as const
 
@@ -130,7 +135,9 @@ export const ProfileScalarFieldEnum = {
   description: 'description',
   is_system: 'is_system',
   is_default: 'is_default',
-  created_at: 'created_at'
+  is_active: 'is_active',
+  created_at: 'created_at',
+  default_screen_id: 'default_screen_id'
 } as const
 
 export type ProfileScalarFieldEnum = (typeof ProfileScalarFieldEnum)[keyof typeof ProfileScalarFieldEnum]
@@ -138,15 +145,29 @@ export type ProfileScalarFieldEnum = (typeof ProfileScalarFieldEnum)[keyof typeo
 
 export const ProfileScreenScalarFieldEnum = {
   profile_id: 'profile_id',
-  screen_id: 'screen_id',
-  can_view: 'can_view',
-  can_create: 'can_create',
-  can_edit: 'can_edit',
-  can_delete: 'can_delete',
-  is_default: 'is_default'
+  screen_id: 'screen_id'
 } as const
 
 export type ProfileScreenScalarFieldEnum = (typeof ProfileScreenScalarFieldEnum)[keyof typeof ProfileScreenScalarFieldEnum]
+
+
+export const PermissionScalarFieldEnum = {
+  id: 'id',
+  screen_id: 'screen_id',
+  action: 'action',
+  label: 'label',
+  is_system: 'is_system'
+} as const
+
+export type PermissionScalarFieldEnum = (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum]
+
+
+export const ProfilePermissionScalarFieldEnum = {
+  profile_id: 'profile_id',
+  permission_id: 'permission_id'
+} as const
+
+export type ProfilePermissionScalarFieldEnum = (typeof ProfilePermissionScalarFieldEnum)[keyof typeof ProfilePermissionScalarFieldEnum]
 
 
 export const UserProfileScalarFieldEnum = {
@@ -286,7 +307,8 @@ export const ProfileOrderByRelevanceFieldEnum = {
   id: 'id',
   key: 'key',
   name: 'name',
-  description: 'description'
+  description: 'description',
+  default_screen_id: 'default_screen_id'
 } as const
 
 export type ProfileOrderByRelevanceFieldEnum = (typeof ProfileOrderByRelevanceFieldEnum)[keyof typeof ProfileOrderByRelevanceFieldEnum]
@@ -298,6 +320,23 @@ export const ProfileScreenOrderByRelevanceFieldEnum = {
 } as const
 
 export type ProfileScreenOrderByRelevanceFieldEnum = (typeof ProfileScreenOrderByRelevanceFieldEnum)[keyof typeof ProfileScreenOrderByRelevanceFieldEnum]
+
+
+export const PermissionOrderByRelevanceFieldEnum = {
+  id: 'id',
+  screen_id: 'screen_id',
+  label: 'label'
+} as const
+
+export type PermissionOrderByRelevanceFieldEnum = (typeof PermissionOrderByRelevanceFieldEnum)[keyof typeof PermissionOrderByRelevanceFieldEnum]
+
+
+export const ProfilePermissionOrderByRelevanceFieldEnum = {
+  profile_id: 'profile_id',
+  permission_id: 'permission_id'
+} as const
+
+export type ProfilePermissionOrderByRelevanceFieldEnum = (typeof ProfilePermissionOrderByRelevanceFieldEnum)[keyof typeof ProfilePermissionOrderByRelevanceFieldEnum]
 
 
 export const UserProfileOrderByRelevanceFieldEnum = {

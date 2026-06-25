@@ -1,4 +1,4 @@
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { ClipboardPen, Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { PageHeader } from '@/components/page-header'
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
+import { PermissionsEditor } from './permissions-editor/permissions-editor'
 import { ScreenDialog } from './screen-dialog'
 import { useScreensPM } from './use-screens-pm'
 
@@ -31,6 +32,21 @@ export function AdminScreens() {
 	const actions = (screen: ScreenRow) => (
 		<>
 			{pm.canEdit && (
+				<PermissionsEditor
+					screen={screen}
+					trigger={
+						<Button
+							variant='outline'
+							size='sm'
+							className='w-16 lg:w-auto'
+							aria-label={`Edit ${screen.name} permissions`}
+						>
+							<ClipboardPen />
+						</Button>
+					}
+				/>
+			)}
+			{pm.canEdit && (
 				<ScreenDialog
 					screen={screen}
 					modules={pm.modules}
@@ -48,7 +64,7 @@ export function AdminScreens() {
 			{pm.canDelete && !screen.isSystem && (
 				<ConfirmDialog
 					title='Delete screen'
-					description={`Delete "${screen.name}"? Its grants are removed too.`}
+					description={`Delete "${screen.name}"? Only screens not assigned to any profile can be deleted.`}
 					confirmLabel='Delete'
 					onConfirm={() => pm.deleteScreen(screen.id)}
 					trigger={

@@ -2,12 +2,16 @@ import {
 	createProfileBodySchema,
 	type Profile,
 	profileDetailSchema,
-	setProfileScreensBodySchema,
+	type ProfileScreenGrant,
+	setProfileGrantsBodySchema,
 	updateProfileBodySchema,
 } from '@root/contracts'
 import { http, HttpResponse } from 'msw'
 
 import {
+	permissions,
+	profileDefaultScreen,
+	profilePermissions,
 	profiles,
 	profileScreens,
 	userProfiles,
@@ -16,6 +20,26 @@ import { requireAuth } from './mock-auth'
 
 let seq = 0
 const nextId = () => `prof-new-${++seq}`
+
+// Build the wire detail (membership + per-screen granted permission ids +
+// landing) from the three mutable seed maps.
+function buildDetail(profile: Profile) {
+	const memberScreenIds = profileScreens[profile.id] ?? []
+	const granted = new Set(profilePermissions[profile.id] ?? [])
+	const screensOut: ProfileScreenGrant[] = memberScreenIds.map(
+		(screenId) => ({
+			screen_id: screenId,
+			permission_ids: permissions
+				.filter((p) => p.screen_id === screenId && granted.has(p.id))
+				.map((p) => p.id),
+		}),
+	)
+	return profileDetailSchema.parse({
+		...profile,
+		default_screen_id: profileDefaultScreen[profile.id] ?? null,
+		screens: screensOut,
+	})
+}
 
 export const listProfilesMock = http.get('/profiles', ({ request }) => {
 	const denied = requireAuth(request.headers.get('Authorization'))
@@ -41,14 +65,7 @@ export const getProfileMock = http.get<{ id: string }>(
 			)
 		}
 
-		// Detail carries the grants (feeds the TransferTable). Parsed through the
-		// shared DTO so the mock can't drift from the contract.
-		return HttpResponse.json(
-			profileDetailSchema.parse({
-				...profile,
-				screens: profileScreens[profile.id] ?? [],
-			}),
-		)
+		return HttpResponse.json(buildDetail(profile))
 	},
 )
 
@@ -66,7 +83,8 @@ export const createProfileMock = http.post('/profiles', async ({ request }) => {
 		)
 	}
 
-	// is_system is seed-only; user-created profiles are never system profiles.
+	// is_system is seed-only; user-created profiles are never system profiles and
+	// start active with no memberships/grants.
 	const profile: Profile = {
 		id: nextId(),
 		key: parsed.data.key,
@@ -74,9 +92,12 @@ export const createProfileMock = http.post('/profiles', async ({ request }) => {
 		description: parsed.data.description,
 		is_default: parsed.data.is_default,
 		is_system: false,
+		is_active: true,
 	}
 	profiles.push(profile)
 	profileScreens[profile.id] = []
+	profilePermissions[profile.id] = []
+	profileDefaultScreen[profile.id] = null
 	// Single-default invariant: a new default demotes every other profile.
 	if (profile.is_default) {
 		for (const p of profiles) {
@@ -170,19 +191,29 @@ export const deleteProfileMock = http.delete<{ id: string }>(
 			)
 		}
 
+		// No cascade: a profile assigned to users can't be deleted — deactivate
+		// it or unassign its users first.
+		const assigned = userProfiles.filter(
+			(up) => up.profile_id === profile.id,
+		).length
+		if (assigned > 0) {
+			return HttpResponse.json(
+				{
+					message: `Assigned to ${assigned} user(s). Unassign it from those users first.`,
+				},
+				{ status: 409 },
+			)
+		}
+
 		profiles.splice(profiles.indexOf(profile), 1)
 		delete profileScreens[profile.id]
-		// Detach it from every user that held it.
-		for (let i = userProfiles.length - 1; i >= 0; i--) {
-			if (userProfiles[i].profile_id === profile.id) {
-				userProfiles.splice(i, 1)
-			}
-		}
+		delete profilePermissions[profile.id]
+		delete profileDefaultScreen[profile.id]
 		return new HttpResponse(null, { status: 204 })
 	},
 )
 
-export const setProfileScreensMock = http.put<{ id: string }>(
+export const setProfileGrantsMock = http.put<{ id: string }>(
 	'/profiles/:id/screens',
 	async ({ request, params }) => {
 		const denied = requireAuth(request.headers.get('Authorization'))
@@ -198,7 +229,7 @@ export const setProfileScreensMock = http.put<{ id: string }>(
 			)
 		}
 
-		const parsed = setProfileScreensBodySchema.safeParse(
+		const parsed = setProfileGrantsBodySchema.safeParse(
 			await request.json(),
 		)
 		if (!parsed.success) {
@@ -208,13 +239,34 @@ export const setProfileScreensMock = http.put<{ id: string }>(
 			)
 		}
 
-		// Replace the grants wholesale — this is the TransferTable save.
-		profileScreens[profile.id] = parsed.data.screens
-		return HttpResponse.json(
-			profileDetailSchema.parse({
-				...profile,
-				screens: profileScreens[profile.id],
-			}),
-		)
+		const membership = parsed.data.screens.map((s) => s.screen_id)
+		const grantedIds = parsed.data.screens.flatMap((s) => s.permission_ids)
+		const landing = parsed.data.default_screen_id
+
+		// The landing screen must be an assigned, viewable screen.
+		if (landing !== null) {
+			const viewPermId = permissions.find(
+				(p) => p.screen_id === landing && p.action === 'view',
+			)?.id
+			const ok =
+				membership.includes(landing) &&
+				!!viewPermId &&
+				grantedIds.includes(viewPermId)
+			if (!ok) {
+				return HttpResponse.json(
+					{
+						message:
+							'The landing screen must be an assigned, viewable screen.',
+					},
+					{ status: 400 },
+				)
+			}
+		}
+
+		// Replace membership, grants and landing wholesale — the profile-detail save.
+		profileScreens[profile.id] = membership
+		profilePermissions[profile.id] = grantedIds
+		profileDefaultScreen[profile.id] = landing
+		return HttpResponse.json(buildDetail(profile))
 	},
 )

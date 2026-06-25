@@ -27,6 +27,7 @@ vi.mock('@/api/modules', () => ({
 			description: null,
 			order: 0,
 			isSystem: true,
+			isActive: true,
 		},
 		{
 			id: 'm-gym',
@@ -35,6 +36,7 @@ vi.mock('@/api/modules', () => ({
 			description: null,
 			order: 1,
 			isSystem: false,
+			isActive: true,
 		},
 	]),
 }))
@@ -50,6 +52,8 @@ vi.mock('@/api/screens', () => ({
 			description: null,
 			order: 0,
 			isSystem: true,
+			isActive: true,
+			isEnabled: true,
 		},
 		{
 			id: 's-ac-screens',
@@ -60,6 +64,8 @@ vi.mock('@/api/screens', () => ({
 			description: null,
 			order: 1,
 			isSystem: true,
+			isActive: true,
+			isEnabled: true,
 		},
 		{
 			id: 's-gym-dash',
@@ -69,6 +75,56 @@ vi.mock('@/api/screens', () => ({
 			path: '/',
 			description: null,
 			order: 0,
+			isSystem: false,
+			isActive: true,
+			isEnabled: true,
+		},
+	]),
+}))
+
+// Curated catalog: Manage Modules has the four ops; the others just `view`.
+vi.mock('@/api/permissions', () => ({
+	getPermissions: vi.fn(async () => [
+		{
+			id: 'p-acm-view',
+			screenId: 's-ac-modules',
+			action: 'view',
+			label: 'View',
+			isSystem: true,
+		},
+		{
+			id: 'p-acm-add',
+			screenId: 's-ac-modules',
+			action: 'create',
+			label: 'Add',
+			isSystem: true,
+		},
+		{
+			id: 'p-acm-edit',
+			screenId: 's-ac-modules',
+			action: 'edit',
+			label: 'Edit',
+			isSystem: true,
+		},
+		{
+			id: 'p-acm-remove',
+			screenId: 's-ac-modules',
+			action: 'delete',
+			label: 'Remove',
+			isSystem: true,
+		},
+		{
+			id: 'p-acs-view',
+			screenId: 's-ac-screens',
+			action: 'view',
+			label: 'View',
+			isSystem: true,
+		},
+		{
+			id: 'p-dash-view',
+			screenId: 's-gym-dash',
+			action: 'view',
+			label: 'View',
 			isSystem: false,
 		},
 	]),
@@ -82,19 +138,13 @@ vi.mock('@/api/profiles', () => ({
 		description: null,
 		isSystem: false,
 		isDefault: false,
-		// Grants one access-control screen, so it sits on the Granted side.
-		screens: [
-			{
-				screenId: 's-ac-modules',
-				view: true,
-				create: false,
-				edit: false,
-				delete: false,
-				isDefault: false,
-			},
-		],
+		isActive: true,
+		defaultScreenId: null,
+		// Membership: one access-control screen granted `view`, so it sits on the
+		// Granted side.
+		screens: [{ screenId: 's-ac-modules', permissionIds: ['p-acm-view'] }],
 	})),
-	setProfileScreens: vi.fn(async () => {}),
+	setProfileGrants: vi.fn(async () => {}),
 	updateProfile: vi.fn(async () => ({})),
 	// Two profiles: p1 (this page, not default) + p2 the current default.
 	getProfiles: vi.fn(async () => [
@@ -105,6 +155,7 @@ vi.mock('@/api/profiles', () => ({
 			description: null,
 			isSystem: false,
 			isDefault: false,
+			isActive: true,
 		},
 		{
 			id: 'p2',
@@ -113,6 +164,7 @@ vi.mock('@/api/profiles', () => ({
 			description: null,
 			isSystem: false,
 			isDefault: true,
+			isActive: true,
 		},
 	]),
 }))
@@ -155,8 +207,9 @@ describe('ProfileDetail — grants module filter + column', () => {
 		expect(screen.getByText('Gym Dashboard')).toBeInTheDocument()
 		expect(screen.getByText('Manage Modules')).toBeInTheDocument() // granted
 
-		// Pick "Gym" in the chips filter.
-		await user.click(screen.getByRole('combobox'))
+		// The first combobox is the module filter (per-row permission selects sit
+		// below it on the Granted side). Pick "Gym".
+		await user.click(screen.getAllByRole('combobox')[0])
 		const gymOption = screen
 			.getAllByText('Gym')
 			.find((el) => el.closest('[data-slot="command-item"]'))
@@ -173,6 +226,18 @@ describe('ProfileDetail — grants module filter + column', () => {
 		// …but the granted access-control screen stays on the Granted side.
 		expect(screen.getByText('Manage Modules')).toBeInTheDocument()
 	})
+
+	it('shows a Permissions column with the granted screen permission badges', async () => {
+		renderDetail()
+
+		await screen.findByText('Manage Modules')
+
+		expect(
+			screen.getByRole('columnheader', { name: 'Permissions' }),
+		).toBeInTheDocument()
+		// The granted screen shows its granted permission label as a chip.
+		expect(screen.getByText('View')).toBeInTheDocument()
+	})
 })
 
 describe('ProfileDetail — single-default invariant', () => {
@@ -183,7 +248,9 @@ describe('ProfileDetail — single-default invariant', () => {
 		await screen.findByText('Gym Dashboard')
 
 		// Turn this (non-default) profile into the default, then save.
-		await user.click(screen.getByRole('switch'))
+		await user.click(
+			screen.getByRole('switch', { name: 'Default profile' }),
+		)
 		await user.click(screen.getByRole('button', { name: 'Save changes' }))
 
 		// The confirm dialog names the current default profile.
@@ -202,13 +269,17 @@ describe('ProfileDetail — single-default invariant', () => {
 			description: null,
 			isSystem: false,
 			isDefault: true,
+			isActive: true,
+			defaultScreenId: null,
 			screens: [],
 		})
 		renderDetail()
 
 		await screen.findByText('Gym Dashboard')
 
-		expect(screen.getByRole('switch')).toBeDisabled()
+		expect(
+			screen.getByRole('switch', { name: 'Default profile' }),
+		).toBeDisabled()
 		expect(
 			screen.getByText(/This is the default profile/),
 		).toBeInTheDocument()

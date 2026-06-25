@@ -6,9 +6,13 @@ import { prisma } from '@/lib/prisma'
 import createAndAuthUser from '@/utils/tests/create-and-auth-user'
 
 describe('Screens routes (e2e)', () => {
+	// Auth once (fixed-credential helper would 409 on a second call); share it.
+	let token: string
+
 	beforeAll(async () => {
 		// running app
 		await app.ready()
+		token = (await createAndAuthUser(app, true)).token
 	})
 
 	afterAll(async () => {
@@ -17,9 +21,6 @@ describe('Screens routes (e2e)', () => {
 	})
 
 	it('should be able to CRUD a screen', async () => {
-		// get admin auth user
-		const { token } = await createAndAuthUser(app, true)
-
 		// a screen needs a module to belong to
 		const module = await prisma.module.create({
 			data: { key: 'test-mod', name: 'Test', order: 0 },
@@ -104,5 +105,35 @@ describe('Screens routes (e2e)', () => {
 			.send()
 
 		expect(sysDeleteResponse.statusCode).toEqual(409)
+	})
+
+	it('blocks deleting a screen still assigned to a profile (no cascade)', async () => {
+		const module = await prisma.module.create({
+			data: { key: `mod-${Date.now()}`, name: 'M', order: 0 },
+		})
+		const screen = await prisma.screen.create({
+			data: {
+				module_id: module.id,
+				key: `scr-${Date.now()}`,
+				name: 'S',
+				order: 0,
+			},
+		})
+		const profile = await prisma.profile.create({
+			data: { key: `profile-${Date.now()}`, name: 'P' },
+		})
+		await prisma.profileScreen.create({
+			data: { profile_id: profile.id, screen_id: screen.id },
+		})
+
+		const response = await request(app.server)
+			.delete(`/screens/${screen.id}`)
+			.set('Authorization', `Bearer ${token}`)
+			.send()
+
+		expect(response.statusCode).toEqual(409)
+		expect(response.body.message).toEqual(
+			'Assigned to 1 profile(s). Remove it from those profiles first.',
+		)
 	})
 })

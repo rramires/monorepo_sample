@@ -15,19 +15,19 @@ export interface ProfileModel {
 	description: string | null
 	isSystem: boolean
 	isDefault: boolean
+	isActive: boolean
 }
 
-export interface GrantModel {
+// One assigned screen inside a profile: membership + the granted permission ids
+// (a subset of the screen's curated catalog). An empty list = member, no perms.
+export interface ProfileScreenGrantModel {
 	screenId: string
-	view: boolean
-	create: boolean
-	edit: boolean
-	delete: boolean
-	isDefault: boolean
+	permissionIds: string[]
 }
 
 export interface ProfileDetailModel extends ProfileModel {
-	screens: GrantModel[]
+	defaultScreenId: string | null
+	screens: ProfileScreenGrantModel[]
 }
 
 const listSchema = z.object({ profiles: z.array(profileSchema) })
@@ -41,19 +41,17 @@ function toModel(p: z.infer<typeof profileSchema>): ProfileModel {
 		description: p.description ?? null,
 		isSystem: p.is_system,
 		isDefault: p.is_default,
+		isActive: p.is_active,
 	}
 }
 
 function toDetail(p: z.infer<typeof profileDetailSchema>): ProfileDetailModel {
 	return {
 		...toModel(p),
+		defaultScreenId: p.default_screen_id,
 		screens: p.screens.map((s) => ({
 			screenId: s.screen_id,
-			view: s.can_view,
-			create: s.can_create,
-			edit: s.can_edit,
-			delete: s.can_delete,
-			isDefault: s.is_default,
+			permissionIds: s.permission_ids,
 		})),
 	}
 }
@@ -87,19 +85,19 @@ export async function deleteProfile(id: string): Promise<void> {
 	await api.delete(`/profiles/${id}`)
 }
 
-export async function setProfileScreens(
+// Replace the profile's memberships, per-screen granted permissions and landing
+// screen in one call (the profile-detail save).
+export async function setProfileGrants(
 	id: string,
-	grants: GrantModel[],
+	grants: ProfileScreenGrantModel[],
+	defaultScreenId: string | null,
 ): Promise<ProfileDetailModel> {
 	const body = {
 		screens: grants.map((g) => ({
 			screen_id: g.screenId,
-			can_view: g.view,
-			can_create: g.create,
-			can_edit: g.edit,
-			can_delete: g.delete,
-			is_default: g.isDefault,
+			permission_ids: g.permissionIds,
 		})),
+		default_screen_id: defaultScreenId,
 	}
 	const response = await api.put(`/profiles/${id}/screens`, body)
 	return toDetail(profileDetailSchema.parse(response.data))

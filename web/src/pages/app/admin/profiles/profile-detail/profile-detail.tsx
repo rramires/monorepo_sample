@@ -20,10 +20,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { Switch } from '@/components/ui/switch'
+import { cn } from '@/lib/utils'
 
 import { type ScreenRow, useProfileDetailPM } from './use-profile-detail-pm'
-
-const ACTIONS = ['view', 'create', 'edit', 'delete'] as const
 
 export function ProfileDetail() {
 	const pm = useProfileDetailPM()
@@ -60,8 +59,21 @@ export function ProfileDetail() {
 		header: 'Screen',
 		cell: (s) => (
 			<div className='flex flex-col'>
-				<span className='font-medium'>{s.name}</span>
-				<span className='text-muted-foreground text-xs'>{s.key}</span>
+				<span className='flex items-center gap-2 font-medium'>
+					{/* Dim the name+key (but not the badge) when disabled. */}
+					<span className={cn(!s.isActive && 'opacity-50')}>
+						{s.name}
+					</span>
+					{!s.isActive && <Badge variant='outline'>Disabled</Badge>}
+				</span>
+				<span
+					className={cn(
+						'text-muted-foreground text-xs',
+						!s.isActive && 'opacity-50',
+					)}
+				>
+					{s.key}
+				</span>
 			</div>
 		),
 	}
@@ -70,7 +82,12 @@ export function ProfileDetail() {
 		key: 'module',
 		header: 'Module',
 		cell: (s) => (
-			<span className='text-muted-foreground text-sm'>
+			<span
+				className={cn(
+					'text-muted-foreground text-sm',
+					!s.isActive && 'opacity-50',
+				)}
+			>
 				{s.moduleName}
 			</span>
 		),
@@ -84,29 +101,54 @@ export function ProfileDetail() {
 	const assignedColumns: TransferColumn<ScreenRow>[] = [
 		nameColumn,
 		moduleColumn,
-		...ACTIONS.map((action) => ({
-			key: action,
-			header: action[0].toUpperCase() + action.slice(1),
-			className: 'text-center',
-			cell: (s: ScreenRow) => (
-				<Checkbox
-					checked={pm.grants[s.id]?.[action] ?? false}
-					onCheckedChange={() => pm.toggleAction(s.id, action)}
-					disabled={!pm.canEdit}
-					aria-label={`${s.key} ${action}`}
-				/>
-			),
-		})),
 		{
-			key: 'default',
-			header: 'Default',
+			key: 'permissions',
+			header: 'Permissions',
+			className: 'min-w-56',
+			cell: (s: ScreenRow) => {
+				const options = (pm.permsByScreen.get(s.id) ?? []).map((p) => ({
+					value: p.id,
+					label: p.label,
+				}))
+				if (options.length === 0) {
+					return (
+						<span
+							className={cn(
+								'text-muted-foreground text-xs',
+								!s.isActive && 'opacity-50',
+							)}
+						>
+							No permissions defined.
+						</span>
+					)
+				}
+				return (
+					<MultiSelect
+						options={options}
+						selected={pm.grants[s.id] ?? []}
+						onChange={(ids) => pm.setScreenPermissions(s.id, ids)}
+						// A disabled screen is on its way out — lock its permissions.
+						disabled={!pm.canEdit || !s.isActive}
+						placeholder='No permissions'
+						searchPlaceholder='Search permissions…'
+						emptyText='No permissions.'
+					/>
+				)
+			},
+		},
+		{
+			key: 'landing',
+			header: 'Landing',
 			className: 'text-center',
 			cell: (s: ScreenRow) => (
 				<Checkbox
 					checked={pm.defaultScreenId === s.id}
 					onCheckedChange={() => pm.setDefault(s.id)}
-					disabled={!pm.canEdit}
-					aria-label={`${s.key} default`}
+					// Only a viewable, active screen can be the landing.
+					disabled={
+						!pm.canEdit || !pm.isViewable(s.id) || !s.isActive
+					}
+					aria-label={`${s.key} landing`}
 				/>
 			),
 		},
@@ -186,9 +228,27 @@ export function ProfileDetail() {
 							<Switch
 								checked={pm.isDefault}
 								onCheckedChange={pm.setIsDefault}
+								aria-label='Default profile'
 								// The current default can't be switched off (it
 								// would leave zero); promote another profile.
 								disabled={!pm.canEdit || pm.profile.isDefault}
+							/>
+						</div>
+
+						<div className='flex items-center justify-between gap-4 border-t pt-4'>
+							<div>
+								<Label>Active</Label>
+								<p className='text-muted-foreground text-xs'>
+									Inactive profiles are hidden when assigning
+									profiles to users; existing assignments keep
+									working.
+								</p>
+							</div>
+							<Switch
+								checked={pm.isActive}
+								onCheckedChange={pm.setIsActive}
+								aria-label='Active'
+								disabled={!pm.canEdit}
 							/>
 						</div>
 					</CardContent>
@@ -198,8 +258,8 @@ export function ProfileDetail() {
 					<CardHeader>
 						<CardTitle>Screen grants</CardTitle>
 						<CardDescription>
-							Move screens to "Granted" and pick the allowed
-							actions.
+							Move screens to "Granted", pick each screen's
+							permissions, and choose one landing screen.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className='flex flex-col gap-6'>
@@ -251,6 +311,20 @@ export function ProfileDetail() {
 					title='Replace default profile'
 					description={`The current default profile is: ${pm.currentDefaultName}. Do you confirm that you want to replace it as the default?`}
 					confirmLabel='Replace'
+				/>
+
+				<ConfirmDialog
+					{...pm.confirmRemoveDisabled}
+					title='Remove disabled screen'
+					description="This screen is disabled — if you remove it you can't re-add it until it's re-enabled. Remove?"
+					confirmLabel='Remove'
+				/>
+
+				<ConfirmDialog
+					{...pm.confirmDeactivate}
+					title='Deactivate profile'
+					description={`Deactivate "${pm.profile.name}"? It will be hidden when assigning profiles to users; existing assignments keep working.`}
+					confirmLabel='Deactivate'
 				/>
 			</div>
 		</>

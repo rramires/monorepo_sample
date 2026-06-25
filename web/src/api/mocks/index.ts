@@ -21,13 +21,19 @@ import {
 	updateModuleMock,
 } from './modules-mock'
 import { nearbyGymsMock } from './nearby-gyms-mock'
+import {
+	createPermissionMock,
+	deletePermissionMock,
+	listPermissionsMock,
+	updatePermissionMock,
+} from './permissions-mock'
 import { profileMock } from './profile-mock'
 import {
 	createProfileMock,
 	deleteProfileMock,
 	getProfileMock,
 	listProfilesMock,
-	setProfileScreensMock,
+	setProfileGrantsMock,
 	updateProfileEntityMock,
 } from './profiles-mock'
 import { refreshMock } from './refresh-mock'
@@ -83,6 +89,12 @@ export const worker = setupWorker(
 	createModuleMock,
 	updateModuleMock,
 	deleteModuleMock,
+	listPermissionsMock,
+	// The nested /screens/:screenId/permissions create sits before the generic
+	// /screens handlers so it isn't shadowed.
+	createPermissionMock,
+	updatePermissionMock,
+	deletePermissionMock,
 	listScreensMock,
 	createScreenMock,
 	updateScreenMock,
@@ -92,7 +104,7 @@ export const worker = setupWorker(
 	createProfileMock,
 	updateProfileEntityMock,
 	deleteProfileMock,
-	setProfileScreensMock,
+	setProfileGrantsMock,
 	getUserProfilesMock,
 	setUserProfilesMock,
 	getUsersMock,

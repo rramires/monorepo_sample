@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 
 import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
+import { ScreenInUseError } from '@/use-cases/errors/screen-in-use-error'
 import { SystemScreenError } from '@/use-cases/errors/system-screen-error'
 import { makeScreensUseCase } from '@/use-cases/factories/make-screens-use-case'
 
@@ -23,7 +24,10 @@ export async function deleteController(
 		if (err instanceof ResourceNotFoundError) {
 			return reply.status(404).send({ message: err.message })
 		}
-		if (err instanceof SystemScreenError) {
+		if (
+			err instanceof SystemScreenError ||
+			err instanceof ScreenInUseError
+		) {
 			return reply.status(409).send({ message: err.message })
 		}
 		throw err
