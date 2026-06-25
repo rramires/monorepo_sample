@@ -6,26 +6,44 @@ never copies). Architecture: [`PROJECT.md`](./PROJECT.md).
 
 ## Resume prompt (cole numa sessão nova, após compactar)
 
-> Leia `HANDOFF.md` + `CLAUDE.md` na raiz do monorepo `monorepo_sample` e continue
-> a partir de _Current state_. **Tudo entregue e mergeado no `master`; nada em
-> andamento, backlog vazio.** Monorepo: `api/` (Fastify+Prisma+MySQL) + `web/`
-> (React+Vite+MSW) + `packages/contracts/` (`@root/contracts`, Zod).
+> Sessão de **execução**. Lê `PLAN.md` (raiz — spec completa, local/gitignored) +
+> `HANDOFF.md` + `CLAUDE.md` do monorepo `monorepo_sample`. Tarefa: **RBAC
+> permissions redesign** — labels amigáveis + ops **curadas por tela** + **3
+> eixos** (grant RBAC / kill switch `Screen.is_enabled` / disable `is_active`) +
+> **delete sem cascade** (409 quando em uso). Modelo: tabela `permissions`
+> (`screen_id, action, label`) + junção `profile_permissions` + `profile_screens`
+> vira **membership** + `Profile.default_screen_id`. Admin bypassa tudo.
 >
-> Doutrina (em `CLAUDE.md`, fonte única): 1 branch local por tarefa off `master`;
-> **commit por fase** após gate verde; **antes de cada commit web**:
-> `pnpm -C web lint:fix && pnpm -C web format`; gate web `lint && build &&
-> test:run` (+`test:e2e` se mexer em fluxo), gate api `lint && compile && test`
-> (+`test:e2e` com MySQL se mexer em rota); docs EN+PT (4 arquivos). **PARE** pro
-> usuário testar no browser, autorizar o merge (`git merge --no-ff`) e **pushar
-> (só o usuário pusha)**. Confirme antes de irreversível. Responda em pt-BR.
-> `web/docs/TUTORIAL_*` é congelado — não mexer.
+> **Frontend-first com MSW**, depois API espelha (status/`message` verbatim).
+> Executa **fase a fase do PLAN** (G0 contracts → G1–G4 web+MSW → G5–G8 api → G9
+> docs → Final), **gate verde + commit por fase** (web: `pnpm -C web lint:fix &&
+> pnpm -C web format` antes; gates no `CLAUDE.md`). Branch local
+> `feat/rbac-permissions` off `master`. **NÃO pushar** (só o usuário). **PARA** no
+> Final pro teste no browser + merge `--no-ff`. Confirma antes de irreversível.
+> Responde em pt-BR; UI em inglês. `web/docs/TUTORIAL_*` congelado. Backlog
+> separado (NÃO agora): fresta do `RequireScreen` (`isFetching`).
 
 ## Current state
 
-- **Branch:** `master` — clean. Code through the responsive merge `08194b5` is
-  **pushed**; the `docs(web)`/`docs(api)` commits after it (`3e0bca2`, `c7103c6`)
-  and this HANDOFF edit are **local — the user pushes**. Last commit `c7103c6`,
-  2026-06-25.
+- **Branch:** `master` — clean, **all pushed** (responsive pass + its docs).
+  Stamp: 2026-06-25.
+- **▶ NEXT (planned, not started): RBAC permissions redesign.** Design **locked
+  with the user**; full execution spec in **`PLAN.md`** (root, gitignored — local
+  only). Build **frontend-first with MSW**, then mirror the API. Start at **G0
+  (contracts)**, one local branch `feat/rbac-permissions`, gate+commit per phase,
+  STOP at Final for browser test + merge. Gist:
+  - New `permissions` table (`screen_id`, `action`, `label`) + `profile_permissions`
+    M:N; `profile_screens` → **membership**; `Profile.default_screen_id` replaces
+    the per-grant `is_default`. **Friendly labels** + **curated ops** per screen
+    (e.g. Check-in = view + "Check in" only — no phantom Edit/Delete).
+  - **3 axes:** grant (RBAC) · **kill switch** `Screen.is_enabled` (runtime, "This
+    screen is temporarily unavailable.") · **disable** `is_active` on
+    Module/Screen/Profile (lifecycle: hidden from "add" below, existing keep).
+    Admin bypasses all. `view` becomes an explicit grant (no more default-true).
+  - **Delete = no cascade** → 409 when in use (+ `is_system`); else Disable.
+  - Two Forbidden messages: no-view → "You don't have access to this screen yet.";
+    killed → "This screen is temporarily unavailable."
+  - Backlog (separate, not in this package): `RequireScreen` `isFetching` gap.
 - **Done + merged + pushed — access-control follow-up package COMPLETE (G0–G6):**
   - **G0** web e2e scripts → `test:e2e`. **G1** `is_system` on Module+Screen
     (delete/key-rename → 409; screen locks module+path; read-only edit fields).
