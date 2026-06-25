@@ -71,9 +71,10 @@ export function useCheckInsPM() {
 		hasNextPage: checkIns.length === PAGE_SIZE,
 		nextPage: () => setPage((current) => current + 1),
 		prevPage: () => setPage((current) => Math.max(1, current - 1)),
-		// Validating needs the gym.validations `create` grant; members never
-		// see the button (managers and admins do).
-		canValidate: can('gym.validations', 'create'),
+		// Validating is an extra op of the Check-ins screen (composed key), so the
+		// grant is gym.check-ins.edit_validate; members never see the button
+		// (managers and admins do).
+		canValidate: can('gym.check-ins', 'edit_validate'),
 		validateCheckIn: (id: string) => validate.mutate(id),
 		validatingId: validate.isPending ? validate.variables : null,
 	}
