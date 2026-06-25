@@ -44,7 +44,11 @@ export function AdminProfiles() {
 					confirmLabel='Delete'
 					onConfirm={() => pm.deleteProfile(profile.id)}
 					trigger={
-						<Button variant='outline' size='sm'>
+						<Button
+							variant='outline'
+							size='sm'
+							className='w-16 lg:w-auto'
+						>
 							<Trash2 />
 						</Button>
 					}

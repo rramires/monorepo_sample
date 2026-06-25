@@ -34,7 +34,11 @@ export function AdminModules() {
 				<ModuleDialog
 					module={module}
 					trigger={
-						<Button variant='outline' size='sm'>
+						<Button
+							variant='outline'
+							size='sm'
+							className='w-16 lg:w-auto'
+						>
 							<Pencil />
 						</Button>
 					}
@@ -47,7 +51,11 @@ export function AdminModules() {
 					confirmLabel='Delete'
 					onConfirm={() => pm.deleteModule(module.id)}
 					trigger={
-						<Button variant='outline' size='sm'>
+						<Button
+							variant='outline'
+							size='sm'
+							className='w-16 lg:w-auto'
+						>
 							<Trash2 />
 						</Button>
 					}

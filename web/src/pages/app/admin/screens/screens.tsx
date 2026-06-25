@@ -35,7 +35,11 @@ export function AdminScreens() {
 					screen={screen}
 					modules={pm.modules}
 					trigger={
-						<Button variant='outline' size='sm'>
+						<Button
+							variant='outline'
+							size='sm'
+							className='w-16 lg:w-auto'
+						>
 							<Pencil />
 						</Button>
 					}
@@ -48,7 +52,11 @@ export function AdminScreens() {
 					confirmLabel='Delete'
 					onConfirm={() => pm.deleteScreen(screen.id)}
 					trigger={
-						<Button variant='outline' size='sm'>
+						<Button
+							variant='outline'
+							size='sm'
+							className='w-16 lg:w-auto'
+						>
 							<Trash2 />
 						</Button>
 					}

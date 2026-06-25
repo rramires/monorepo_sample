@@ -1,6 +1,8 @@
+import { Pencil } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { PageHeader } from '@/components/page-header'
+import { Pager } from '@/components/pager/pager'
 import {
 	ResponsiveList,
 	type ResponsiveListColumn,
@@ -35,8 +37,10 @@ function statusBadges(row: UserRow) {
 
 function editButton(row: UserRow) {
 	return (
-		<Button asChild variant='outline' size='sm'>
-			<Link to={`/admin/users/${row.id}`}>Edit</Link>
+		<Button asChild variant='outline' size='icon' className='w-16 lg:w-8'>
+			<Link to={`/admin/users/${row.id}`} aria-label='Edit'>
+				<Pencil />
+			</Link>
 		</Button>
 	)
 }
@@ -112,27 +116,15 @@ export function AdminUsers() {
 					</CardContent>
 				</Card>
 
-				<div className='flex items-center justify-end gap-2'>
-					<Button
-						variant='outline'
-						size='sm'
-						onClick={pm.prevPage}
-						disabled={!pm.hasPrevPage}
-					>
-						Previous
-					</Button>
-					<span className='text-muted-foreground text-sm'>
-						Page {pm.page}
-					</span>
-					<Button
-						variant='outline'
-						size='sm'
-						onClick={pm.nextPage}
-						disabled={!pm.hasNextPage}
-					>
-						Next
-					</Button>
-				</div>
+				{pm.status === 'list' && (
+					<Pager
+						page={pm.page}
+						canPrev={pm.hasPrevPage}
+						canNext={pm.hasNextPage}
+						onPrev={pm.prevPage}
+						onNext={pm.nextPage}
+					/>
+				)}
 			</div>
 		</>
 	)
