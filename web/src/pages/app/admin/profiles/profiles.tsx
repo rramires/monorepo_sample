@@ -3,7 +3,6 @@ import { Link } from 'react-router'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { PageHeader } from '@/components/page-header'
-import { DataCard } from '@/components/responsive-list/data-card'
 import {
 	ResponsiveList,
 	type ResponsiveListColumn,
@@ -59,24 +58,28 @@ export function AdminProfiles() {
 			header: 'Key',
 			cell: (profile) => profile.key,
 			className: 'font-mono text-xs',
+			card: 'top',
 		},
 		{
 			key: 'name',
 			header: 'Name',
 			cell: (profile) => profile.name,
 			className: 'font-medium',
+			card: 'top',
 		},
 		{
 			key: 'flags',
 			header: 'Flags',
 			cell: flagBadges,
 			className: 'space-x-1',
+			card: 'top',
 		},
 		{
 			key: 'description',
 			header: 'Description',
 			cell: (profile) => profile.description,
 			className: 'text-muted-foreground',
+			card: 'bottom',
 		},
 		{
 			key: 'actions',
@@ -84,24 +87,9 @@ export function AdminProfiles() {
 			cell: actions,
 			className: 'space-x-2 text-right',
 			headClassName: 'text-right',
+			card: 'actions',
 		},
 	]
-
-	const renderCard = (profile: ProfileRow) => (
-		<DataCard
-			primary={profile.name}
-			secondary={<span className='font-mono'>{profile.key}</span>}
-			badges={flagBadges(profile)}
-			footer={
-				<>
-					<span className='text-muted-foreground text-sm'>
-						{profile.description}
-					</span>
-					<div className='flex gap-2'>{actions(profile)}</div>
-				</>
-			}
-		/>
-	)
 
 	return (
 		<>
@@ -131,7 +119,6 @@ export function AdminProfiles() {
 						rows={pm.profiles}
 						columns={columns}
 						getRowKey={(profile) => String(profile.id)}
-						renderCard={renderCard}
 						empty={
 							<p className='text-muted-foreground text-sm'>
 								No profiles found.

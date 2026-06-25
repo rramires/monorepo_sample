@@ -2,7 +2,6 @@ import { Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { PageHeader } from '@/components/page-header'
-import { DataCard } from '@/components/responsive-list/data-card'
 import {
 	ResponsiveList,
 	type ResponsiveListColumn,
@@ -62,24 +61,28 @@ export function AdminScreens() {
 			key: 'module',
 			header: 'Module',
 			cell: (screen) => pm.moduleName(screen.moduleId),
+			card: 'bottom',
 		},
 		{
 			key: 'key',
 			header: 'Key',
 			cell: (screen) => screen.key,
 			className: 'font-mono text-xs',
+			card: 'top',
 		},
 		{
 			key: 'name',
 			header: 'Name',
 			cell: nameWithFlag,
 			className: 'space-x-1 font-medium',
+			card: 'top',
 		},
 		{
 			key: 'path',
 			header: 'Path',
 			cell: (screen) => screen.path,
 			className: 'text-muted-foreground font-mono text-xs',
+			card: 'top',
 		},
 		{
 			key: 'actions',
@@ -87,23 +90,9 @@ export function AdminScreens() {
 			cell: actions,
 			className: 'space-x-2 text-right',
 			headClassName: 'text-right',
+			card: 'actions',
 		},
 	]
-
-	const renderCard = (screen: ScreenRow) => (
-		<DataCard
-			primary={nameWithFlag(screen)}
-			secondary={<span className='font-mono'>{screen.path}</span>}
-			footer={
-				<>
-					<span className='text-muted-foreground text-sm'>
-						{pm.moduleName(screen.moduleId)}
-					</span>
-					<div className='flex gap-2'>{actions(screen)}</div>
-				</>
-			}
-		/>
-	)
 
 	return (
 		<>
@@ -134,7 +123,6 @@ export function AdminScreens() {
 						rows={pm.rows}
 						columns={columns}
 						getRowKey={(screen) => String(screen.id)}
-						renderCard={renderCard}
 						empty={
 							<p className='text-muted-foreground text-sm'>
 								No screens found.

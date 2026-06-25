@@ -2,7 +2,6 @@ import { Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { PageHeader } from '@/components/page-header'
-import { DataCard } from '@/components/responsive-list/data-card'
 import {
 	ResponsiveList,
 	type ResponsiveListColumn,
@@ -62,19 +61,27 @@ export function AdminModules() {
 			header: 'Key',
 			cell: (module) => module.key,
 			className: 'font-mono text-xs',
+			card: 'top',
 		},
 		{
 			key: 'name',
 			header: 'Name',
 			cell: nameWithFlag,
 			className: 'space-x-1 font-medium',
+			card: 'top',
 		},
-		{ key: 'order', header: 'Order', cell: (module) => module.order },
+		{
+			key: 'order',
+			header: 'Order',
+			cell: (module) => module.order,
+			card: 'bottom-right',
+		},
 		{
 			key: 'description',
 			header: 'Description',
 			cell: (module) => module.description,
 			className: 'text-muted-foreground',
+			card: 'bottom',
 		},
 		{
 			key: 'actions',
@@ -82,23 +89,9 @@ export function AdminModules() {
 			cell: actions,
 			className: 'space-x-2 text-right',
 			headClassName: 'text-right',
+			card: 'actions',
 		},
 	]
-
-	const renderCard = (module: ModuleRow) => (
-		<DataCard
-			primary={nameWithFlag(module)}
-			secondary={<span className='font-mono'>{module.key}</span>}
-			footer={
-				<>
-					<span className='text-muted-foreground text-sm'>
-						{module.description || `Order ${module.order}`}
-					</span>
-					<div className='flex gap-2'>{actions(module)}</div>
-				</>
-			}
-		/>
-	)
 
 	return (
 		<>
@@ -128,7 +121,6 @@ export function AdminModules() {
 						rows={pm.modules}
 						columns={columns}
 						getRowKey={(module) => String(module.id)}
-						renderCard={renderCard}
 						empty={
 							<p className='text-muted-foreground text-sm'>
 								No modules found.

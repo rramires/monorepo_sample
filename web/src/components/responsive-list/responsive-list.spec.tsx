@@ -3,24 +3,26 @@ import { type ReactNode } from 'react'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { renderWithProviders } from '../../../test/utils'
-import { DataCard, InitialsAvatar } from './data-card'
 import { ResponsiveList, type ResponsiveListColumn } from './responsive-list'
 
-type Row = { id: string; name: string; role: string }
+type Row = { id: string; name: string; role: string; note: string }
 
 const ROWS: Row[] = [
-	{ id: '1', name: 'Ada Lovelace', role: 'ADMIN' },
-	{ id: '2', name: 'Linus', role: 'USER' },
+	{ id: '1', name: 'Ada Lovelace', role: 'ADMIN', note: 'first' },
+	{ id: '2', name: 'Linus', role: 'USER', note: 'second' },
 ]
 
 const COLUMNS: ResponsiveListColumn<Row>[] = [
-	{ key: 'name', header: 'Name', cell: (row) => row.name },
-	{ key: 'role', header: 'Role', cell: (row) => row.role },
+	{ key: 'name', header: 'Name', cell: (row) => row.name, card: 'top' },
+	{ key: 'role', header: 'Role', cell: (row) => row.role, card: 'top' },
+	{ key: 'note', header: 'Note', cell: (row) => row.note, card: 'bottom' },
+	{
+		key: 'actions',
+		header: 'Actions',
+		cell: () => <button>Edit</button>,
+		card: 'actions',
+	},
 ]
-
-function renderCard(row: Row) {
-	return <div data-testid='card'>{row.name}</div>
-}
 
 function setViewport(width: number) {
 	Object.defineProperty(window, 'innerWidth', {
@@ -36,7 +38,6 @@ function renderList(rows: Row[], empty?: ReactNode) {
 			rows={rows}
 			columns={COLUMNS}
 			getRowKey={(row) => row.id}
-			renderCard={renderCard}
 			empty={empty}
 		/>,
 	)
@@ -54,16 +55,18 @@ describe('ResponsiveList', () => {
 		expect(screen.getByRole('table')).toBeInTheDocument()
 		expect(screen.getByText('Name')).toBeInTheDocument()
 		expect(screen.getByText('Ada Lovelace')).toBeInTheDocument()
-		expect(screen.queryByTestId('card')).not.toBeInTheDocument()
 	})
 
-	it('renders cards on the tablet band (< lg)', () => {
+	it('renders column-driven cards on the tablet band (< lg)', () => {
 		setViewport(800)
 		renderList(ROWS)
 
 		expect(screen.queryByRole('table')).not.toBeInTheDocument()
-		expect(screen.getAllByTestId('card')).toHaveLength(2)
-		expect(screen.getByText('Linus')).toBeInTheDocument()
+		// Columns become "Label:" fields; the actions column renders bare.
+		expect(screen.getAllByText('Name:')).toHaveLength(2)
+		expect(screen.getAllByText('Note:')).toHaveLength(2)
+		expect(screen.getByText('Ada Lovelace')).toBeInTheDocument()
+		expect(screen.getAllByRole('button', { name: 'Edit' })).toHaveLength(2)
 	})
 
 	it('renders cards on the mobile band (< md)', () => {
@@ -71,7 +74,7 @@ describe('ResponsiveList', () => {
 		renderList(ROWS)
 
 		expect(screen.queryByRole('table')).not.toBeInTheDocument()
-		expect(screen.getAllByTestId('card')).toHaveLength(2)
+		expect(screen.getAllByRole('button', { name: 'Edit' })).toHaveLength(2)
 	})
 
 	it('shows the empty fallback instead of the list when there are no rows', () => {
@@ -80,36 +83,5 @@ describe('ResponsiveList', () => {
 
 		expect(screen.getByText('Nothing here')).toBeInTheDocument()
 		expect(screen.queryByRole('table')).not.toBeInTheDocument()
-	})
-})
-
-describe('DataCard', () => {
-	it('renders the recipe slots', () => {
-		setViewport(800)
-		renderWithProviders(
-			<DataCard
-				primary='Ada'
-				secondary='ada@example.com'
-				badges={<span>Admin</span>}
-				footer={<span>Created today</span>}
-			/>,
-		)
-
-		expect(screen.getByText('Ada')).toBeInTheDocument()
-		expect(screen.getByText('ada@example.com')).toBeInTheDocument()
-		expect(screen.getByText('Admin')).toBeInTheDocument()
-		expect(screen.getByText('Created today')).toBeInTheDocument()
-	})
-})
-
-describe('InitialsAvatar', () => {
-	it('shows first + last initials for multi-word names', () => {
-		renderWithProviders(<InitialsAvatar name='Ada Lovelace' />)
-		expect(screen.getByText('AL')).toBeInTheDocument()
-	})
-
-	it('shows the first two letters of a single word', () => {
-		renderWithProviders(<InitialsAvatar name='admin' />)
-		expect(screen.getByText('AD')).toBeInTheDocument()
 	})
 })

@@ -2,10 +2,6 @@ import { Link } from 'react-router'
 
 import { PageHeader } from '@/components/page-header'
 import {
-	DataCard,
-	InitialsAvatar,
-} from '@/components/responsive-list/data-card'
-import {
 	ResponsiveList,
 	type ResponsiveListColumn,
 } from '@/components/responsive-list/responsive-list'
@@ -50,20 +46,23 @@ const columns: ResponsiveListColumn<UserRow>[] = [
 		header: 'Username',
 		cell: (row) => row.username,
 		className: 'font-medium',
+		card: 'top',
 	},
-	{ key: 'email', header: 'Email', cell: (row) => row.email },
-	{ key: 'role', header: 'Role', cell: roleBadge },
+	{ key: 'email', header: 'Email', cell: (row) => row.email, card: 'top' },
+	{ key: 'role', header: 'Role', cell: roleBadge, card: 'top' },
 	{
 		key: 'status',
 		header: 'Status',
 		cell: statusBadges,
 		className: 'space-x-1',
+		card: 'bottom',
 	},
 	{
 		key: 'created',
 		header: 'Created',
 		cell: (row) => row.created,
 		className: 'text-muted-foreground',
+		card: 'bottom',
 	},
 	{
 		key: 'actions',
@@ -71,32 +70,9 @@ const columns: ResponsiveListColumn<UserRow>[] = [
 		cell: editButton,
 		className: 'text-right',
 		headClassName: 'text-right',
+		card: 'actions',
 	},
 ]
-
-function renderUserCard(row: UserRow) {
-	return (
-		<DataCard
-			avatar={<InitialsAvatar name={row.username} />}
-			primary={row.username}
-			secondary={row.email}
-			badges={
-				<>
-					{roleBadge(row)}
-					{statusBadges(row)}
-				</>
-			}
-			footer={
-				<>
-					<span className='text-muted-foreground text-sm'>
-						Created {row.created}
-					</span>
-					{editButton(row)}
-				</>
-			}
-		/>
-	)
-}
 
 export function AdminUsers() {
 	const pm = useUsersPM()
@@ -126,7 +102,6 @@ export function AdminUsers() {
 						rows={pm.rows}
 						columns={columns}
 						getRowKey={(row) => String(row.id)}
-						renderCard={renderUserCard}
 					/>
 				)}
 
