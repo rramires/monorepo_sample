@@ -48,10 +48,10 @@ export function Gyms() {
 						onChange={(event) =>
 							pm.handleQueryChange(event.target.value)
 						}
-						className='max-w-md'
+						className='w-full sm:w-1/2'
 					/>
 					{pm.canManage && (
-						<>
+						<div className='flex items-center gap-4'>
 							<Label className='text-muted-foreground flex items-center gap-2 text-sm font-normal'>
 								<Checkbox
 									checked={pm.nearbyMode}
@@ -70,7 +70,7 @@ export function Gyms() {
 								/>
 								Show deactivated
 							</Label>
-						</>
+						</div>
 					)}
 				</div>
 
