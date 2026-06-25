@@ -76,13 +76,16 @@ function ResponsiveCard<T>({
 	const bottom = columns.filter((col) => slotOf(col) === 'bottom')
 	const bottomRight = columns.filter((col) => slotOf(col) === 'bottom-right')
 	const actions = columns.filter((col) => slotOf(col) === 'actions')
-	const hasFooter =
-		bottom.length > 0 || bottomRight.length > 0 || actions.length > 0
+	const hasRight = bottomRight.length > 0 || actions.length > 0
+	const hasFooter = bottom.length > 0 || hasRight
 
+	// Both rows are space-between so fields fan out across the card width; the
+	// actions stay one tight cluster (with any bottom-right field, e.g. Order)
+	// pinned to the right edge.
 	return (
 		<div className='rounded-md border p-4'>
 			{top.length > 0 && (
-				<div className='flex flex-wrap items-center gap-x-4 gap-y-1'>
+				<div className='flex flex-wrap items-center justify-between gap-x-4 gap-y-1'>
 					{top.map((col) => (
 						<CardField
 							key={col.key}
@@ -96,33 +99,33 @@ function ResponsiveCard<T>({
 			{hasFooter && (
 				<div
 					className={cn(
-						'flex items-center justify-between gap-3',
+						'flex flex-wrap items-center justify-between gap-x-4 gap-y-2',
 						top.length > 0 && 'mt-3 border-t border-dashed pt-3',
 					)}
 				>
-					<div className='flex flex-wrap items-center gap-x-4 gap-y-1'>
-						{bottom.map((col) => (
-							<CardField
-								key={col.key}
-								label={col.header}
-								value={col.cell(row)}
-							/>
-						))}
-					</div>
-					<div className='flex shrink-0 items-center gap-3'>
-						{bottomRight.map((col) => (
-							<CardField
-								key={col.key}
-								label={col.header}
-								value={col.cell(row)}
-							/>
-						))}
-						{actions.map((col) => (
-							<div key={col.key} className='flex gap-2'>
-								{col.cell(row)}
-							</div>
-						))}
-					</div>
+					{bottom.map((col) => (
+						<CardField
+							key={col.key}
+							label={col.header}
+							value={col.cell(row)}
+						/>
+					))}
+					{hasRight && (
+						<div className='flex shrink-0 items-center gap-3'>
+							{bottomRight.map((col) => (
+								<CardField
+									key={col.key}
+									label={col.header}
+									value={col.cell(row)}
+								/>
+							))}
+							{actions.map((col) => (
+								<div key={col.key} className='flex gap-2'>
+									{col.cell(row)}
+								</div>
+							))}
+						</div>
+					)}
 				</div>
 			)}
 		</div>
