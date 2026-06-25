@@ -18,6 +18,15 @@ enum Role {
   USER
 }
 
+// The curated operations a screen can offer. The action is the code contract
+// (requireScreen('x','create')); the friendly label lives on Permission.label.
+enum PermissionAction {
+  view
+  create
+  edit
+  delete
+}
+
 model User {
   id            String   @id @default(uuid()) @db.VarChar(36)
   username      String   @unique @db.VarChar(30)
@@ -44,8 +53,10 @@ model User {
 }
 
 // ─── Access control (RBAC) ───────────────────────────────────────────────────
-// A module groups screens; a screen is the unit grants attach to; a profile
-// bundles screen grants (with per-action booleans) and is assigned to users.
+// A module groups screens; a screen owns a curated permission catalog and is the
+// unit a profile takes MEMBERSHIP in; a profile bundles membership + granted
+// permissions and is assigned to users. Three axes gate access: grant
+// (ProfilePermission), kill switch (Screen.is_enabled) and disable (is_active).
 // Profiles are global (no tenant) — a cloning project adds company_id here.
 model Module {
   id          String  @id @default(uuid()) @db.VarChar(36)
@@ -55,6 +66,9 @@ model Module {
   order       Int     @default(0)
   // is_system protects seeded modules (no delete / no key rename); mirrors Profile.
   is_system   Boolean @default(false)
+  // Lifecycle (disable): inactive modules are hidden from the "add" pickers
+  // below; existing screens keep working.
+  is_active   Boolean @default(true)
 
   screens Screen[]
 
@@ -70,11 +84,24 @@ model Screen {
   order       Int     @default(0)
   // is_system protects seeded screens (no delete / no key rename); mirrors Profile.
   is_system   Boolean @default(false)
+  // Lifecycle (disable): inactive screens are hidden from the "add" pickers;
+  // existing memberships keep working until removed by hand.
+  is_active   Boolean @default(true)
+  // Kill switch (On): when false the screen stops working NOW for all non-admins
+  // (emergency) — "This screen is temporarily unavailable."
+  is_enabled  Boolean @default(true)
 
   module_id String @db.VarChar(36)
-  module    Module @relation(fields: [module_id], references: [id], onDelete: Cascade)
+  // No cascade: a module with screens can't be deleted (use-case 409s first).
+  module    Module @relation(fields: [module_id], references: [id], onDelete: Restrict)
 
-  grants ProfileScreen[]
+  // Membership (which profiles list this screen in their sidebar). No cascade —
+  // a screen assigned to a profile can't be deleted (use-case 409s first).
+  members     ProfileScreen[]
+  // Curated permission catalog this screen offers.
+  permissions Permission[]
+  // Profiles that land here (Profile.default_screen_id back-reference).
+  default_for Profile[]       @relation("ProfileDefaultScreen")
 
   @@map("screens")
 }
@@ -88,37 +115,78 @@ model Profile {
   // editable. is_default is auto-attached to new users on /register.
   is_system   Boolean  @default(false)
   is_default  Boolean  @default(false)
+  // Lifecycle (disable): inactive profiles are hidden when assigning profiles to
+  // users; existing assignments keep working.
+  is_active   Boolean  @default(true)
   created_at  DateTime @default(now())
 
-  screens ProfileScreen[]
-  users   UserProfile[]
+  // The profile's landing screen (must be an assigned, viewable screen). Replaces
+  // the old per-grant is_default flag. SetNull if that screen is ever removed.
+  default_screen_id String? @db.VarChar(36)
+  default_screen    Screen? @relation("ProfileDefaultScreen", fields: [default_screen_id], references: [id], onDelete: SetNull)
+
+  // Membership + granted permissions (the two M:N halves of a grant).
+  screens     ProfileScreen[]
+  permissions ProfilePermission[]
+  users       UserProfile[]
 
   @@map("profiles")
 }
 
+// Membership: the profile lists this screen (so it shows in the sidebar), even
+// with zero granted permissions — staged rollout. `view` is now a real granted
+// permission (ProfilePermission), not a column here.
 model ProfileScreen {
-  profile_id String  @db.VarChar(36)
-  screen_id  String  @db.VarChar(36)
-  can_view   Boolean @default(true)
-  can_create Boolean @default(false)
-  can_edit   Boolean @default(false)
-  can_delete Boolean @default(false)
-  // At most one grant per profile is the profile's default landing screen.
-  is_default Boolean @default(false)
+  profile_id String @db.VarChar(36)
+  screen_id  String @db.VarChar(36)
 
+  // Cascade: removing the profile drops its memberships. Restrict on the screen
+  // side blocks deleting a screen that's still a member somewhere.
   profile Profile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
-  screen  Screen  @relation(fields: [screen_id], references: [id], onDelete: Cascade)
+  screen  Screen  @relation(fields: [screen_id], references: [id], onDelete: Restrict)
 
   @@id([profile_id, screen_id])
   @@map("profile_screens")
+}
+
+// A curated permission a screen offers: the fixed action + a friendly, editable
+// label. is_system mirrors the screen (seeded permissions are protected).
+model Permission {
+  id        String           @id @default(uuid()) @db.VarChar(36)
+  screen_id String           @db.VarChar(36)
+  action    PermissionAction
+  label     String           @db.VarChar(100)
+  is_system Boolean          @default(false)
+
+  // Cascade: a deletable screen takes its (ungranted) permissions with it.
+  screen  Screen              @relation(fields: [screen_id], references: [id], onDelete: Cascade)
+  // No cascade: a granted permission can't be deleted (use-case 409s first).
+  profiles ProfilePermission[]
+
+  @@unique([screen_id, action])
+  @@map("permissions")
+}
+
+// A profile granting one permission (the "grant" half). Granted = row exists.
+model ProfilePermission {
+  profile_id    String @db.VarChar(36)
+  permission_id String @db.VarChar(36)
+
+  profile    Profile    @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permission_id], references: [id], onDelete: Restrict)
+
+  @@id([profile_id, permission_id])
+  @@map("profile_permissions")
 }
 
 model UserProfile {
   user_id    String @db.VarChar(36)
   profile_id String @db.VarChar(36)
 
+  // User delete cascades their assignments; profile delete does NOT — a profile
+  // assigned to users can't be deleted (use-case 409s first; this is the net).
   user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  profile Profile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profile_id], references: [id], onDelete: Restrict)
 
   @@id([user_id, profile_id])
   @@map("user_profiles")

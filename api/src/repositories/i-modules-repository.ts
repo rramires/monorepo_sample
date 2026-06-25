@@ -7,6 +7,7 @@ export interface IModuleUpdateInput {
 	name?: string
 	description?: string | null
 	order?: number
+	is_active?: boolean
 }
 
 export interface IModulesRepository {

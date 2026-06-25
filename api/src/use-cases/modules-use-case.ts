@@ -31,7 +31,9 @@ export class ModulesUseCase {
 			body.key !== undefined &&
 			body.key !== existing.key
 		) {
-			throw new SystemModuleError()
+			throw new SystemModuleError(
+				'A system module key cannot be changed.',
+			)
 		}
 
 		const module = await this.modulesRepository.update(id, body)
@@ -45,9 +47,10 @@ export class ModulesUseCase {
 		}
 
 		if (existing.is_system) {
-			throw new SystemModuleError()
+			throw new SystemModuleError('A system module cannot be deleted.')
 		}
 
+		// No cascade: a module that still owns screens can't be deleted.
 		if (await this.modulesRepository.hasScreens(id)) {
 			throw new ModuleHasScreensError()
 		}

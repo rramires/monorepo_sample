@@ -19,6 +19,8 @@ function seedSystemScreen() {
 		description: null,
 		order: 0,
 		is_system: true,
+		is_active: true,
+		is_enabled: true,
 	})
 }
 

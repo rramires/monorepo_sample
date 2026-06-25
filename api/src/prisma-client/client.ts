@@ -67,6 +67,16 @@ export type Profile = Prisma.ProfileModel
  */
 export type ProfileScreen = Prisma.ProfileScreenModel
 /**
+ * Model Permission
+ * 
+ */
+export type Permission = Prisma.PermissionModel
+/**
+ * Model ProfilePermission
+ * 
+ */
+export type ProfilePermission = Prisma.ProfilePermissionModel
+/**
  * Model UserProfile
  * 
  */

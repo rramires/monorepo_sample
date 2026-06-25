@@ -3,15 +3,24 @@ import { randomUUID } from 'node:crypto'
 import { Profile } from '@/prisma-client'
 
 import {
-	GrantRow,
 	IProfilesRepository,
 	IProfileUpdateInput,
+	ProfileScreenGrant,
 } from '../i-profiles-repository'
 
 export class InMemoryProfilesRepository implements IProfilesRepository {
 	// in-memory mock database
 	public items: Profile[] = []
-	public grants: Array<{ profile_id: string } & GrantRow> = []
+	// Membership (which screens a profile lists) + grants (which permissions it
+	// holds, denormalized with screen_id so findDetail can group cheaply).
+	public memberships: { profile_id: string; screen_id: string }[] = []
+	public grants: {
+		profile_id: string
+		screen_id: string
+		permission_id: string
+	}[] = []
+	// User assignments — seed in tests for the delete guard.
+	public userAssignments: { profile_id: string; user_id: string }[] = []
 
 	async list() {
 		return this.items
@@ -28,21 +37,21 @@ export class InMemoryProfilesRepository implements IProfilesRepository {
 			return null
 		}
 
-		const screens: GrantRow[] = this.grants
-			.filter((g) => g.profile_id === id)
-			.map((g) => ({
-				screen_id: g.screen_id,
-				can_view: g.can_view,
-				can_create: g.can_create,
-				can_edit: g.can_edit,
-				can_delete: g.can_delete,
-				is_default: g.is_default,
-			}))
+		const screenIds = [
+			...new Set(
+				this.memberships
+					.filter((m) => m.profile_id === id)
+					.map((m) => m.screen_id),
+			),
+		]
+		const screens: ProfileScreenGrant[] = screenIds.map((screen_id) => ({
+			screen_id,
+			permission_ids: this.grants
+				.filter((g) => g.profile_id === id && g.screen_id === screen_id)
+				.map((g) => g.permission_id),
+		}))
 
-		return {
-			...profile,
-			screens,
-		}
+		return { ...profile, screens }
 	}
 
 	async create(data: {
@@ -51,7 +60,6 @@ export class InMemoryProfilesRepository implements IProfilesRepository {
 		description?: string | null
 		is_default: boolean
 	}) {
-		// new profile
 		const profile = {
 			id: randomUUID(),
 			key: data.key,
@@ -59,6 +67,8 @@ export class InMemoryProfilesRepository implements IProfilesRepository {
 			description: data.description ?? null,
 			is_system: false,
 			is_default: data.is_default,
+			is_active: true,
+			default_screen_id: null,
 			created_at: new Date(),
 		}
 		this.items.push(profile)
@@ -84,6 +94,9 @@ export class InMemoryProfilesRepository implements IProfilesRepository {
 		if (data.is_default !== undefined) {
 			profile.is_default = data.is_default
 		}
+		if (data.is_active !== undefined) {
+			profile.is_active = data.is_active
+		}
 		return profile
 	}
 
@@ -100,14 +113,35 @@ export class InMemoryProfilesRepository implements IProfilesRepository {
 		if (index >= 0) {
 			this.items.splice(index, 1)
 		}
+		this.memberships = this.memberships.filter((m) => m.profile_id !== id)
 		this.grants = this.grants.filter((g) => g.profile_id !== id)
 	}
 
-	async setScreens(id: string, grants: GrantRow[]) {
+	async setGrants(
+		id: string,
+		grants: ProfileScreenGrant[],
+		defaultScreenId: string | null,
+	) {
 		// Replace the whole grant set for this profile.
+		this.memberships = this.memberships.filter((m) => m.profile_id !== id)
 		this.grants = this.grants.filter((g) => g.profile_id !== id)
 		for (const g of grants) {
-			this.grants.push({ profile_id: id, ...g })
+			this.memberships.push({ profile_id: id, screen_id: g.screen_id })
+			for (const permission_id of g.permission_ids) {
+				this.grants.push({
+					profile_id: id,
+					screen_id: g.screen_id,
+					permission_id,
+				})
+			}
 		}
+		const profile = this.items.find((item) => item.id === id)
+		if (profile) {
+			profile.default_screen_id = defaultScreenId
+		}
+	}
+
+	async countUsers(id: string) {
+		return this.userAssignments.filter((a) => a.profile_id === id).length
 	}
 }

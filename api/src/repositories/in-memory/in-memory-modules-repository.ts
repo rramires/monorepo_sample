@@ -18,15 +18,15 @@ export class InMemoryModulesRepository implements IModulesRepository {
 		description?: string | null
 		order?: number
 	}) {
-		// new module
+		// new module — is_active defaults true; is_system never client-settable.
 		const module = {
 			id: randomUUID(),
 			key: data.key,
 			name: data.name,
 			description: data.description ?? null,
 			order: data.order ?? 0,
-			// is_system is never client-settable; created modules are always false.
 			is_system: false,
+			is_active: true,
 		}
 		this.items.push(module)
 
@@ -57,6 +57,9 @@ export class InMemoryModulesRepository implements IModulesRepository {
 		}
 		if (data.order !== undefined) {
 			module.order = data.order
+		}
+		if (data.is_active !== undefined) {
+			module.is_active = data.is_active
 		}
 		return module
 	}

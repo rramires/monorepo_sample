@@ -27,31 +27,16 @@ export type AggregateProfileScreen = {
 export type ProfileScreenMinAggregateOutputType = {
   profile_id: string | null
   screen_id: string | null
-  can_view: boolean | null
-  can_create: boolean | null
-  can_edit: boolean | null
-  can_delete: boolean | null
-  is_default: boolean | null
 }
 
 export type ProfileScreenMaxAggregateOutputType = {
   profile_id: string | null
   screen_id: string | null
-  can_view: boolean | null
-  can_create: boolean | null
-  can_edit: boolean | null
-  can_delete: boolean | null
-  is_default: boolean | null
 }
 
 export type ProfileScreenCountAggregateOutputType = {
   profile_id: number
   screen_id: number
-  can_view: number
-  can_create: number
-  can_edit: number
-  can_delete: number
-  is_default: number
   _all: number
 }
 
@@ -59,31 +44,16 @@ export type ProfileScreenCountAggregateOutputType = {
 export type ProfileScreenMinAggregateInputType = {
   profile_id?: true
   screen_id?: true
-  can_view?: true
-  can_create?: true
-  can_edit?: true
-  can_delete?: true
-  is_default?: true
 }
 
 export type ProfileScreenMaxAggregateInputType = {
   profile_id?: true
   screen_id?: true
-  can_view?: true
-  can_create?: true
-  can_edit?: true
-  can_delete?: true
-  is_default?: true
 }
 
 export type ProfileScreenCountAggregateInputType = {
   profile_id?: true
   screen_id?: true
-  can_view?: true
-  can_create?: true
-  can_edit?: true
-  can_delete?: true
-  is_default?: true
   _all?: true
 }
 
@@ -162,11 +132,6 @@ export type ProfileScreenGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
 export type ProfileScreenGroupByOutputType = {
   profile_id: string
   screen_id: string
-  can_view: boolean
-  can_create: boolean
-  can_edit: boolean
-  can_delete: boolean
-  is_default: boolean
   _count: ProfileScreenCountAggregateOutputType | null
   _min: ProfileScreenMinAggregateOutputType | null
   _max: ProfileScreenMaxAggregateOutputType | null
@@ -193,11 +158,6 @@ export type ProfileScreenWhereInput = {
   NOT?: Prisma.ProfileScreenWhereInput | Prisma.ProfileScreenWhereInput[]
   profile_id?: Prisma.StringFilter<"ProfileScreen"> | string
   screen_id?: Prisma.StringFilter<"ProfileScreen"> | string
-  can_view?: Prisma.BoolFilter<"ProfileScreen"> | boolean
-  can_create?: Prisma.BoolFilter<"ProfileScreen"> | boolean
-  can_edit?: Prisma.BoolFilter<"ProfileScreen"> | boolean
-  can_delete?: Prisma.BoolFilter<"ProfileScreen"> | boolean
-  is_default?: Prisma.BoolFilter<"ProfileScreen"> | boolean
   profile?: Prisma.XOR<Prisma.ProfileScalarRelationFilter, Prisma.ProfileWhereInput>
   screen?: Prisma.XOR<Prisma.ScreenScalarRelationFilter, Prisma.ScreenWhereInput>
 }
@@ -205,11 +165,6 @@ export type ProfileScreenWhereInput = {
 export type ProfileScreenOrderByWithRelationInput = {
   profile_id?: Prisma.SortOrder
   screen_id?: Prisma.SortOrder
-  can_view?: Prisma.SortOrder
-  can_create?: Prisma.SortOrder
-  can_edit?: Prisma.SortOrder
-  can_delete?: Prisma.SortOrder
-  is_default?: Prisma.SortOrder
   profile?: Prisma.ProfileOrderByWithRelationInput
   screen?: Prisma.ScreenOrderByWithRelationInput
   _relevance?: Prisma.ProfileScreenOrderByRelevanceInput
@@ -222,11 +177,6 @@ export type ProfileScreenWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ProfileScreenWhereInput | Prisma.ProfileScreenWhereInput[]
   profile_id?: Prisma.StringFilter<"ProfileScreen"> | string
   screen_id?: Prisma.StringFilter<"ProfileScreen"> | string
-  can_view?: Prisma.BoolFilter<"ProfileScreen"> | boolean
-  can_create?: Prisma.BoolFilter<"ProfileScreen"> | boolean
-  can_edit?: Prisma.BoolFilter<"ProfileScreen"> | boolean
-  can_delete?: Prisma.BoolFilter<"ProfileScreen"> | boolean
-  is_default?: Prisma.BoolFilter<"ProfileScreen"> | boolean
   profile?: Prisma.XOR<Prisma.ProfileScalarRelationFilter, Prisma.ProfileWhereInput>
   screen?: Prisma.XOR<Prisma.ScreenScalarRelationFilter, Prisma.ScreenWhereInput>
 }, "profile_id_screen_id">
@@ -234,11 +184,6 @@ export type ProfileScreenWhereUniqueInput = Prisma.AtLeast<{
 export type ProfileScreenOrderByWithAggregationInput = {
   profile_id?: Prisma.SortOrder
   screen_id?: Prisma.SortOrder
-  can_view?: Prisma.SortOrder
-  can_create?: Prisma.SortOrder
-  can_edit?: Prisma.SortOrder
-  can_delete?: Prisma.SortOrder
-  is_default?: Prisma.SortOrder
   _count?: Prisma.ProfileScreenCountOrderByAggregateInput
   _max?: Prisma.ProfileScreenMaxOrderByAggregateInput
   _min?: Prisma.ProfileScreenMinOrderByAggregateInput
@@ -250,79 +195,40 @@ export type ProfileScreenScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ProfileScreenScalarWhereWithAggregatesInput | Prisma.ProfileScreenScalarWhereWithAggregatesInput[]
   profile_id?: Prisma.StringWithAggregatesFilter<"ProfileScreen"> | string
   screen_id?: Prisma.StringWithAggregatesFilter<"ProfileScreen"> | string
-  can_view?: Prisma.BoolWithAggregatesFilter<"ProfileScreen"> | boolean
-  can_create?: Prisma.BoolWithAggregatesFilter<"ProfileScreen"> | boolean
-  can_edit?: Prisma.BoolWithAggregatesFilter<"ProfileScreen"> | boolean
-  can_delete?: Prisma.BoolWithAggregatesFilter<"ProfileScreen"> | boolean
-  is_default?: Prisma.BoolWithAggregatesFilter<"ProfileScreen"> | boolean
 }
 
 export type ProfileScreenCreateInput = {
-  can_view?: boolean
-  can_create?: boolean
-  can_edit?: boolean
-  can_delete?: boolean
-  is_default?: boolean
   profile: Prisma.ProfileCreateNestedOneWithoutScreensInput
-  screen: Prisma.ScreenCreateNestedOneWithoutGrantsInput
+  screen: Prisma.ScreenCreateNestedOneWithoutMembersInput
 }
 
 export type ProfileScreenUncheckedCreateInput = {
   profile_id: string
   screen_id: string
-  can_view?: boolean
-  can_create?: boolean
-  can_edit?: boolean
-  can_delete?: boolean
-  is_default?: boolean
 }
 
 export type ProfileScreenUpdateInput = {
-  can_view?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_create?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_edit?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_delete?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
   profile?: Prisma.ProfileUpdateOneRequiredWithoutScreensNestedInput
-  screen?: Prisma.ScreenUpdateOneRequiredWithoutGrantsNestedInput
+  screen?: Prisma.ScreenUpdateOneRequiredWithoutMembersNestedInput
 }
 
 export type ProfileScreenUncheckedUpdateInput = {
   profile_id?: Prisma.StringFieldUpdateOperationsInput | string
   screen_id?: Prisma.StringFieldUpdateOperationsInput | string
-  can_view?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_create?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_edit?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_delete?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProfileScreenCreateManyInput = {
   profile_id: string
   screen_id: string
-  can_view?: boolean
-  can_create?: boolean
-  can_edit?: boolean
-  can_delete?: boolean
-  is_default?: boolean
 }
 
 export type ProfileScreenUpdateManyMutationInput = {
-  can_view?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_create?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_edit?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_delete?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
+
 }
 
 export type ProfileScreenUncheckedUpdateManyInput = {
   profile_id?: Prisma.StringFieldUpdateOperationsInput | string
   screen_id?: Prisma.StringFieldUpdateOperationsInput | string
-  can_view?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_create?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_edit?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_delete?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProfileScreenListRelationFilter = {
@@ -349,31 +255,16 @@ export type ProfileScreenProfile_idScreen_idCompoundUniqueInput = {
 export type ProfileScreenCountOrderByAggregateInput = {
   profile_id?: Prisma.SortOrder
   screen_id?: Prisma.SortOrder
-  can_view?: Prisma.SortOrder
-  can_create?: Prisma.SortOrder
-  can_edit?: Prisma.SortOrder
-  can_delete?: Prisma.SortOrder
-  is_default?: Prisma.SortOrder
 }
 
 export type ProfileScreenMaxOrderByAggregateInput = {
   profile_id?: Prisma.SortOrder
   screen_id?: Prisma.SortOrder
-  can_view?: Prisma.SortOrder
-  can_create?: Prisma.SortOrder
-  can_edit?: Prisma.SortOrder
-  can_delete?: Prisma.SortOrder
-  is_default?: Prisma.SortOrder
 }
 
 export type ProfileScreenMinOrderByAggregateInput = {
   profile_id?: Prisma.SortOrder
   screen_id?: Prisma.SortOrder
-  can_view?: Prisma.SortOrder
-  can_create?: Prisma.SortOrder
-  can_edit?: Prisma.SortOrder
-  can_delete?: Prisma.SortOrder
-  is_default?: Prisma.SortOrder
 }
 
 export type ProfileScreenCreateNestedManyWithoutScreenInput = {
@@ -461,21 +352,11 @@ export type ProfileScreenUncheckedUpdateManyWithoutProfileNestedInput = {
 }
 
 export type ProfileScreenCreateWithoutScreenInput = {
-  can_view?: boolean
-  can_create?: boolean
-  can_edit?: boolean
-  can_delete?: boolean
-  is_default?: boolean
   profile: Prisma.ProfileCreateNestedOneWithoutScreensInput
 }
 
 export type ProfileScreenUncheckedCreateWithoutScreenInput = {
   profile_id: string
-  can_view?: boolean
-  can_create?: boolean
-  can_edit?: boolean
-  can_delete?: boolean
-  is_default?: boolean
 }
 
 export type ProfileScreenCreateOrConnectWithoutScreenInput = {
@@ -510,29 +391,14 @@ export type ProfileScreenScalarWhereInput = {
   NOT?: Prisma.ProfileScreenScalarWhereInput | Prisma.ProfileScreenScalarWhereInput[]
   profile_id?: Prisma.StringFilter<"ProfileScreen"> | string
   screen_id?: Prisma.StringFilter<"ProfileScreen"> | string
-  can_view?: Prisma.BoolFilter<"ProfileScreen"> | boolean
-  can_create?: Prisma.BoolFilter<"ProfileScreen"> | boolean
-  can_edit?: Prisma.BoolFilter<"ProfileScreen"> | boolean
-  can_delete?: Prisma.BoolFilter<"ProfileScreen"> | boolean
-  is_default?: Prisma.BoolFilter<"ProfileScreen"> | boolean
 }
 
 export type ProfileScreenCreateWithoutProfileInput = {
-  can_view?: boolean
-  can_create?: boolean
-  can_edit?: boolean
-  can_delete?: boolean
-  is_default?: boolean
-  screen: Prisma.ScreenCreateNestedOneWithoutGrantsInput
+  screen: Prisma.ScreenCreateNestedOneWithoutMembersInput
 }
 
 export type ProfileScreenUncheckedCreateWithoutProfileInput = {
   screen_id: string
-  can_view?: boolean
-  can_create?: boolean
-  can_edit?: boolean
-  can_delete?: boolean
-  is_default?: boolean
 }
 
 export type ProfileScreenCreateOrConnectWithoutProfileInput = {
@@ -563,74 +429,34 @@ export type ProfileScreenUpdateManyWithWhereWithoutProfileInput = {
 
 export type ProfileScreenCreateManyScreenInput = {
   profile_id: string
-  can_view?: boolean
-  can_create?: boolean
-  can_edit?: boolean
-  can_delete?: boolean
-  is_default?: boolean
 }
 
 export type ProfileScreenUpdateWithoutScreenInput = {
-  can_view?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_create?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_edit?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_delete?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
   profile?: Prisma.ProfileUpdateOneRequiredWithoutScreensNestedInput
 }
 
 export type ProfileScreenUncheckedUpdateWithoutScreenInput = {
   profile_id?: Prisma.StringFieldUpdateOperationsInput | string
-  can_view?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_create?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_edit?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_delete?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProfileScreenUncheckedUpdateManyWithoutScreenInput = {
   profile_id?: Prisma.StringFieldUpdateOperationsInput | string
-  can_view?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_create?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_edit?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_delete?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProfileScreenCreateManyProfileInput = {
   screen_id: string
-  can_view?: boolean
-  can_create?: boolean
-  can_edit?: boolean
-  can_delete?: boolean
-  is_default?: boolean
 }
 
 export type ProfileScreenUpdateWithoutProfileInput = {
-  can_view?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_create?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_edit?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_delete?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  screen?: Prisma.ScreenUpdateOneRequiredWithoutGrantsNestedInput
+  screen?: Prisma.ScreenUpdateOneRequiredWithoutMembersNestedInput
 }
 
 export type ProfileScreenUncheckedUpdateWithoutProfileInput = {
   screen_id?: Prisma.StringFieldUpdateOperationsInput | string
-  can_view?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_create?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_edit?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_delete?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ProfileScreenUncheckedUpdateManyWithoutProfileInput = {
   screen_id?: Prisma.StringFieldUpdateOperationsInput | string
-  can_view?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_create?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_edit?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  can_delete?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 
@@ -638,11 +464,6 @@ export type ProfileScreenUncheckedUpdateManyWithoutProfileInput = {
 export type ProfileScreenSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   profile_id?: boolean
   screen_id?: boolean
-  can_view?: boolean
-  can_create?: boolean
-  can_edit?: boolean
-  can_delete?: boolean
-  is_default?: boolean
   profile?: boolean | Prisma.ProfileDefaultArgs<ExtArgs>
   screen?: boolean | Prisma.ScreenDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["profileScreen"]>
@@ -652,14 +473,9 @@ export type ProfileScreenSelect<ExtArgs extends runtime.Types.Extensions.Interna
 export type ProfileScreenSelectScalar = {
   profile_id?: boolean
   screen_id?: boolean
-  can_view?: boolean
-  can_create?: boolean
-  can_edit?: boolean
-  can_delete?: boolean
-  is_default?: boolean
 }
 
-export type ProfileScreenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"profile_id" | "screen_id" | "can_view" | "can_create" | "can_edit" | "can_delete" | "is_default", ExtArgs["result"]["profileScreen"]>
+export type ProfileScreenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"profile_id" | "screen_id", ExtArgs["result"]["profileScreen"]>
 export type ProfileScreenInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   profile?: boolean | Prisma.ProfileDefaultArgs<ExtArgs>
   screen?: boolean | Prisma.ScreenDefaultArgs<ExtArgs>
@@ -674,11 +490,6 @@ export type $ProfileScreenPayload<ExtArgs extends runtime.Types.Extensions.Inter
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     profile_id: string
     screen_id: string
-    can_view: boolean
-    can_create: boolean
-    can_edit: boolean
-    can_delete: boolean
-    is_default: boolean
   }, ExtArgs["result"]["profileScreen"]>
   composites: {}
 }
@@ -1052,11 +863,6 @@ export interface Prisma__ProfileScreenClient<T, Null = never, ExtArgs extends ru
 export interface ProfileScreenFieldRefs {
   readonly profile_id: Prisma.FieldRef<"ProfileScreen", 'String'>
   readonly screen_id: Prisma.FieldRef<"ProfileScreen", 'String'>
-  readonly can_view: Prisma.FieldRef<"ProfileScreen", 'Boolean'>
-  readonly can_create: Prisma.FieldRef<"ProfileScreen", 'Boolean'>
-  readonly can_edit: Prisma.FieldRef<"ProfileScreen", 'Boolean'>
-  readonly can_delete: Prisma.FieldRef<"ProfileScreen", 'Boolean'>
-  readonly is_default: Prisma.FieldRef<"ProfileScreen", 'Boolean'>
 }
     
 

@@ -4,6 +4,7 @@ import { Screen } from '@/prisma-client'
 import { IScreensRepository } from '@/repositories/i-screens-repository'
 
 import { ResourceNotFoundError } from './errors/resource-not-found-error'
+import { ScreenInUseError } from './errors/screen-in-use-error'
 import { SystemScreenError } from './errors/system-screen-error'
 
 export class ScreensUseCase {
@@ -38,7 +39,9 @@ export class ScreensUseCase {
 			const changesPath =
 				body.path !== undefined && body.path !== existing.path
 			if (changesKey || changesModule || changesPath) {
-				throw new SystemScreenError()
+				throw new SystemScreenError(
+					'A system screen cannot change its key, module or path.',
+				)
 			}
 		}
 
@@ -53,10 +56,15 @@ export class ScreensUseCase {
 		}
 
 		if (existing.is_system) {
-			throw new SystemScreenError()
+			throw new SystemScreenError('A system screen cannot be deleted.')
 		}
 
-		// Deleting a screen cascades its grants at the DB level — no extra guard.
+		// No cascade: a screen still assigned to profiles can't be deleted.
+		const members = await this.screensRepository.countMembers(id)
+		if (members > 0) {
+			throw new ScreenInUseError(members)
+		}
+
 		await this.screensRepository.delete(id)
 	}
 }

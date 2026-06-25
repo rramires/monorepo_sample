@@ -42,6 +42,8 @@ export type ScreenMinAggregateOutputType = {
   description: string | null
   order: number | null
   is_system: boolean | null
+  is_active: boolean | null
+  is_enabled: boolean | null
   module_id: string | null
 }
 
@@ -53,6 +55,8 @@ export type ScreenMaxAggregateOutputType = {
   description: string | null
   order: number | null
   is_system: boolean | null
+  is_active: boolean | null
+  is_enabled: boolean | null
   module_id: string | null
 }
 
@@ -64,6 +68,8 @@ export type ScreenCountAggregateOutputType = {
   description: number
   order: number
   is_system: number
+  is_active: number
+  is_enabled: number
   module_id: number
   _all: number
 }
@@ -85,6 +91,8 @@ export type ScreenMinAggregateInputType = {
   description?: true
   order?: true
   is_system?: true
+  is_active?: true
+  is_enabled?: true
   module_id?: true
 }
 
@@ -96,6 +104,8 @@ export type ScreenMaxAggregateInputType = {
   description?: true
   order?: true
   is_system?: true
+  is_active?: true
+  is_enabled?: true
   module_id?: true
 }
 
@@ -107,6 +117,8 @@ export type ScreenCountAggregateInputType = {
   description?: true
   order?: true
   is_system?: true
+  is_active?: true
+  is_enabled?: true
   module_id?: true
   _all?: true
 }
@@ -205,6 +217,8 @@ export type ScreenGroupByOutputType = {
   description: string | null
   order: number
   is_system: boolean
+  is_active: boolean
+  is_enabled: boolean
   module_id: string
   _count: ScreenCountAggregateOutputType | null
   _avg: ScreenAvgAggregateOutputType | null
@@ -239,9 +253,13 @@ export type ScreenWhereInput = {
   description?: Prisma.StringNullableFilter<"Screen"> | string | null
   order?: Prisma.IntFilter<"Screen"> | number
   is_system?: Prisma.BoolFilter<"Screen"> | boolean
+  is_active?: Prisma.BoolFilter<"Screen"> | boolean
+  is_enabled?: Prisma.BoolFilter<"Screen"> | boolean
   module_id?: Prisma.StringFilter<"Screen"> | string
   module?: Prisma.XOR<Prisma.ModuleScalarRelationFilter, Prisma.ModuleWhereInput>
-  grants?: Prisma.ProfileScreenListRelationFilter
+  members?: Prisma.ProfileScreenListRelationFilter
+  permissions?: Prisma.PermissionListRelationFilter
+  default_for?: Prisma.ProfileListRelationFilter
 }
 
 export type ScreenOrderByWithRelationInput = {
@@ -252,9 +270,13 @@ export type ScreenOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   order?: Prisma.SortOrder
   is_system?: Prisma.SortOrder
+  is_active?: Prisma.SortOrder
+  is_enabled?: Prisma.SortOrder
   module_id?: Prisma.SortOrder
   module?: Prisma.ModuleOrderByWithRelationInput
-  grants?: Prisma.ProfileScreenOrderByRelationAggregateInput
+  members?: Prisma.ProfileScreenOrderByRelationAggregateInput
+  permissions?: Prisma.PermissionOrderByRelationAggregateInput
+  default_for?: Prisma.ProfileOrderByRelationAggregateInput
   _relevance?: Prisma.ScreenOrderByRelevanceInput
 }
 
@@ -269,9 +291,13 @@ export type ScreenWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"Screen"> | string | null
   order?: Prisma.IntFilter<"Screen"> | number
   is_system?: Prisma.BoolFilter<"Screen"> | boolean
+  is_active?: Prisma.BoolFilter<"Screen"> | boolean
+  is_enabled?: Prisma.BoolFilter<"Screen"> | boolean
   module_id?: Prisma.StringFilter<"Screen"> | string
   module?: Prisma.XOR<Prisma.ModuleScalarRelationFilter, Prisma.ModuleWhereInput>
-  grants?: Prisma.ProfileScreenListRelationFilter
+  members?: Prisma.ProfileScreenListRelationFilter
+  permissions?: Prisma.PermissionListRelationFilter
+  default_for?: Prisma.ProfileListRelationFilter
 }, "id" | "key">
 
 export type ScreenOrderByWithAggregationInput = {
@@ -282,6 +308,8 @@ export type ScreenOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   order?: Prisma.SortOrder
   is_system?: Prisma.SortOrder
+  is_active?: Prisma.SortOrder
+  is_enabled?: Prisma.SortOrder
   module_id?: Prisma.SortOrder
   _count?: Prisma.ScreenCountOrderByAggregateInput
   _avg?: Prisma.ScreenAvgOrderByAggregateInput
@@ -301,6 +329,8 @@ export type ScreenScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<"Screen"> | string | null
   order?: Prisma.IntWithAggregatesFilter<"Screen"> | number
   is_system?: Prisma.BoolWithAggregatesFilter<"Screen"> | boolean
+  is_active?: Prisma.BoolWithAggregatesFilter<"Screen"> | boolean
+  is_enabled?: Prisma.BoolWithAggregatesFilter<"Screen"> | boolean
   module_id?: Prisma.StringWithAggregatesFilter<"Screen"> | string
 }
 
@@ -312,8 +342,12 @@ export type ScreenCreateInput = {
   description?: string | null
   order?: number
   is_system?: boolean
+  is_active?: boolean
+  is_enabled?: boolean
   module: Prisma.ModuleCreateNestedOneWithoutScreensInput
-  grants?: Prisma.ProfileScreenCreateNestedManyWithoutScreenInput
+  members?: Prisma.ProfileScreenCreateNestedManyWithoutScreenInput
+  permissions?: Prisma.PermissionCreateNestedManyWithoutScreenInput
+  default_for?: Prisma.ProfileCreateNestedManyWithoutDefault_screenInput
 }
 
 export type ScreenUncheckedCreateInput = {
@@ -324,8 +358,12 @@ export type ScreenUncheckedCreateInput = {
   description?: string | null
   order?: number
   is_system?: boolean
+  is_active?: boolean
+  is_enabled?: boolean
   module_id: string
-  grants?: Prisma.ProfileScreenUncheckedCreateNestedManyWithoutScreenInput
+  members?: Prisma.ProfileScreenUncheckedCreateNestedManyWithoutScreenInput
+  permissions?: Prisma.PermissionUncheckedCreateNestedManyWithoutScreenInput
+  default_for?: Prisma.ProfileUncheckedCreateNestedManyWithoutDefault_screenInput
 }
 
 export type ScreenUpdateInput = {
@@ -336,8 +374,12 @@ export type ScreenUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   module?: Prisma.ModuleUpdateOneRequiredWithoutScreensNestedInput
-  grants?: Prisma.ProfileScreenUpdateManyWithoutScreenNestedInput
+  members?: Prisma.ProfileScreenUpdateManyWithoutScreenNestedInput
+  permissions?: Prisma.PermissionUpdateManyWithoutScreenNestedInput
+  default_for?: Prisma.ProfileUpdateManyWithoutDefault_screenNestedInput
 }
 
 export type ScreenUncheckedUpdateInput = {
@@ -348,8 +390,12 @@ export type ScreenUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   module_id?: Prisma.StringFieldUpdateOperationsInput | string
-  grants?: Prisma.ProfileScreenUncheckedUpdateManyWithoutScreenNestedInput
+  members?: Prisma.ProfileScreenUncheckedUpdateManyWithoutScreenNestedInput
+  permissions?: Prisma.PermissionUncheckedUpdateManyWithoutScreenNestedInput
+  default_for?: Prisma.ProfileUncheckedUpdateManyWithoutDefault_screenNestedInput
 }
 
 export type ScreenCreateManyInput = {
@@ -360,6 +406,8 @@ export type ScreenCreateManyInput = {
   description?: string | null
   order?: number
   is_system?: boolean
+  is_active?: boolean
+  is_enabled?: boolean
   module_id: string
 }
 
@@ -371,6 +419,8 @@ export type ScreenUpdateManyMutationInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type ScreenUncheckedUpdateManyInput = {
@@ -381,6 +431,8 @@ export type ScreenUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   module_id?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -408,6 +460,8 @@ export type ScreenCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   order?: Prisma.SortOrder
   is_system?: Prisma.SortOrder
+  is_active?: Prisma.SortOrder
+  is_enabled?: Prisma.SortOrder
   module_id?: Prisma.SortOrder
 }
 
@@ -423,6 +477,8 @@ export type ScreenMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder
   order?: Prisma.SortOrder
   is_system?: Prisma.SortOrder
+  is_active?: Prisma.SortOrder
+  is_enabled?: Prisma.SortOrder
   module_id?: Prisma.SortOrder
 }
 
@@ -434,11 +490,18 @@ export type ScreenMinOrderByAggregateInput = {
   description?: Prisma.SortOrder
   order?: Prisma.SortOrder
   is_system?: Prisma.SortOrder
+  is_active?: Prisma.SortOrder
+  is_enabled?: Prisma.SortOrder
   module_id?: Prisma.SortOrder
 }
 
 export type ScreenSumOrderByAggregateInput = {
   order?: Prisma.SortOrder
+}
+
+export type ScreenNullableScalarRelationFilter = {
+  is?: Prisma.ScreenWhereInput | null
+  isNot?: Prisma.ScreenWhereInput | null
 }
 
 export type ScreenScalarRelationFilter = {
@@ -488,18 +551,48 @@ export type ScreenUncheckedUpdateManyWithoutModuleNestedInput = {
   deleteMany?: Prisma.ScreenScalarWhereInput | Prisma.ScreenScalarWhereInput[]
 }
 
-export type ScreenCreateNestedOneWithoutGrantsInput = {
-  create?: Prisma.XOR<Prisma.ScreenCreateWithoutGrantsInput, Prisma.ScreenUncheckedCreateWithoutGrantsInput>
-  connectOrCreate?: Prisma.ScreenCreateOrConnectWithoutGrantsInput
+export type ScreenCreateNestedOneWithoutDefault_forInput = {
+  create?: Prisma.XOR<Prisma.ScreenCreateWithoutDefault_forInput, Prisma.ScreenUncheckedCreateWithoutDefault_forInput>
+  connectOrCreate?: Prisma.ScreenCreateOrConnectWithoutDefault_forInput
   connect?: Prisma.ScreenWhereUniqueInput
 }
 
-export type ScreenUpdateOneRequiredWithoutGrantsNestedInput = {
-  create?: Prisma.XOR<Prisma.ScreenCreateWithoutGrantsInput, Prisma.ScreenUncheckedCreateWithoutGrantsInput>
-  connectOrCreate?: Prisma.ScreenCreateOrConnectWithoutGrantsInput
-  upsert?: Prisma.ScreenUpsertWithoutGrantsInput
+export type ScreenUpdateOneWithoutDefault_forNestedInput = {
+  create?: Prisma.XOR<Prisma.ScreenCreateWithoutDefault_forInput, Prisma.ScreenUncheckedCreateWithoutDefault_forInput>
+  connectOrCreate?: Prisma.ScreenCreateOrConnectWithoutDefault_forInput
+  upsert?: Prisma.ScreenUpsertWithoutDefault_forInput
+  disconnect?: Prisma.ScreenWhereInput | boolean
+  delete?: Prisma.ScreenWhereInput | boolean
   connect?: Prisma.ScreenWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ScreenUpdateToOneWithWhereWithoutGrantsInput, Prisma.ScreenUpdateWithoutGrantsInput>, Prisma.ScreenUncheckedUpdateWithoutGrantsInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ScreenUpdateToOneWithWhereWithoutDefault_forInput, Prisma.ScreenUpdateWithoutDefault_forInput>, Prisma.ScreenUncheckedUpdateWithoutDefault_forInput>
+}
+
+export type ScreenCreateNestedOneWithoutMembersInput = {
+  create?: Prisma.XOR<Prisma.ScreenCreateWithoutMembersInput, Prisma.ScreenUncheckedCreateWithoutMembersInput>
+  connectOrCreate?: Prisma.ScreenCreateOrConnectWithoutMembersInput
+  connect?: Prisma.ScreenWhereUniqueInput
+}
+
+export type ScreenUpdateOneRequiredWithoutMembersNestedInput = {
+  create?: Prisma.XOR<Prisma.ScreenCreateWithoutMembersInput, Prisma.ScreenUncheckedCreateWithoutMembersInput>
+  connectOrCreate?: Prisma.ScreenCreateOrConnectWithoutMembersInput
+  upsert?: Prisma.ScreenUpsertWithoutMembersInput
+  connect?: Prisma.ScreenWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ScreenUpdateToOneWithWhereWithoutMembersInput, Prisma.ScreenUpdateWithoutMembersInput>, Prisma.ScreenUncheckedUpdateWithoutMembersInput>
+}
+
+export type ScreenCreateNestedOneWithoutPermissionsInput = {
+  create?: Prisma.XOR<Prisma.ScreenCreateWithoutPermissionsInput, Prisma.ScreenUncheckedCreateWithoutPermissionsInput>
+  connectOrCreate?: Prisma.ScreenCreateOrConnectWithoutPermissionsInput
+  connect?: Prisma.ScreenWhereUniqueInput
+}
+
+export type ScreenUpdateOneRequiredWithoutPermissionsNestedInput = {
+  create?: Prisma.XOR<Prisma.ScreenCreateWithoutPermissionsInput, Prisma.ScreenUncheckedCreateWithoutPermissionsInput>
+  connectOrCreate?: Prisma.ScreenCreateOrConnectWithoutPermissionsInput
+  upsert?: Prisma.ScreenUpsertWithoutPermissionsInput
+  connect?: Prisma.ScreenWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ScreenUpdateToOneWithWhereWithoutPermissionsInput, Prisma.ScreenUpdateWithoutPermissionsInput>, Prisma.ScreenUncheckedUpdateWithoutPermissionsInput>
 }
 
 export type ScreenCreateWithoutModuleInput = {
@@ -510,7 +603,11 @@ export type ScreenCreateWithoutModuleInput = {
   description?: string | null
   order?: number
   is_system?: boolean
-  grants?: Prisma.ProfileScreenCreateNestedManyWithoutScreenInput
+  is_active?: boolean
+  is_enabled?: boolean
+  members?: Prisma.ProfileScreenCreateNestedManyWithoutScreenInput
+  permissions?: Prisma.PermissionCreateNestedManyWithoutScreenInput
+  default_for?: Prisma.ProfileCreateNestedManyWithoutDefault_screenInput
 }
 
 export type ScreenUncheckedCreateWithoutModuleInput = {
@@ -521,7 +618,11 @@ export type ScreenUncheckedCreateWithoutModuleInput = {
   description?: string | null
   order?: number
   is_system?: boolean
-  grants?: Prisma.ProfileScreenUncheckedCreateNestedManyWithoutScreenInput
+  is_active?: boolean
+  is_enabled?: boolean
+  members?: Prisma.ProfileScreenUncheckedCreateNestedManyWithoutScreenInput
+  permissions?: Prisma.PermissionUncheckedCreateNestedManyWithoutScreenInput
+  default_for?: Prisma.ProfileUncheckedCreateNestedManyWithoutDefault_screenInput
 }
 
 export type ScreenCreateOrConnectWithoutModuleInput = {
@@ -561,10 +662,12 @@ export type ScreenScalarWhereInput = {
   description?: Prisma.StringNullableFilter<"Screen"> | string | null
   order?: Prisma.IntFilter<"Screen"> | number
   is_system?: Prisma.BoolFilter<"Screen"> | boolean
+  is_active?: Prisma.BoolFilter<"Screen"> | boolean
+  is_enabled?: Prisma.BoolFilter<"Screen"> | boolean
   module_id?: Prisma.StringFilter<"Screen"> | string
 }
 
-export type ScreenCreateWithoutGrantsInput = {
+export type ScreenCreateWithoutDefault_forInput = {
   id?: string
   key: string
   name: string
@@ -572,10 +675,14 @@ export type ScreenCreateWithoutGrantsInput = {
   description?: string | null
   order?: number
   is_system?: boolean
+  is_active?: boolean
+  is_enabled?: boolean
   module: Prisma.ModuleCreateNestedOneWithoutScreensInput
+  members?: Prisma.ProfileScreenCreateNestedManyWithoutScreenInput
+  permissions?: Prisma.PermissionCreateNestedManyWithoutScreenInput
 }
 
-export type ScreenUncheckedCreateWithoutGrantsInput = {
+export type ScreenUncheckedCreateWithoutDefault_forInput = {
   id?: string
   key: string
   name: string
@@ -583,26 +690,30 @@ export type ScreenUncheckedCreateWithoutGrantsInput = {
   description?: string | null
   order?: number
   is_system?: boolean
+  is_active?: boolean
+  is_enabled?: boolean
   module_id: string
+  members?: Prisma.ProfileScreenUncheckedCreateNestedManyWithoutScreenInput
+  permissions?: Prisma.PermissionUncheckedCreateNestedManyWithoutScreenInput
 }
 
-export type ScreenCreateOrConnectWithoutGrantsInput = {
+export type ScreenCreateOrConnectWithoutDefault_forInput = {
   where: Prisma.ScreenWhereUniqueInput
-  create: Prisma.XOR<Prisma.ScreenCreateWithoutGrantsInput, Prisma.ScreenUncheckedCreateWithoutGrantsInput>
+  create: Prisma.XOR<Prisma.ScreenCreateWithoutDefault_forInput, Prisma.ScreenUncheckedCreateWithoutDefault_forInput>
 }
 
-export type ScreenUpsertWithoutGrantsInput = {
-  update: Prisma.XOR<Prisma.ScreenUpdateWithoutGrantsInput, Prisma.ScreenUncheckedUpdateWithoutGrantsInput>
-  create: Prisma.XOR<Prisma.ScreenCreateWithoutGrantsInput, Prisma.ScreenUncheckedCreateWithoutGrantsInput>
+export type ScreenUpsertWithoutDefault_forInput = {
+  update: Prisma.XOR<Prisma.ScreenUpdateWithoutDefault_forInput, Prisma.ScreenUncheckedUpdateWithoutDefault_forInput>
+  create: Prisma.XOR<Prisma.ScreenCreateWithoutDefault_forInput, Prisma.ScreenUncheckedCreateWithoutDefault_forInput>
   where?: Prisma.ScreenWhereInput
 }
 
-export type ScreenUpdateToOneWithWhereWithoutGrantsInput = {
+export type ScreenUpdateToOneWithWhereWithoutDefault_forInput = {
   where?: Prisma.ScreenWhereInput
-  data: Prisma.XOR<Prisma.ScreenUpdateWithoutGrantsInput, Prisma.ScreenUncheckedUpdateWithoutGrantsInput>
+  data: Prisma.XOR<Prisma.ScreenUpdateWithoutDefault_forInput, Prisma.ScreenUncheckedUpdateWithoutDefault_forInput>
 }
 
-export type ScreenUpdateWithoutGrantsInput = {
+export type ScreenUpdateWithoutDefault_forInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   key?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -610,10 +721,14 @@ export type ScreenUpdateWithoutGrantsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   module?: Prisma.ModuleUpdateOneRequiredWithoutScreensNestedInput
+  members?: Prisma.ProfileScreenUpdateManyWithoutScreenNestedInput
+  permissions?: Prisma.PermissionUpdateManyWithoutScreenNestedInput
 }
 
-export type ScreenUncheckedUpdateWithoutGrantsInput = {
+export type ScreenUncheckedUpdateWithoutDefault_forInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   key?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -621,7 +736,163 @@ export type ScreenUncheckedUpdateWithoutGrantsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   module_id?: Prisma.StringFieldUpdateOperationsInput | string
+  members?: Prisma.ProfileScreenUncheckedUpdateManyWithoutScreenNestedInput
+  permissions?: Prisma.PermissionUncheckedUpdateManyWithoutScreenNestedInput
+}
+
+export type ScreenCreateWithoutMembersInput = {
+  id?: string
+  key: string
+  name: string
+  path?: string | null
+  description?: string | null
+  order?: number
+  is_system?: boolean
+  is_active?: boolean
+  is_enabled?: boolean
+  module: Prisma.ModuleCreateNestedOneWithoutScreensInput
+  permissions?: Prisma.PermissionCreateNestedManyWithoutScreenInput
+  default_for?: Prisma.ProfileCreateNestedManyWithoutDefault_screenInput
+}
+
+export type ScreenUncheckedCreateWithoutMembersInput = {
+  id?: string
+  key: string
+  name: string
+  path?: string | null
+  description?: string | null
+  order?: number
+  is_system?: boolean
+  is_active?: boolean
+  is_enabled?: boolean
+  module_id: string
+  permissions?: Prisma.PermissionUncheckedCreateNestedManyWithoutScreenInput
+  default_for?: Prisma.ProfileUncheckedCreateNestedManyWithoutDefault_screenInput
+}
+
+export type ScreenCreateOrConnectWithoutMembersInput = {
+  where: Prisma.ScreenWhereUniqueInput
+  create: Prisma.XOR<Prisma.ScreenCreateWithoutMembersInput, Prisma.ScreenUncheckedCreateWithoutMembersInput>
+}
+
+export type ScreenUpsertWithoutMembersInput = {
+  update: Prisma.XOR<Prisma.ScreenUpdateWithoutMembersInput, Prisma.ScreenUncheckedUpdateWithoutMembersInput>
+  create: Prisma.XOR<Prisma.ScreenCreateWithoutMembersInput, Prisma.ScreenUncheckedCreateWithoutMembersInput>
+  where?: Prisma.ScreenWhereInput
+}
+
+export type ScreenUpdateToOneWithWhereWithoutMembersInput = {
+  where?: Prisma.ScreenWhereInput
+  data: Prisma.XOR<Prisma.ScreenUpdateWithoutMembersInput, Prisma.ScreenUncheckedUpdateWithoutMembersInput>
+}
+
+export type ScreenUpdateWithoutMembersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  module?: Prisma.ModuleUpdateOneRequiredWithoutScreensNestedInput
+  permissions?: Prisma.PermissionUpdateManyWithoutScreenNestedInput
+  default_for?: Prisma.ProfileUpdateManyWithoutDefault_screenNestedInput
+}
+
+export type ScreenUncheckedUpdateWithoutMembersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  module_id?: Prisma.StringFieldUpdateOperationsInput | string
+  permissions?: Prisma.PermissionUncheckedUpdateManyWithoutScreenNestedInput
+  default_for?: Prisma.ProfileUncheckedUpdateManyWithoutDefault_screenNestedInput
+}
+
+export type ScreenCreateWithoutPermissionsInput = {
+  id?: string
+  key: string
+  name: string
+  path?: string | null
+  description?: string | null
+  order?: number
+  is_system?: boolean
+  is_active?: boolean
+  is_enabled?: boolean
+  module: Prisma.ModuleCreateNestedOneWithoutScreensInput
+  members?: Prisma.ProfileScreenCreateNestedManyWithoutScreenInput
+  default_for?: Prisma.ProfileCreateNestedManyWithoutDefault_screenInput
+}
+
+export type ScreenUncheckedCreateWithoutPermissionsInput = {
+  id?: string
+  key: string
+  name: string
+  path?: string | null
+  description?: string | null
+  order?: number
+  is_system?: boolean
+  is_active?: boolean
+  is_enabled?: boolean
+  module_id: string
+  members?: Prisma.ProfileScreenUncheckedCreateNestedManyWithoutScreenInput
+  default_for?: Prisma.ProfileUncheckedCreateNestedManyWithoutDefault_screenInput
+}
+
+export type ScreenCreateOrConnectWithoutPermissionsInput = {
+  where: Prisma.ScreenWhereUniqueInput
+  create: Prisma.XOR<Prisma.ScreenCreateWithoutPermissionsInput, Prisma.ScreenUncheckedCreateWithoutPermissionsInput>
+}
+
+export type ScreenUpsertWithoutPermissionsInput = {
+  update: Prisma.XOR<Prisma.ScreenUpdateWithoutPermissionsInput, Prisma.ScreenUncheckedUpdateWithoutPermissionsInput>
+  create: Prisma.XOR<Prisma.ScreenCreateWithoutPermissionsInput, Prisma.ScreenUncheckedCreateWithoutPermissionsInput>
+  where?: Prisma.ScreenWhereInput
+}
+
+export type ScreenUpdateToOneWithWhereWithoutPermissionsInput = {
+  where?: Prisma.ScreenWhereInput
+  data: Prisma.XOR<Prisma.ScreenUpdateWithoutPermissionsInput, Prisma.ScreenUncheckedUpdateWithoutPermissionsInput>
+}
+
+export type ScreenUpdateWithoutPermissionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  module?: Prisma.ModuleUpdateOneRequiredWithoutScreensNestedInput
+  members?: Prisma.ProfileScreenUpdateManyWithoutScreenNestedInput
+  default_for?: Prisma.ProfileUpdateManyWithoutDefault_screenNestedInput
+}
+
+export type ScreenUncheckedUpdateWithoutPermissionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  path?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  module_id?: Prisma.StringFieldUpdateOperationsInput | string
+  members?: Prisma.ProfileScreenUncheckedUpdateManyWithoutScreenNestedInput
+  default_for?: Prisma.ProfileUncheckedUpdateManyWithoutDefault_screenNestedInput
 }
 
 export type ScreenCreateManyModuleInput = {
@@ -632,6 +903,8 @@ export type ScreenCreateManyModuleInput = {
   description?: string | null
   order?: number
   is_system?: boolean
+  is_active?: boolean
+  is_enabled?: boolean
 }
 
 export type ScreenUpdateWithoutModuleInput = {
@@ -642,7 +915,11 @@ export type ScreenUpdateWithoutModuleInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  grants?: Prisma.ProfileScreenUpdateManyWithoutScreenNestedInput
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  members?: Prisma.ProfileScreenUpdateManyWithoutScreenNestedInput
+  permissions?: Prisma.PermissionUpdateManyWithoutScreenNestedInput
+  default_for?: Prisma.ProfileUpdateManyWithoutDefault_screenNestedInput
 }
 
 export type ScreenUncheckedUpdateWithoutModuleInput = {
@@ -653,7 +930,11 @@ export type ScreenUncheckedUpdateWithoutModuleInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  grants?: Prisma.ProfileScreenUncheckedUpdateManyWithoutScreenNestedInput
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  members?: Prisma.ProfileScreenUncheckedUpdateManyWithoutScreenNestedInput
+  permissions?: Prisma.PermissionUncheckedUpdateManyWithoutScreenNestedInput
+  default_for?: Prisma.ProfileUncheckedUpdateManyWithoutDefault_screenNestedInput
 }
 
 export type ScreenUncheckedUpdateManyWithoutModuleInput = {
@@ -664,6 +945,8 @@ export type ScreenUncheckedUpdateManyWithoutModuleInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 
@@ -672,11 +955,15 @@ export type ScreenUncheckedUpdateManyWithoutModuleInput = {
  */
 
 export type ScreenCountOutputType = {
-  grants: number
+  members: number
+  permissions: number
+  default_for: number
 }
 
 export type ScreenCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  grants?: boolean | ScreenCountOutputTypeCountGrantsArgs
+  members?: boolean | ScreenCountOutputTypeCountMembersArgs
+  permissions?: boolean | ScreenCountOutputTypeCountPermissionsArgs
+  default_for?: boolean | ScreenCountOutputTypeCountDefault_forArgs
 }
 
 /**
@@ -692,8 +979,22 @@ export type ScreenCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exten
 /**
  * ScreenCountOutputType without action
  */
-export type ScreenCountOutputTypeCountGrantsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type ScreenCountOutputTypeCountMembersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ProfileScreenWhereInput
+}
+
+/**
+ * ScreenCountOutputType without action
+ */
+export type ScreenCountOutputTypeCountPermissionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PermissionWhereInput
+}
+
+/**
+ * ScreenCountOutputType without action
+ */
+export type ScreenCountOutputTypeCountDefault_forArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProfileWhereInput
 }
 
 
@@ -705,9 +1006,13 @@ export type ScreenSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   description?: boolean
   order?: boolean
   is_system?: boolean
+  is_active?: boolean
+  is_enabled?: boolean
   module_id?: boolean
   module?: boolean | Prisma.ModuleDefaultArgs<ExtArgs>
-  grants?: boolean | Prisma.Screen$grantsArgs<ExtArgs>
+  members?: boolean | Prisma.Screen$membersArgs<ExtArgs>
+  permissions?: boolean | Prisma.Screen$permissionsArgs<ExtArgs>
+  default_for?: boolean | Prisma.Screen$default_forArgs<ExtArgs>
   _count?: boolean | Prisma.ScreenCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["screen"]>
 
@@ -721,13 +1026,17 @@ export type ScreenSelectScalar = {
   description?: boolean
   order?: boolean
   is_system?: boolean
+  is_active?: boolean
+  is_enabled?: boolean
   module_id?: boolean
 }
 
-export type ScreenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "key" | "name" | "path" | "description" | "order" | "is_system" | "module_id", ExtArgs["result"]["screen"]>
+export type ScreenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "key" | "name" | "path" | "description" | "order" | "is_system" | "is_active" | "is_enabled" | "module_id", ExtArgs["result"]["screen"]>
 export type ScreenInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   module?: boolean | Prisma.ModuleDefaultArgs<ExtArgs>
-  grants?: boolean | Prisma.Screen$grantsArgs<ExtArgs>
+  members?: boolean | Prisma.Screen$membersArgs<ExtArgs>
+  permissions?: boolean | Prisma.Screen$permissionsArgs<ExtArgs>
+  default_for?: boolean | Prisma.Screen$default_forArgs<ExtArgs>
   _count?: boolean | Prisma.ScreenCountOutputTypeDefaultArgs<ExtArgs>
 }
 
@@ -735,7 +1044,9 @@ export type $ScreenPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   name: "Screen"
   objects: {
     module: Prisma.$ModulePayload<ExtArgs>
-    grants: Prisma.$ProfileScreenPayload<ExtArgs>[]
+    members: Prisma.$ProfileScreenPayload<ExtArgs>[]
+    permissions: Prisma.$PermissionPayload<ExtArgs>[]
+    default_for: Prisma.$ProfilePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -745,6 +1056,8 @@ export type $ScreenPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     description: string | null
     order: number
     is_system: boolean
+    is_active: boolean
+    is_enabled: boolean
     module_id: string
   }, ExtArgs["result"]["screen"]>
   composites: {}
@@ -1087,7 +1400,9 @@ readonly fields: ScreenFieldRefs;
 export interface Prisma__ScreenClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   module<T extends Prisma.ModuleDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ModuleDefaultArgs<ExtArgs>>): Prisma.Prisma__ModuleClient<runtime.Types.Result.GetResult<Prisma.$ModulePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  grants<T extends Prisma.Screen$grantsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Screen$grantsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProfileScreenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  members<T extends Prisma.Screen$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Screen$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProfileScreenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  permissions<T extends Prisma.Screen$permissionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Screen$permissionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  default_for<T extends Prisma.Screen$default_forArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Screen$default_forArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProfilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1124,6 +1439,8 @@ export interface ScreenFieldRefs {
   readonly description: Prisma.FieldRef<"Screen", 'String'>
   readonly order: Prisma.FieldRef<"Screen", 'Int'>
   readonly is_system: Prisma.FieldRef<"Screen", 'Boolean'>
+  readonly is_active: Prisma.FieldRef<"Screen", 'Boolean'>
+  readonly is_enabled: Prisma.FieldRef<"Screen", 'Boolean'>
   readonly module_id: Prisma.FieldRef<"Screen", 'String'>
 }
     
@@ -1473,9 +1790,9 @@ export type ScreenDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
 }
 
 /**
- * Screen.grants
+ * Screen.members
  */
-export type Screen$grantsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Screen$membersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the ProfileScreen
    */
@@ -1494,6 +1811,54 @@ export type Screen$grantsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.ProfileScreenScalarFieldEnum | Prisma.ProfileScreenScalarFieldEnum[]
+}
+
+/**
+ * Screen.permissions
+ */
+export type Screen$permissionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Permission
+   */
+  select?: Prisma.PermissionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Permission
+   */
+  omit?: Prisma.PermissionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PermissionInclude<ExtArgs> | null
+  where?: Prisma.PermissionWhereInput
+  orderBy?: Prisma.PermissionOrderByWithRelationInput | Prisma.PermissionOrderByWithRelationInput[]
+  cursor?: Prisma.PermissionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PermissionScalarFieldEnum | Prisma.PermissionScalarFieldEnum[]
+}
+
+/**
+ * Screen.default_for
+ */
+export type Screen$default_forArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Profile
+   */
+  select?: Prisma.ProfileSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Profile
+   */
+  omit?: Prisma.ProfileOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProfileInclude<ExtArgs> | null
+  where?: Prisma.ProfileWhereInput
+  orderBy?: Prisma.ProfileOrderByWithRelationInput | Prisma.ProfileOrderByWithRelationInput[]
+  cursor?: Prisma.ProfileWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProfileScalarFieldEnum | Prisma.ProfileScalarFieldEnum[]
 }
 
 /**

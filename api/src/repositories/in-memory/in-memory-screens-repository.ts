@@ -11,6 +11,8 @@ import {
 export class InMemoryScreensRepository implements IScreensRepository {
 	// in-memory mock database
 	public items: Screen[] = []
+	// Membership rows — seed in tests for the delete guard.
+	public memberships: { profile_id: string; screen_id: string }[] = []
 
 	async list(moduleId?: string) {
 		if (moduleId) {
@@ -20,7 +22,7 @@ export class InMemoryScreensRepository implements IScreensRepository {
 	}
 
 	async create(data: IScreenCreateInput) {
-		// new screen
+		// new screen — is_active/is_enabled default true; is_system never client-set.
 		const screen = {
 			id: randomUUID(),
 			module_id: data.module_id,
@@ -29,8 +31,9 @@ export class InMemoryScreensRepository implements IScreensRepository {
 			path: data.path ?? null,
 			description: data.description ?? null,
 			order: data.order ?? 0,
-			// is_system is never client-settable; created screens are always false.
 			is_system: false,
+			is_active: true,
+			is_enabled: true,
 		}
 		this.items.push(screen)
 
@@ -38,9 +41,7 @@ export class InMemoryScreensRepository implements IScreensRepository {
 	}
 
 	async findById(id: string) {
-		// find by id
 		const screen = this.items.find((item) => item.id === id)
-
 		return screen || null
 	}
 
@@ -68,6 +69,12 @@ export class InMemoryScreensRepository implements IScreensRepository {
 		if (data.order !== undefined) {
 			screen.order = data.order
 		}
+		if (data.is_active !== undefined) {
+			screen.is_active = data.is_active
+		}
+		if (data.is_enabled !== undefined) {
+			screen.is_enabled = data.is_enabled
+		}
 		return screen
 	}
 
@@ -76,5 +83,9 @@ export class InMemoryScreensRepository implements IScreensRepository {
 		if (index >= 0) {
 			this.items.splice(index, 1)
 		}
+	}
+
+	async countMembers(id: string) {
+		return this.memberships.filter((m) => m.screen_id === id).length
 	}
 }

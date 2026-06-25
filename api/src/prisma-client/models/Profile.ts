@@ -31,7 +31,9 @@ export type ProfileMinAggregateOutputType = {
   description: string | null
   is_system: boolean | null
   is_default: boolean | null
+  is_active: boolean | null
   created_at: Date | null
+  default_screen_id: string | null
 }
 
 export type ProfileMaxAggregateOutputType = {
@@ -41,7 +43,9 @@ export type ProfileMaxAggregateOutputType = {
   description: string | null
   is_system: boolean | null
   is_default: boolean | null
+  is_active: boolean | null
   created_at: Date | null
+  default_screen_id: string | null
 }
 
 export type ProfileCountAggregateOutputType = {
@@ -51,7 +55,9 @@ export type ProfileCountAggregateOutputType = {
   description: number
   is_system: number
   is_default: number
+  is_active: number
   created_at: number
+  default_screen_id: number
   _all: number
 }
 
@@ -63,7 +69,9 @@ export type ProfileMinAggregateInputType = {
   description?: true
   is_system?: true
   is_default?: true
+  is_active?: true
   created_at?: true
+  default_screen_id?: true
 }
 
 export type ProfileMaxAggregateInputType = {
@@ -73,7 +81,9 @@ export type ProfileMaxAggregateInputType = {
   description?: true
   is_system?: true
   is_default?: true
+  is_active?: true
   created_at?: true
+  default_screen_id?: true
 }
 
 export type ProfileCountAggregateInputType = {
@@ -83,7 +93,9 @@ export type ProfileCountAggregateInputType = {
   description?: true
   is_system?: true
   is_default?: true
+  is_active?: true
   created_at?: true
+  default_screen_id?: true
   _all?: true
 }
 
@@ -166,7 +178,9 @@ export type ProfileGroupByOutputType = {
   description: string | null
   is_system: boolean
   is_default: boolean
+  is_active: boolean
   created_at: Date
+  default_screen_id: string | null
   _count: ProfileCountAggregateOutputType | null
   _min: ProfileMinAggregateOutputType | null
   _max: ProfileMaxAggregateOutputType | null
@@ -197,8 +211,12 @@ export type ProfileWhereInput = {
   description?: Prisma.StringNullableFilter<"Profile"> | string | null
   is_system?: Prisma.BoolFilter<"Profile"> | boolean
   is_default?: Prisma.BoolFilter<"Profile"> | boolean
+  is_active?: Prisma.BoolFilter<"Profile"> | boolean
   created_at?: Prisma.DateTimeFilter<"Profile"> | Date | string
+  default_screen_id?: Prisma.StringNullableFilter<"Profile"> | string | null
+  default_screen?: Prisma.XOR<Prisma.ScreenNullableScalarRelationFilter, Prisma.ScreenWhereInput> | null
   screens?: Prisma.ProfileScreenListRelationFilter
+  permissions?: Prisma.ProfilePermissionListRelationFilter
   users?: Prisma.UserProfileListRelationFilter
 }
 
@@ -209,8 +227,12 @@ export type ProfileOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   is_system?: Prisma.SortOrder
   is_default?: Prisma.SortOrder
+  is_active?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  default_screen_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  default_screen?: Prisma.ScreenOrderByWithRelationInput
   screens?: Prisma.ProfileScreenOrderByRelationAggregateInput
+  permissions?: Prisma.ProfilePermissionOrderByRelationAggregateInput
   users?: Prisma.UserProfileOrderByRelationAggregateInput
   _relevance?: Prisma.ProfileOrderByRelevanceInput
 }
@@ -225,8 +247,12 @@ export type ProfileWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"Profile"> | string | null
   is_system?: Prisma.BoolFilter<"Profile"> | boolean
   is_default?: Prisma.BoolFilter<"Profile"> | boolean
+  is_active?: Prisma.BoolFilter<"Profile"> | boolean
   created_at?: Prisma.DateTimeFilter<"Profile"> | Date | string
+  default_screen_id?: Prisma.StringNullableFilter<"Profile"> | string | null
+  default_screen?: Prisma.XOR<Prisma.ScreenNullableScalarRelationFilter, Prisma.ScreenWhereInput> | null
   screens?: Prisma.ProfileScreenListRelationFilter
+  permissions?: Prisma.ProfilePermissionListRelationFilter
   users?: Prisma.UserProfileListRelationFilter
 }, "id" | "key">
 
@@ -237,7 +263,9 @@ export type ProfileOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   is_system?: Prisma.SortOrder
   is_default?: Prisma.SortOrder
+  is_active?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  default_screen_id?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ProfileCountOrderByAggregateInput
   _max?: Prisma.ProfileMaxOrderByAggregateInput
   _min?: Prisma.ProfileMinOrderByAggregateInput
@@ -253,7 +281,9 @@ export type ProfileScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<"Profile"> | string | null
   is_system?: Prisma.BoolWithAggregatesFilter<"Profile"> | boolean
   is_default?: Prisma.BoolWithAggregatesFilter<"Profile"> | boolean
+  is_active?: Prisma.BoolWithAggregatesFilter<"Profile"> | boolean
   created_at?: Prisma.DateTimeWithAggregatesFilter<"Profile"> | Date | string
+  default_screen_id?: Prisma.StringNullableWithAggregatesFilter<"Profile"> | string | null
 }
 
 export type ProfileCreateInput = {
@@ -263,8 +293,11 @@ export type ProfileCreateInput = {
   description?: string | null
   is_system?: boolean
   is_default?: boolean
+  is_active?: boolean
   created_at?: Date | string
+  default_screen?: Prisma.ScreenCreateNestedOneWithoutDefault_forInput
   screens?: Prisma.ProfileScreenCreateNestedManyWithoutProfileInput
+  permissions?: Prisma.ProfilePermissionCreateNestedManyWithoutProfileInput
   users?: Prisma.UserProfileCreateNestedManyWithoutProfileInput
 }
 
@@ -275,8 +308,11 @@ export type ProfileUncheckedCreateInput = {
   description?: string | null
   is_system?: boolean
   is_default?: boolean
+  is_active?: boolean
   created_at?: Date | string
+  default_screen_id?: string | null
   screens?: Prisma.ProfileScreenUncheckedCreateNestedManyWithoutProfileInput
+  permissions?: Prisma.ProfilePermissionUncheckedCreateNestedManyWithoutProfileInput
   users?: Prisma.UserProfileUncheckedCreateNestedManyWithoutProfileInput
 }
 
@@ -287,8 +323,11 @@ export type ProfileUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  default_screen?: Prisma.ScreenUpdateOneWithoutDefault_forNestedInput
   screens?: Prisma.ProfileScreenUpdateManyWithoutProfileNestedInput
+  permissions?: Prisma.ProfilePermissionUpdateManyWithoutProfileNestedInput
   users?: Prisma.UserProfileUpdateManyWithoutProfileNestedInput
 }
 
@@ -299,8 +338,11 @@ export type ProfileUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  default_screen_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   screens?: Prisma.ProfileScreenUncheckedUpdateManyWithoutProfileNestedInput
+  permissions?: Prisma.ProfilePermissionUncheckedUpdateManyWithoutProfileNestedInput
   users?: Prisma.UserProfileUncheckedUpdateManyWithoutProfileNestedInput
 }
 
@@ -311,7 +353,9 @@ export type ProfileCreateManyInput = {
   description?: string | null
   is_system?: boolean
   is_default?: boolean
+  is_active?: boolean
   created_at?: Date | string
+  default_screen_id?: string | null
 }
 
 export type ProfileUpdateManyMutationInput = {
@@ -321,6 +365,7 @@ export type ProfileUpdateManyMutationInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -331,7 +376,19 @@ export type ProfileUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  default_screen_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type ProfileListRelationFilter = {
+  every?: Prisma.ProfileWhereInput
+  some?: Prisma.ProfileWhereInput
+  none?: Prisma.ProfileWhereInput
+}
+
+export type ProfileOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type ProfileOrderByRelevanceInput = {
@@ -347,7 +404,9 @@ export type ProfileCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   is_system?: Prisma.SortOrder
   is_default?: Prisma.SortOrder
+  is_active?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  default_screen_id?: Prisma.SortOrder
 }
 
 export type ProfileMaxOrderByAggregateInput = {
@@ -357,7 +416,9 @@ export type ProfileMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder
   is_system?: Prisma.SortOrder
   is_default?: Prisma.SortOrder
+  is_active?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  default_screen_id?: Prisma.SortOrder
 }
 
 export type ProfileMinOrderByAggregateInput = {
@@ -367,12 +428,56 @@ export type ProfileMinOrderByAggregateInput = {
   description?: Prisma.SortOrder
   is_system?: Prisma.SortOrder
   is_default?: Prisma.SortOrder
+  is_active?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  default_screen_id?: Prisma.SortOrder
 }
 
 export type ProfileScalarRelationFilter = {
   is?: Prisma.ProfileWhereInput
   isNot?: Prisma.ProfileWhereInput
+}
+
+export type ProfileCreateNestedManyWithoutDefault_screenInput = {
+  create?: Prisma.XOR<Prisma.ProfileCreateWithoutDefault_screenInput, Prisma.ProfileUncheckedCreateWithoutDefault_screenInput> | Prisma.ProfileCreateWithoutDefault_screenInput[] | Prisma.ProfileUncheckedCreateWithoutDefault_screenInput[]
+  connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutDefault_screenInput | Prisma.ProfileCreateOrConnectWithoutDefault_screenInput[]
+  createMany?: Prisma.ProfileCreateManyDefault_screenInputEnvelope
+  connect?: Prisma.ProfileWhereUniqueInput | Prisma.ProfileWhereUniqueInput[]
+}
+
+export type ProfileUncheckedCreateNestedManyWithoutDefault_screenInput = {
+  create?: Prisma.XOR<Prisma.ProfileCreateWithoutDefault_screenInput, Prisma.ProfileUncheckedCreateWithoutDefault_screenInput> | Prisma.ProfileCreateWithoutDefault_screenInput[] | Prisma.ProfileUncheckedCreateWithoutDefault_screenInput[]
+  connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutDefault_screenInput | Prisma.ProfileCreateOrConnectWithoutDefault_screenInput[]
+  createMany?: Prisma.ProfileCreateManyDefault_screenInputEnvelope
+  connect?: Prisma.ProfileWhereUniqueInput | Prisma.ProfileWhereUniqueInput[]
+}
+
+export type ProfileUpdateManyWithoutDefault_screenNestedInput = {
+  create?: Prisma.XOR<Prisma.ProfileCreateWithoutDefault_screenInput, Prisma.ProfileUncheckedCreateWithoutDefault_screenInput> | Prisma.ProfileCreateWithoutDefault_screenInput[] | Prisma.ProfileUncheckedCreateWithoutDefault_screenInput[]
+  connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutDefault_screenInput | Prisma.ProfileCreateOrConnectWithoutDefault_screenInput[]
+  upsert?: Prisma.ProfileUpsertWithWhereUniqueWithoutDefault_screenInput | Prisma.ProfileUpsertWithWhereUniqueWithoutDefault_screenInput[]
+  createMany?: Prisma.ProfileCreateManyDefault_screenInputEnvelope
+  set?: Prisma.ProfileWhereUniqueInput | Prisma.ProfileWhereUniqueInput[]
+  disconnect?: Prisma.ProfileWhereUniqueInput | Prisma.ProfileWhereUniqueInput[]
+  delete?: Prisma.ProfileWhereUniqueInput | Prisma.ProfileWhereUniqueInput[]
+  connect?: Prisma.ProfileWhereUniqueInput | Prisma.ProfileWhereUniqueInput[]
+  update?: Prisma.ProfileUpdateWithWhereUniqueWithoutDefault_screenInput | Prisma.ProfileUpdateWithWhereUniqueWithoutDefault_screenInput[]
+  updateMany?: Prisma.ProfileUpdateManyWithWhereWithoutDefault_screenInput | Prisma.ProfileUpdateManyWithWhereWithoutDefault_screenInput[]
+  deleteMany?: Prisma.ProfileScalarWhereInput | Prisma.ProfileScalarWhereInput[]
+}
+
+export type ProfileUncheckedUpdateManyWithoutDefault_screenNestedInput = {
+  create?: Prisma.XOR<Prisma.ProfileCreateWithoutDefault_screenInput, Prisma.ProfileUncheckedCreateWithoutDefault_screenInput> | Prisma.ProfileCreateWithoutDefault_screenInput[] | Prisma.ProfileUncheckedCreateWithoutDefault_screenInput[]
+  connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutDefault_screenInput | Prisma.ProfileCreateOrConnectWithoutDefault_screenInput[]
+  upsert?: Prisma.ProfileUpsertWithWhereUniqueWithoutDefault_screenInput | Prisma.ProfileUpsertWithWhereUniqueWithoutDefault_screenInput[]
+  createMany?: Prisma.ProfileCreateManyDefault_screenInputEnvelope
+  set?: Prisma.ProfileWhereUniqueInput | Prisma.ProfileWhereUniqueInput[]
+  disconnect?: Prisma.ProfileWhereUniqueInput | Prisma.ProfileWhereUniqueInput[]
+  delete?: Prisma.ProfileWhereUniqueInput | Prisma.ProfileWhereUniqueInput[]
+  connect?: Prisma.ProfileWhereUniqueInput | Prisma.ProfileWhereUniqueInput[]
+  update?: Prisma.ProfileUpdateWithWhereUniqueWithoutDefault_screenInput | Prisma.ProfileUpdateWithWhereUniqueWithoutDefault_screenInput[]
+  updateMany?: Prisma.ProfileUpdateManyWithWhereWithoutDefault_screenInput | Prisma.ProfileUpdateManyWithWhereWithoutDefault_screenInput[]
+  deleteMany?: Prisma.ProfileScalarWhereInput | Prisma.ProfileScalarWhereInput[]
 }
 
 export type ProfileCreateNestedOneWithoutScreensInput = {
@@ -389,6 +494,20 @@ export type ProfileUpdateOneRequiredWithoutScreensNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProfileUpdateToOneWithWhereWithoutScreensInput, Prisma.ProfileUpdateWithoutScreensInput>, Prisma.ProfileUncheckedUpdateWithoutScreensInput>
 }
 
+export type ProfileCreateNestedOneWithoutPermissionsInput = {
+  create?: Prisma.XOR<Prisma.ProfileCreateWithoutPermissionsInput, Prisma.ProfileUncheckedCreateWithoutPermissionsInput>
+  connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutPermissionsInput
+  connect?: Prisma.ProfileWhereUniqueInput
+}
+
+export type ProfileUpdateOneRequiredWithoutPermissionsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProfileCreateWithoutPermissionsInput, Prisma.ProfileUncheckedCreateWithoutPermissionsInput>
+  connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutPermissionsInput
+  upsert?: Prisma.ProfileUpsertWithoutPermissionsInput
+  connect?: Prisma.ProfileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProfileUpdateToOneWithWhereWithoutPermissionsInput, Prisma.ProfileUpdateWithoutPermissionsInput>, Prisma.ProfileUncheckedUpdateWithoutPermissionsInput>
+}
+
 export type ProfileCreateNestedOneWithoutUsersInput = {
   create?: Prisma.XOR<Prisma.ProfileCreateWithoutUsersInput, Prisma.ProfileUncheckedCreateWithoutUsersInput>
   connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutUsersInput
@@ -403,6 +522,75 @@ export type ProfileUpdateOneRequiredWithoutUsersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProfileUpdateToOneWithWhereWithoutUsersInput, Prisma.ProfileUpdateWithoutUsersInput>, Prisma.ProfileUncheckedUpdateWithoutUsersInput>
 }
 
+export type ProfileCreateWithoutDefault_screenInput = {
+  id?: string
+  key: string
+  name: string
+  description?: string | null
+  is_system?: boolean
+  is_default?: boolean
+  is_active?: boolean
+  created_at?: Date | string
+  screens?: Prisma.ProfileScreenCreateNestedManyWithoutProfileInput
+  permissions?: Prisma.ProfilePermissionCreateNestedManyWithoutProfileInput
+  users?: Prisma.UserProfileCreateNestedManyWithoutProfileInput
+}
+
+export type ProfileUncheckedCreateWithoutDefault_screenInput = {
+  id?: string
+  key: string
+  name: string
+  description?: string | null
+  is_system?: boolean
+  is_default?: boolean
+  is_active?: boolean
+  created_at?: Date | string
+  screens?: Prisma.ProfileScreenUncheckedCreateNestedManyWithoutProfileInput
+  permissions?: Prisma.ProfilePermissionUncheckedCreateNestedManyWithoutProfileInput
+  users?: Prisma.UserProfileUncheckedCreateNestedManyWithoutProfileInput
+}
+
+export type ProfileCreateOrConnectWithoutDefault_screenInput = {
+  where: Prisma.ProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProfileCreateWithoutDefault_screenInput, Prisma.ProfileUncheckedCreateWithoutDefault_screenInput>
+}
+
+export type ProfileCreateManyDefault_screenInputEnvelope = {
+  data: Prisma.ProfileCreateManyDefault_screenInput | Prisma.ProfileCreateManyDefault_screenInput[]
+  skipDuplicates?: boolean
+}
+
+export type ProfileUpsertWithWhereUniqueWithoutDefault_screenInput = {
+  where: Prisma.ProfileWhereUniqueInput
+  update: Prisma.XOR<Prisma.ProfileUpdateWithoutDefault_screenInput, Prisma.ProfileUncheckedUpdateWithoutDefault_screenInput>
+  create: Prisma.XOR<Prisma.ProfileCreateWithoutDefault_screenInput, Prisma.ProfileUncheckedCreateWithoutDefault_screenInput>
+}
+
+export type ProfileUpdateWithWhereUniqueWithoutDefault_screenInput = {
+  where: Prisma.ProfileWhereUniqueInput
+  data: Prisma.XOR<Prisma.ProfileUpdateWithoutDefault_screenInput, Prisma.ProfileUncheckedUpdateWithoutDefault_screenInput>
+}
+
+export type ProfileUpdateManyWithWhereWithoutDefault_screenInput = {
+  where: Prisma.ProfileScalarWhereInput
+  data: Prisma.XOR<Prisma.ProfileUpdateManyMutationInput, Prisma.ProfileUncheckedUpdateManyWithoutDefault_screenInput>
+}
+
+export type ProfileScalarWhereInput = {
+  AND?: Prisma.ProfileScalarWhereInput | Prisma.ProfileScalarWhereInput[]
+  OR?: Prisma.ProfileScalarWhereInput[]
+  NOT?: Prisma.ProfileScalarWhereInput | Prisma.ProfileScalarWhereInput[]
+  id?: Prisma.StringFilter<"Profile"> | string
+  key?: Prisma.StringFilter<"Profile"> | string
+  name?: Prisma.StringFilter<"Profile"> | string
+  description?: Prisma.StringNullableFilter<"Profile"> | string | null
+  is_system?: Prisma.BoolFilter<"Profile"> | boolean
+  is_default?: Prisma.BoolFilter<"Profile"> | boolean
+  is_active?: Prisma.BoolFilter<"Profile"> | boolean
+  created_at?: Prisma.DateTimeFilter<"Profile"> | Date | string
+  default_screen_id?: Prisma.StringNullableFilter<"Profile"> | string | null
+}
+
 export type ProfileCreateWithoutScreensInput = {
   id?: string
   key: string
@@ -410,7 +598,10 @@ export type ProfileCreateWithoutScreensInput = {
   description?: string | null
   is_system?: boolean
   is_default?: boolean
+  is_active?: boolean
   created_at?: Date | string
+  default_screen?: Prisma.ScreenCreateNestedOneWithoutDefault_forInput
+  permissions?: Prisma.ProfilePermissionCreateNestedManyWithoutProfileInput
   users?: Prisma.UserProfileCreateNestedManyWithoutProfileInput
 }
 
@@ -421,7 +612,10 @@ export type ProfileUncheckedCreateWithoutScreensInput = {
   description?: string | null
   is_system?: boolean
   is_default?: boolean
+  is_active?: boolean
   created_at?: Date | string
+  default_screen_id?: string | null
+  permissions?: Prisma.ProfilePermissionUncheckedCreateNestedManyWithoutProfileInput
   users?: Prisma.UserProfileUncheckedCreateNestedManyWithoutProfileInput
 }
 
@@ -448,7 +642,10 @@ export type ProfileUpdateWithoutScreensInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  default_screen?: Prisma.ScreenUpdateOneWithoutDefault_forNestedInput
+  permissions?: Prisma.ProfilePermissionUpdateManyWithoutProfileNestedInput
   users?: Prisma.UserProfileUpdateManyWithoutProfileNestedInput
 }
 
@@ -459,7 +656,82 @@ export type ProfileUncheckedUpdateWithoutScreensInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  default_screen_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  permissions?: Prisma.ProfilePermissionUncheckedUpdateManyWithoutProfileNestedInput
+  users?: Prisma.UserProfileUncheckedUpdateManyWithoutProfileNestedInput
+}
+
+export type ProfileCreateWithoutPermissionsInput = {
+  id?: string
+  key: string
+  name: string
+  description?: string | null
+  is_system?: boolean
+  is_default?: boolean
+  is_active?: boolean
+  created_at?: Date | string
+  default_screen?: Prisma.ScreenCreateNestedOneWithoutDefault_forInput
+  screens?: Prisma.ProfileScreenCreateNestedManyWithoutProfileInput
+  users?: Prisma.UserProfileCreateNestedManyWithoutProfileInput
+}
+
+export type ProfileUncheckedCreateWithoutPermissionsInput = {
+  id?: string
+  key: string
+  name: string
+  description?: string | null
+  is_system?: boolean
+  is_default?: boolean
+  is_active?: boolean
+  created_at?: Date | string
+  default_screen_id?: string | null
+  screens?: Prisma.ProfileScreenUncheckedCreateNestedManyWithoutProfileInput
+  users?: Prisma.UserProfileUncheckedCreateNestedManyWithoutProfileInput
+}
+
+export type ProfileCreateOrConnectWithoutPermissionsInput = {
+  where: Prisma.ProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProfileCreateWithoutPermissionsInput, Prisma.ProfileUncheckedCreateWithoutPermissionsInput>
+}
+
+export type ProfileUpsertWithoutPermissionsInput = {
+  update: Prisma.XOR<Prisma.ProfileUpdateWithoutPermissionsInput, Prisma.ProfileUncheckedUpdateWithoutPermissionsInput>
+  create: Prisma.XOR<Prisma.ProfileCreateWithoutPermissionsInput, Prisma.ProfileUncheckedCreateWithoutPermissionsInput>
+  where?: Prisma.ProfileWhereInput
+}
+
+export type ProfileUpdateToOneWithWhereWithoutPermissionsInput = {
+  where?: Prisma.ProfileWhereInput
+  data: Prisma.XOR<Prisma.ProfileUpdateWithoutPermissionsInput, Prisma.ProfileUncheckedUpdateWithoutPermissionsInput>
+}
+
+export type ProfileUpdateWithoutPermissionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  default_screen?: Prisma.ScreenUpdateOneWithoutDefault_forNestedInput
+  screens?: Prisma.ProfileScreenUpdateManyWithoutProfileNestedInput
+  users?: Prisma.UserProfileUpdateManyWithoutProfileNestedInput
+}
+
+export type ProfileUncheckedUpdateWithoutPermissionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  default_screen_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  screens?: Prisma.ProfileScreenUncheckedUpdateManyWithoutProfileNestedInput
   users?: Prisma.UserProfileUncheckedUpdateManyWithoutProfileNestedInput
 }
 
@@ -470,8 +742,11 @@ export type ProfileCreateWithoutUsersInput = {
   description?: string | null
   is_system?: boolean
   is_default?: boolean
+  is_active?: boolean
   created_at?: Date | string
+  default_screen?: Prisma.ScreenCreateNestedOneWithoutDefault_forInput
   screens?: Prisma.ProfileScreenCreateNestedManyWithoutProfileInput
+  permissions?: Prisma.ProfilePermissionCreateNestedManyWithoutProfileInput
 }
 
 export type ProfileUncheckedCreateWithoutUsersInput = {
@@ -481,8 +756,11 @@ export type ProfileUncheckedCreateWithoutUsersInput = {
   description?: string | null
   is_system?: boolean
   is_default?: boolean
+  is_active?: boolean
   created_at?: Date | string
+  default_screen_id?: string | null
   screens?: Prisma.ProfileScreenUncheckedCreateNestedManyWithoutProfileInput
+  permissions?: Prisma.ProfilePermissionUncheckedCreateNestedManyWithoutProfileInput
 }
 
 export type ProfileCreateOrConnectWithoutUsersInput = {
@@ -508,8 +786,11 @@ export type ProfileUpdateWithoutUsersInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  default_screen?: Prisma.ScreenUpdateOneWithoutDefault_forNestedInput
   screens?: Prisma.ProfileScreenUpdateManyWithoutProfileNestedInput
+  permissions?: Prisma.ProfilePermissionUpdateManyWithoutProfileNestedInput
 }
 
 export type ProfileUncheckedUpdateWithoutUsersInput = {
@@ -519,8 +800,61 @@ export type ProfileUncheckedUpdateWithoutUsersInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  default_screen_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  screens?: Prisma.ProfileScreenUncheckedUpdateManyWithoutProfileNestedInput
+  permissions?: Prisma.ProfilePermissionUncheckedUpdateManyWithoutProfileNestedInput
+}
+
+export type ProfileCreateManyDefault_screenInput = {
+  id?: string
+  key: string
+  name: string
+  description?: string | null
+  is_system?: boolean
+  is_default?: boolean
+  is_active?: boolean
+  created_at?: Date | string
+}
+
+export type ProfileUpdateWithoutDefault_screenInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  screens?: Prisma.ProfileScreenUpdateManyWithoutProfileNestedInput
+  permissions?: Prisma.ProfilePermissionUpdateManyWithoutProfileNestedInput
+  users?: Prisma.UserProfileUpdateManyWithoutProfileNestedInput
+}
+
+export type ProfileUncheckedUpdateWithoutDefault_screenInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   screens?: Prisma.ProfileScreenUncheckedUpdateManyWithoutProfileNestedInput
+  permissions?: Prisma.ProfilePermissionUncheckedUpdateManyWithoutProfileNestedInput
+  users?: Prisma.UserProfileUncheckedUpdateManyWithoutProfileNestedInput
+}
+
+export type ProfileUncheckedUpdateManyWithoutDefault_screenInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  key?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  is_system?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_default?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -530,11 +864,13 @@ export type ProfileUncheckedUpdateWithoutUsersInput = {
 
 export type ProfileCountOutputType = {
   screens: number
+  permissions: number
   users: number
 }
 
 export type ProfileCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   screens?: boolean | ProfileCountOutputTypeCountScreensArgs
+  permissions?: boolean | ProfileCountOutputTypeCountPermissionsArgs
   users?: boolean | ProfileCountOutputTypeCountUsersArgs
 }
 
@@ -558,6 +894,13 @@ export type ProfileCountOutputTypeCountScreensArgs<ExtArgs extends runtime.Types
 /**
  * ProfileCountOutputType without action
  */
+export type ProfileCountOutputTypeCountPermissionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProfilePermissionWhereInput
+}
+
+/**
+ * ProfileCountOutputType without action
+ */
 export type ProfileCountOutputTypeCountUsersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.UserProfileWhereInput
 }
@@ -570,8 +913,12 @@ export type ProfileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   description?: boolean
   is_system?: boolean
   is_default?: boolean
+  is_active?: boolean
   created_at?: boolean
+  default_screen_id?: boolean
+  default_screen?: boolean | Prisma.Profile$default_screenArgs<ExtArgs>
   screens?: boolean | Prisma.Profile$screensArgs<ExtArgs>
+  permissions?: boolean | Prisma.Profile$permissionsArgs<ExtArgs>
   users?: boolean | Prisma.Profile$usersArgs<ExtArgs>
   _count?: boolean | Prisma.ProfileCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["profile"]>
@@ -585,12 +932,16 @@ export type ProfileSelectScalar = {
   description?: boolean
   is_system?: boolean
   is_default?: boolean
+  is_active?: boolean
   created_at?: boolean
+  default_screen_id?: boolean
 }
 
-export type ProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "key" | "name" | "description" | "is_system" | "is_default" | "created_at", ExtArgs["result"]["profile"]>
+export type ProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "key" | "name" | "description" | "is_system" | "is_default" | "is_active" | "created_at" | "default_screen_id", ExtArgs["result"]["profile"]>
 export type ProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  default_screen?: boolean | Prisma.Profile$default_screenArgs<ExtArgs>
   screens?: boolean | Prisma.Profile$screensArgs<ExtArgs>
+  permissions?: boolean | Prisma.Profile$permissionsArgs<ExtArgs>
   users?: boolean | Prisma.Profile$usersArgs<ExtArgs>
   _count?: boolean | Prisma.ProfileCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -598,7 +949,9 @@ export type ProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type $ProfilePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Profile"
   objects: {
+    default_screen: Prisma.$ScreenPayload<ExtArgs> | null
     screens: Prisma.$ProfileScreenPayload<ExtArgs>[]
+    permissions: Prisma.$ProfilePermissionPayload<ExtArgs>[]
     users: Prisma.$UserProfilePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -608,7 +961,9 @@ export type $ProfilePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     description: string | null
     is_system: boolean
     is_default: boolean
+    is_active: boolean
     created_at: Date
+    default_screen_id: string | null
   }, ExtArgs["result"]["profile"]>
   composites: {}
 }
@@ -949,7 +1304,9 @@ readonly fields: ProfileFieldRefs;
  */
 export interface Prisma__ProfileClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  default_screen<T extends Prisma.Profile$default_screenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Profile$default_screenArgs<ExtArgs>>): Prisma.Prisma__ScreenClient<runtime.Types.Result.GetResult<Prisma.$ScreenPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   screens<T extends Prisma.Profile$screensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Profile$screensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProfileScreenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  permissions<T extends Prisma.Profile$permissionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Profile$permissionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProfilePermissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   users<T extends Prisma.Profile$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Profile$usersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -986,7 +1343,9 @@ export interface ProfileFieldRefs {
   readonly description: Prisma.FieldRef<"Profile", 'String'>
   readonly is_system: Prisma.FieldRef<"Profile", 'Boolean'>
   readonly is_default: Prisma.FieldRef<"Profile", 'Boolean'>
+  readonly is_active: Prisma.FieldRef<"Profile", 'Boolean'>
   readonly created_at: Prisma.FieldRef<"Profile", 'DateTime'>
+  readonly default_screen_id: Prisma.FieldRef<"Profile", 'String'>
 }
     
 
@@ -1335,6 +1694,25 @@ export type ProfileDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
 }
 
 /**
+ * Profile.default_screen
+ */
+export type Profile$default_screenArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Screen
+   */
+  select?: Prisma.ScreenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Screen
+   */
+  omit?: Prisma.ScreenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ScreenInclude<ExtArgs> | null
+  where?: Prisma.ScreenWhereInput
+}
+
+/**
  * Profile.screens
  */
 export type Profile$screensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1356,6 +1734,30 @@ export type Profile$screensArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.ProfileScreenScalarFieldEnum | Prisma.ProfileScreenScalarFieldEnum[]
+}
+
+/**
+ * Profile.permissions
+ */
+export type Profile$permissionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProfilePermission
+   */
+  select?: Prisma.ProfilePermissionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProfilePermission
+   */
+  omit?: Prisma.ProfilePermissionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProfilePermissionInclude<ExtArgs> | null
+  where?: Prisma.ProfilePermissionWhereInput
+  orderBy?: Prisma.ProfilePermissionOrderByWithRelationInput | Prisma.ProfilePermissionOrderByWithRelationInput[]
+  cursor?: Prisma.ProfilePermissionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProfilePermissionScalarFieldEnum | Prisma.ProfilePermissionScalarFieldEnum[]
 }
 
 /**

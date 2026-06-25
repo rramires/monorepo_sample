@@ -9,32 +9,43 @@ export class PrismaPermissionsRepository implements IPermissionsRepository {
 	async getEffectivePermissions(
 		userId: string,
 	): Promise<EffectiveScreenPermission[]> {
-		// All grants from every profile the user holds, with the screen key.
-		const grants = await prisma.profileScreen.findMany({
+		// Every granted permission from every profile the user holds, with the
+		// permission's action and its screen key.
+		const grants = await prisma.profilePermission.findMany({
 			where: { profile: { users: { some: { user_id: userId } } } },
-			include: { screen: { select: { key: true } } },
+			include: {
+				permission: {
+					select: {
+						action: true,
+						screen: { select: { key: true } },
+					},
+				},
+			},
 		})
 
 		// OR the actions per screen key.
 		const byKey = new Map<string, EffectiveScreenPermission>()
 		for (const grant of grants) {
-			const key = grant.screen.key
-			const prev = byKey.get(key) ?? {
+			const key = grant.permission.screen.key
+			const entry = byKey.get(key) ?? {
 				screen_key: key,
 				view: false,
 				create: false,
 				edit: false,
 				delete: false,
 			}
-			byKey.set(key, {
-				screen_key: key,
-				view: prev.view || grant.can_view,
-				create: prev.create || grant.can_create,
-				edit: prev.edit || grant.can_edit,
-				delete: prev.delete || grant.can_delete,
-			})
+			entry[grant.permission.action] = true
+			byKey.set(key, entry)
 		}
 		return [...byKey.values()]
+	}
+
+	async getMembershipScreenKeys(userId: string): Promise<string[]> {
+		const rows = await prisma.profileScreen.findMany({
+			where: { profile: { users: { some: { user_id: userId } } } },
+			include: { screen: { select: { key: true } } },
+		})
+		return [...new Set(rows.map((r) => r.screen.key))]
 	}
 
 	async listAllScreenKeys(): Promise<string[]> {
@@ -43,13 +54,13 @@ export class PrismaPermissionsRepository implements IPermissionsRepository {
 	}
 
 	async getDefaultScreenCandidates(userId: string) {
-		const grants = await prisma.profileScreen.findMany({
+		const profiles = await prisma.profile.findMany({
 			where: {
-				is_default: true,
-				profile: { users: { some: { user_id: userId } } },
+				users: { some: { user_id: userId } },
+				default_screen_id: { not: null },
 			},
 			include: {
-				screen: {
+				default_screen: {
 					select: {
 						key: true,
 						order: true,
@@ -58,11 +69,13 @@ export class PrismaPermissionsRepository implements IPermissionsRepository {
 				},
 			},
 		})
-		return grants.map((g) => ({
-			screen_key: g.screen.key,
-			module_order: g.screen.module.order,
-			screen_order: g.screen.order,
-		}))
+		return profiles
+			.filter((p) => p.default_screen !== null)
+			.map((p) => ({
+				screen_key: p.default_screen!.key,
+				module_order: p.default_screen!.module.order,
+				screen_order: p.default_screen!.order,
+			}))
 	}
 
 	async listScreenCatalog() {
@@ -79,6 +92,7 @@ export class PrismaPermissionsRepository implements IPermissionsRepository {
 			module_key: s.module.key,
 			module_name: s.module.name,
 			module_order: s.module.order,
+			is_enabled: s.is_enabled,
 		}))
 	}
 }

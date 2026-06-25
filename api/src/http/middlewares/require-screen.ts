@@ -15,7 +15,7 @@ function requireScreen(screenKey: string, action: ScreenAction = 'view') {
 		const getUserPermissions = makeGetUserPermissionsUseCase()
 
 		try {
-			const { role, screens } = await getUserPermissions.execute({
+			const { role, screens, menu } = await getUserPermissions.execute({
 				userId: request.user.sub,
 			})
 
@@ -27,6 +27,16 @@ function requireScreen(screenKey: string, action: ScreenAction = 'view') {
 			if (!screen?.[action]) {
 				// Authenticated but lacking the grant: 403, not 401.
 				return reply.status(403).send({ message: 'Forbidden.' })
+			}
+
+			// Granted, but the screen is killed (emergency switch) for non-admins.
+			const menuEntry = menu.find((m) => m.screen_key === screenKey)
+			if (menuEntry && !menuEntry.is_enabled) {
+				return reply
+					.status(403)
+					.send({
+						message: 'This screen is temporarily unavailable.',
+					})
 			}
 		} catch (err) {
 			if (err instanceof ResourceNotFoundError) {

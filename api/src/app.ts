@@ -14,6 +14,7 @@ import { gymsRoutes } from './http/controllers/gyms/routes'
 import { healthRoutes } from './http/controllers/health/routes'
 import { meRoutes } from './http/controllers/me/routes'
 import { modulesRoutes } from './http/controllers/modules/routes'
+import { permissionsRoutes } from './http/controllers/permissions/routes'
 import { profilesRoutes } from './http/controllers/profiles/routes'
 import { screensRoutes } from './http/controllers/screens/routes'
 import { usersRoutes } from './http/controllers/users/routes'
@@ -88,6 +89,7 @@ app.register(checkInsRoutes)
 app.register(meRoutes)
 app.register(modulesRoutes)
 app.register(screensRoutes)
+app.register(permissionsRoutes)
 app.register(profilesRoutes)
 // Errors
 app.setErrorHandler((error, request, reply) => {

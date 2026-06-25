@@ -43,10 +43,16 @@ export class PrismaScreensRepository implements IScreensRepository {
 	}
 
 	async delete(id: string) {
+		// Permissions cascade with the screen (FK); membership is Restrict, so the
+		// use-case must 409 first when the screen is still assigned.
 		await prisma.screen.delete({
 			where: {
 				id,
 			},
 		})
+	}
+
+	async countMembers(id: string) {
+		return prisma.profileScreen.count({ where: { screen_id: id } })
 	}
 }
