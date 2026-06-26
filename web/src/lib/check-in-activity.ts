@@ -1,8 +1,11 @@
+import { format, type Locale } from 'date-fns'
+import { enUS } from 'date-fns/locale'
+
 import type { CheckIn } from '@/api/get-check-ins-history'
 
 export interface ActivityDay {
 	date: string // YYYY-MM-DD (local calendar day)
-	label: string // short weekday, e.g. "Mon"
+	label: string // short weekday, e.g. "Mon" (en) / "seg." (pt-BR)
 	count: number
 }
 
@@ -13,15 +16,16 @@ function dateKey(date: Date) {
 	return `${year}-${month}-${day}`
 }
 
-const weekday = new Intl.DateTimeFormat(undefined, { weekday: 'short' })
-
 // Buckets check-ins into the last `days` calendar days (oldest first), filling
 // empty days with zero so the chart shows a continuous week. Pure function —
-// `now` is injectable so it can be unit-tested deterministically.
+// `now` is injectable so it can be unit-tested deterministically. The window is
+// rolling (last N days ending today), so first-day-of-week doesn't apply; only
+// the weekday *label* is locale-aware (defaults to en-US).
 export function groupByDay(
 	checkIns: CheckIn[],
 	days = 7,
 	now: Date = new Date(),
+	locale: Locale = enUS,
 ): ActivityDay[] {
 	const buckets: ActivityDay[] = []
 	const index = new Map<string, ActivityDay>()
@@ -33,7 +37,7 @@ export function groupByDay(
 
 		const bucket: ActivityDay = {
 			date: dateKey(date),
-			label: weekday.format(date),
+			label: format(date, 'EEE', { locale }),
 			count: 0,
 		}
 		buckets.push(bucket)

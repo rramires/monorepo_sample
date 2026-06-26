@@ -2,12 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 
 import { getUsers } from '@/api/get-users'
+import { useLocale } from '@/components/locale/locale-hooks'
+import { formatDate } from '@/lib/datetime'
 
 const PAGE_SIZE = 20
-
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
-	dateStyle: 'medium',
-})
 
 export type UsersStatus = 'loading' | 'empty' | 'list'
 
@@ -24,6 +22,7 @@ export interface UserRow {
 }
 
 export function useUsersPM() {
+	const { dateLocale } = useLocale()
 	const [page, setPage] = useState(1)
 
 	const { data, isLoading } = useQuery({
@@ -42,7 +41,7 @@ export function useUsersPM() {
 		role: user.role,
 		verified: user.is_verified,
 		active: user.is_active,
-		created: dateFormatter.format(new Date(user.created_at)),
+		created: formatDate(user.created_at, dateLocale),
 	}))
 
 	let status: UsersStatus

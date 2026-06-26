@@ -3,6 +3,8 @@ import { render } from '@testing-library/react'
 import { type ReactElement, type ReactNode } from 'react'
 import { MemoryRouter } from 'react-router'
 
+import { LocaleProvider } from '@/components/locale/locale-provider'
+
 interface RenderOptions {
 	route?: string
 }
@@ -19,7 +21,7 @@ export function renderWithProviders(
 		return (
 			<MemoryRouter initialEntries={[route]}>
 				<QueryClientProvider client={queryClient}>
-					{children}
+					<LocaleProvider>{children}</LocaleProvider>
 				</QueryClientProvider>
 			</MemoryRouter>
 		)
