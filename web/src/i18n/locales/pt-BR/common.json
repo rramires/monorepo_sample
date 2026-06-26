@@ -1,4 +1,8 @@
 {
+	"roles": {
+		"admin": "Admin",
+		"member": "Membro"
+	},
 	"errors": {
 		"minChars": "Mínimo de {{count}} caracteres.",
 		"maxChars": "Máximo de {{count}} caracteres.",

@@ -2,8 +2,10 @@ import 'i18next'
 
 import type enAccount from './locales/en/account.json'
 import type enAuth from './locales/en/auth.json'
+import type enCatalog from './locales/en/catalog.json'
 import type enCheckIns from './locales/en/check-ins.json'
 import type enCommon from './locales/en/common.json'
+import type enNav from './locales/en/nav.json'
 
 /**
  * Type-safe translation keys. `t('common:actions.save')` autocompletes and a
@@ -19,6 +21,8 @@ declare module 'i18next' {
 			auth: typeof enAuth
 			account: typeof enAccount
 			'check-ins': typeof enCheckIns
+			nav: typeof enNav
+			catalog: typeof enCatalog
 		}
 	}
 }

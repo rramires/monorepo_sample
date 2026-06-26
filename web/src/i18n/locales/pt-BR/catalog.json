@@ -1,0 +1,64 @@
+{
+	"modules": {
+		"gym": {
+			"name": "Academia",
+			"description": "Painel, academias e check-ins."
+		},
+		"access-control": {
+			"name": "Controle de Acesso",
+			"description": "Módulos, telas, perfis, usuários."
+		}
+	},
+	"screens": {
+		"gym.dashboard": {
+			"name": "Painel",
+			"description": "Visão geral da atividade."
+		},
+		"gym.gyms": {
+			"name": "Academias",
+			"description": "Navegue e gerencie academias."
+		},
+		"gym.check-ins": {
+			"name": "Check-ins",
+			"description": "Faça check-in e valide membros."
+		},
+		"access-control.modules": {
+			"name": "Gerenciar Módulos",
+			"description": "Agrupe telas em módulos."
+		},
+		"access-control.screens": {
+			"name": "Gerenciar Telas",
+			"description": "Telas e suas permissões."
+		},
+		"access-control.profiles": {
+			"name": "Gerenciar Perfis",
+			"description": "Agrupe permissões em perfis."
+		},
+		"access-control.users": {
+			"name": "Gerenciar Usuários",
+			"description": "Usuários e seus perfis."
+		}
+	},
+	"actions": {
+		"view": "Ver",
+		"create": "Adicionar",
+		"edit": "Editar",
+		"delete": "Remover",
+		"create_checkin": "Check-in",
+		"edit_validate": "Validar"
+	},
+	"profiles": {
+		"gym-member": {
+			"name": "Membro de Academia",
+			"description": "Perfil padrão concedido no cadastro."
+		},
+		"gym-manager": {
+			"name": "Gerente de Academia",
+			"description": "Administra uma academia: gerencia academias e valida check-ins."
+		},
+		"support": {
+			"name": "Suporte",
+			"description": "Retaguarda: administra perfis e acesso de usuários."
+		}
+	}
+}

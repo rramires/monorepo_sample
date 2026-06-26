@@ -1,4 +1,5 @@
 import { GlobeCheck, LogOut, UserRoundPen } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { Badge } from '@/components/ui/badge'
@@ -21,6 +22,7 @@ import { useAppSidebarPM } from './use-app-sidebar-pm'
 
 export function AppSidebar() {
 	const pm = useAppSidebarPM()
+	const { t } = useTranslation(['nav', 'common'])
 
 	return (
 		<Sidebar collapsible='icon'>
@@ -75,7 +77,9 @@ export function AppSidebar() {
 									: 'secondary'
 							}
 						>
-							{pm.user?.role === 'ADMIN' ? 'Admin' : 'Member'}
+							{pm.user?.role === 'ADMIN'
+								? t('common:roles.admin')
+								: t('common:roles.member')}
 						</Badge>
 						{/* Account is self-service — it lives here, next to your
 						    identity, not in the gym-domain nav above. */}
@@ -89,8 +93,8 @@ export function AppSidebar() {
 						>
 							<Link
 								to='/account'
-								aria-label='Account'
-								title='Account'
+								aria-label={t('nav:account')}
+								title={t('nav:account')}
 								onClick={pm.closeMobile}
 							>
 								<UserRoundPen />
@@ -103,7 +107,7 @@ export function AppSidebar() {
 						onClick={pm.handleSignOut}
 					>
 						<LogOut />
-						Sign out
+						{t('nav:signOut')}
 					</Button>
 				</div>
 
@@ -115,25 +119,25 @@ export function AppSidebar() {
 						<SidebarMenuButton
 							asChild
 							isActive={pm.isActive('/account')}
-							tooltip='Account'
+							tooltip={t('nav:account')}
 						>
 							<Link
 								to='/account'
-								aria-label='Account'
+								aria-label={t('nav:account')}
 								onClick={pm.closeMobile}
 							>
 								<UserRoundPen />
-								<span>Account</span>
+								<span>{t('nav:account')}</span>
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 					<SidebarMenuItem>
 						<SidebarMenuButton
-							tooltip='Sign out'
+							tooltip={t('nav:signOut')}
 							onClick={pm.handleSignOut}
 						>
 							<LogOut />
-							<span>Sign out</span>
+							<span>{t('nav:signOut')}</span>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 				</SidebarMenu>
