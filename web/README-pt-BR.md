@@ -316,6 +316,16 @@ Para um smoke com **backend real**, rode `pnpm dev` contra o `solid_api_sample` 
 percorra o mesmo fluxo (registre-se antes; verifique o e-mail pelo link/OTP
 impresso no log do servidor da API).
 
+## Internacionalização
+
+A UI vem em **Inglês (en-US)** e **Português (pt-BR)** — alterne pelo seletor de
+bandeiras no cabeçalho (sua escolha fica salva; na primeira visita segue o
+navegador). O idioma comanda toda a cópia, a formatação de datas/números
+(`date-fns`) e as mensagens de validação dos formulários; as datas renderizam no
+fuso do seu navegador. A arquitetura e as convenções estão documentadas em
+[`PROJECT.md`](PROJECT.md) § Internacionalização (ou em
+[`PROJECT-pt-BR.md`](PROJECT-pt-BR.md)).
+
 ## Licença
 
 Distribuído sob a [Licença MIT](LICENSE).

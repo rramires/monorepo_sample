@@ -668,3 +668,67 @@ leak past `src/api`. Build against the mock first; the real API is wired last.
   mode.
 - Unit (happy-dom) + e2e (Playwright vs. MSW) suites — plus the documented
   manual-smoke discipline for controlled-field cold-load bugs.
+
+## Internationalization (i18n)
+
+Full UI internationalization, **frontend-only**, two languages: **en-US** (`en`)
+and **pt-BR**. A flag selector in the header drives everything.
+
+**Stack.** `react-i18next` + `i18next` + `i18next-browser-languagedetector`;
+static JSON resources (no http-backend); typed keys via TS module augmentation
+(`src/i18n/resources.d.ts`) so a missing/mistyped key is a **build error**.
+`date-fns` (+ `@date-fns/tz`) for dates; `Intl.NumberFormat` is the documented
+choice for numbers/money.
+
+**Three independent concepts.** Keep them apart:
+1. **Language** (which text) — from the selector, persisted in `localStorage`
+   (`vite-ui-locale`), detected from `navigator` on first visit.
+2. **Format locale** (date order, month names, 12/24h) — derived from the
+   language (`enUS` / `ptBR` date-fns locales via `useLocale().dateLocale`).
+3. **Timezone** (offset/DST) — from the **browser**
+   (`Intl…resolvedOptions().timeZone`); dates render in local time. There is no
+   stored per-user tz in v1; `@date-fns/tz` `TZDate` is installed + documented
+   for that future override. A pt-BR user in Lisbon = `pt-BR` + `Europe/Lisbon`.
+
+**Layout.** `src/i18n/` holds the init, the typed-keys augmentation, the
+handwritten Zod locale maps (`zod-locale.ts`), and `locales/{en,pt-BR}/*.json`.
+Namespaces: `common` (shared: actions, states, roles, status, errors, pager,
+transfer, multiSelect, errorPage), `nav`, `catalog`, `auth`, `account`,
+`check-ins`, `gyms`, `admin`. `components/locale/` mirrors `components/theme/`
+(provider + `useLocale` hook + `LanguageSelector`). `lib/datetime.ts` has the
+date helpers. Changing the language syncs `<html lang>`, persists the choice, and
+swaps the Zod locale.
+
+**Conventions.**
+- **One code everywhere** for a concept — never diverge the language tag across
+  i18next / `<html lang>` / date-fns / Intl.
+- **Interpolate, never concatenate** (word order differs per language); use
+  `<Trans>` for embedded markup (e.g. the account email-change hint).
+- **Validation messages** are built from a `factory(t)` memoized on
+  `i18n.language`, so they follow the selector. Generic field rules live in
+  `common:errors`; the Zod **locale map** (`z.config({ localeError })`) is the
+  catch-all. **Precedence trap:** an inline schema message
+  (`.min(3, 'msg')`) beats the locale map — so feature schemas pass `t()`
+  messages, not inline strings.
+- **Enum/status labels** are code→text maps (`common:roles`, `common:status`),
+  never loose strings.
+- **DB-sourced catalog** (sidebar module names, screen/action/profile names in
+  chrome) is translated **by stable key** with the stored value as
+  `defaultValue` fallback: `t('catalog:modules.<key>.name', { defaultValue:
+  name })`. Seeded entries have a translation; admin-created rows fall back to
+  their stored value (never machine-translated). In the **admin management
+  tables** the raw stored name shows verbatim (it's the data being edited).
+- **Numbers/money = data, not language.** This app has no money field; when one
+  appears, format with `Intl.NumberFormat(localeTag, { style: 'currency',
+  currency })` — not translation strings. (See `lib/datetime.ts` header.)
+
+**Tests.** The `en` JSON values are verbatim the original English copy, so the
+unit + e2e suites assert the same strings; `test/setup.ts` forces `lng: en` for
+determinism. In dev, a `missingKeyHandler` warns on any unresolved key.
+
+**Known seams (English, by design — backend i18n is Plan 2).** Server-sent
+toast messages (`error.response.data.message`, e.g. "Invalid credentials.") and
+the env-driven password-pattern message (`VITE_PASSWORD_MESSAGE`) stay English:
+they are deployment-/backend-owned. Plan 2 moves backend responses to stable
+`code`s in `@root/contracts` that the frontend maps to text. A literal-string
+eslint rule (`eslint-plugin-i18next`) is a recommended future regression guard.
