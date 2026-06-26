@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import type { ProfileModel } from '@/api/profiles'
 import { type TransferColumn, TransferTable } from '@/components/transfer-table'
 import { Button } from '@/components/ui/button'
@@ -11,17 +13,6 @@ import {
 
 import { useUserProfilesPM } from './use-user-profiles-pm'
 
-const profileColumn: TransferColumn<ProfileModel> = {
-	key: 'name',
-	header: 'Profile',
-	cell: (p) => (
-		<div className='flex flex-col'>
-			<span className='font-medium'>{p.name}</span>
-			<span className='text-muted-foreground text-xs'>{p.key}</span>
-		</div>
-	),
-}
-
 export function UserProfilesCard({
 	userId,
 	userIsAdmin,
@@ -30,19 +21,31 @@ export function UserProfilesCard({
 	userIsAdmin: boolean
 }) {
 	const pm = useUserProfilesPM(userId)
+	const { t } = useTranslation('admin')
+
+	const profileColumn: TransferColumn<ProfileModel> = {
+		key: 'name',
+		header: t('users.profiles.columnHeader'),
+		cell: (p) => (
+			<div className='flex flex-col'>
+				<span className='font-medium'>{p.name}</span>
+				<span className='text-muted-foreground text-xs'>{p.key}</span>
+			</div>
+		),
+	}
 
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Profiles</CardTitle>
+				<CardTitle>{t('users.profiles.title')}</CardTitle>
 				<CardDescription>
-					Assign profiles to grant this user their screens.
+					{t('users.profiles.description')}
 				</CardDescription>
 			</CardHeader>
 			<CardContent className='flex flex-col gap-4'>
 				{userIsAdmin ? (
 					<p className='text-muted-foreground text-sm'>
-						All profiles and screens are assigned to the admin.
+						{t('users.profiles.adminNote')}
 					</p>
 				) : (
 					<>
@@ -53,10 +56,6 @@ export function UserProfilesCard({
 							onAssignedChange={pm.setAssignedIds}
 							availableColumns={[profileColumn]}
 							assignedColumns={[profileColumn]}
-							labels={{
-								available: 'Available',
-								assigned: 'Assigned',
-							}}
 							searchable
 							getSearchText={(p) => `${p.name} ${p.key}`}
 						/>
@@ -66,7 +65,7 @@ export function UserProfilesCard({
 									onClick={pm.save}
 									disabled={pm.isSaving}
 								>
-									Save profiles
+									{t('users.profiles.save')}
 								</Button>
 							</div>
 						)}

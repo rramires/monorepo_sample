@@ -1,0 +1,55 @@
+{
+	"users": {
+		"pageTitle": "Users",
+		"title": "Users",
+		"description": "Manage member and admin accounts.",
+		"loading": "Loading…",
+		"empty": "No users found.",
+		"columns": {
+			"username": "Username",
+			"email": "Email",
+			"role": "Role",
+			"status": "Status",
+			"created": "Created",
+			"actions": "Actions"
+		},
+		"verified": "Verified",
+		"unverified": "Unverified",
+		"edit": {
+			"pageTitle": "Edit user",
+			"title": "Edit user",
+			"notFoundTitle": "User not found",
+			"notFoundDescription": "This user does not exist or could not be loaded.",
+			"backToUsers": "Back to users",
+			"description": "Update {{username}}'s account.",
+			"usernameLabel": "Username",
+			"emailLabel": "Email",
+			"emailUnverifyHint": "Changing the email will unverify this account.",
+			"roleLabel": "Role",
+			"selfRoleHint": "You can't change your own role.",
+			"emailVerifiedLabel": "Email verified",
+			"activeLabel": "Active",
+			"selfDeactivateHint": "You can't deactivate your own account.",
+			"save": "Save changes",
+			"confirmTitle": "Deactivate user",
+			"confirmDescription": "Deactivate {{username}}? They will be cut off on their next request and can't sign in until reactivated.",
+			"confirmLabel": "Deactivate",
+			"noChanges": "No changes to save.",
+			"toast": {
+				"updated": "User updated.",
+				"error": "Could not update the user."
+			}
+		},
+		"profiles": {
+			"title": "Profiles",
+			"description": "Assign profiles to grant this user their screens.",
+			"adminNote": "All profiles and screens are assigned to the admin.",
+			"columnHeader": "Profile",
+			"save": "Save profiles",
+			"toast": {
+				"updated": "Profiles updated.",
+				"error": "Could not update the profiles."
+			}
+		}
+	}
+}

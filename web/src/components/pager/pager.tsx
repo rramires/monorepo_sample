@@ -4,6 +4,7 @@ import {
 	ChevronsLeft,
 	ChevronsRight,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 
@@ -41,12 +42,13 @@ export function Pager({
 	onFirst,
 	onLast,
 }: PagerProps) {
+	const { t } = useTranslation('common')
 	const full = onFirst != null && onLast != null && total != null
 
 	const label = full
-		? `${from} to ${to} of ${total}`
+		? t('pager.summary', { from, to, total })
 		: page != null
-			? `Page ${page}`
+			? t('pager.page', { page })
 			: null
 
 	return (
@@ -64,7 +66,7 @@ export function Pager({
 						className={PAGER_BUTTON}
 						onClick={onFirst}
 						disabled={!canPrev}
-						aria-label='First page'
+						aria-label={t('pager.first')}
 					>
 						<ChevronsLeft />
 					</Button>
@@ -75,7 +77,7 @@ export function Pager({
 					className={PAGER_BUTTON}
 					onClick={onPrev}
 					disabled={!canPrev}
-					aria-label='Previous page'
+					aria-label={t('pager.previous')}
 				>
 					<ChevronLeft />
 				</Button>
@@ -85,7 +87,7 @@ export function Pager({
 					className={PAGER_BUTTON}
 					onClick={onNext}
 					disabled={!canNext}
-					aria-label='Next page'
+					aria-label={t('pager.next')}
 				>
 					<ChevronRight />
 				</Button>
@@ -96,7 +98,7 @@ export function Pager({
 						className={PAGER_BUTTON}
 						onClick={onLast}
 						disabled={!canNext}
-						aria-label='Last page'
+						aria-label={t('pager.last')}
 					>
 						<ChevronsRight />
 					</Button>

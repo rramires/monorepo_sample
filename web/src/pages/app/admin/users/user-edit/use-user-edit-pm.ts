@@ -1,8 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useEffect } from 'react'
+import type { TFunction } from 'i18next'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -15,22 +17,24 @@ import { useConfirmDeactivate } from '@/hooks/use-confirm-deactivate'
 
 const usernamePattern = /^[a-zA-Z0-9_]+$/
 
-const editForm = z.object({
-	username: z
-		.string()
-		.min(3, 'Minimum of 3 characters.')
-		.max(30, 'Maximum of 30 characters.')
-		.regex(usernamePattern, 'Letters, numbers and underscore only.'),
-	email: z.email('Enter a valid email.'),
-	role: z.enum(['USER', 'ADMIN']),
-	is_verified: z.boolean(),
-	is_active: z.boolean(),
-})
-type EditForm = z.infer<typeof editForm>
+const makeEditForm = (t: TFunction<['admin', 'common']>) =>
+	z.object({
+		username: z
+			.string()
+			.min(3, t('common:errors.minChars', { count: 3 }))
+			.max(30, t('common:errors.maxChars', { count: 30 }))
+			.regex(usernamePattern, t('common:errors.usernamePattern')),
+		email: z.email(t('common:errors.email')),
+		role: z.enum(['USER', 'ADMIN']),
+		is_verified: z.boolean(),
+		is_active: z.boolean(),
+	})
+type EditForm = z.infer<ReturnType<typeof makeEditForm>>
 
 export function useUserEditPM() {
 	const { userId = '' } = useParams()
 	const auth = useAuth()
+	const { t, i18n } = useTranslation(['admin', 'common'])
 	const navigate = useNavigate()
 	const queryClient = useQueryClient()
 	const deactivate = useConfirmDeactivate()
@@ -57,7 +61,11 @@ export function useUserEditPM() {
 		setValue,
 		formState: { errors, dirtyFields },
 	} = useForm<EditForm>({
-		resolver: zodResolver(editForm),
+		resolver: useMemo(
+			() => zodResolver(makeEditForm(t)),
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+			[i18n.language],
+		),
 		defaultValues: {
 			username: '',
 			email: '',
@@ -94,14 +102,14 @@ export function useUserEditPM() {
 	const update = useMutation({
 		mutationFn: (body: UpdateUserBody) => updateUser(userId, body),
 		onSuccess: () => {
-			toast.success('User updated.')
+			toast.success(t('users.edit.toast.updated'))
 			queryClient.invalidateQueries({ queryKey: ['users'] })
 			navigate('/admin/users')
 		},
 		onError: (err) => {
 			const message =
 				(isAxiosError(err) && err.response?.data?.message) ||
-				'Could not update the user.'
+				t('users.edit.toast.error')
 			toast.error(message)
 		},
 	})
@@ -131,7 +139,7 @@ export function useUserEditPM() {
 		}
 
 		if (Object.keys(body).length === 0) {
-			toast.info('No changes to save.')
+			toast.info(t('users.edit.noChanges'))
 			return
 		}
 

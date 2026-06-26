@@ -1,6 +1,7 @@
 import 'i18next'
 
 import type enAccount from './locales/en/account.json'
+import type enAdmin from './locales/en/admin.json'
 import type enAuth from './locales/en/auth.json'
 import type enCatalog from './locales/en/catalog.json'
 import type enCheckIns from './locales/en/check-ins.json'
@@ -25,6 +26,7 @@ declare module 'i18next' {
 			nav: typeof enNav
 			catalog: typeof enCatalog
 			gyms: typeof enGyms
+			admin: typeof enAdmin
 		}
 	}
 }

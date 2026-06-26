@@ -1,4 +1,5 @@
 import { Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
@@ -28,31 +29,35 @@ import { UserProfilesCard } from './user-profiles-card'
 
 export function UserEdit() {
 	const pm = useUserEditPM()
+	const { t } = useTranslation(['admin', 'common'])
 
 	return (
 		<>
-			<PageTitle title='Edit user' />
+			<PageTitle title={t('users.edit.pageTitle')} />
 
 			<div className='flex flex-1 flex-col items-center gap-6 p-8'>
 				<Card className='w-full max-w-3xl'>
 					{pm.isLoading && (
 						<CardHeader>
-							<CardTitle>Loading…</CardTitle>
+							<CardTitle>{t('common:states.loading')}</CardTitle>
 						</CardHeader>
 					)}
 
 					{pm.isError && (
 						<>
 							<CardHeader>
-								<CardTitle>User not found</CardTitle>
+								<CardTitle>
+									{t('users.edit.notFoundTitle')}
+								</CardTitle>
 								<CardDescription>
-									This user does not exist or could not be
-									loaded.
+									{t('users.edit.notFoundDescription')}
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
 								<Button asChild variant='outline'>
-									<Link to='/admin/users'>Back to users</Link>
+									<Link to='/admin/users'>
+										{t('users.edit.backToUsers')}
+									</Link>
 								</Button>
 							</CardContent>
 						</>
@@ -61,9 +66,11 @@ export function UserEdit() {
 					{!pm.isLoading && !pm.isError && pm.user && (
 						<>
 							<CardHeader>
-								<CardTitle>Edit user</CardTitle>
+								<CardTitle>{t('users.edit.title')}</CardTitle>
 								<CardDescription>
-									Update {pm.user.username}'s account.
+									{t('users.edit.description', {
+										username: pm.user.username,
+									})}
 								</CardDescription>
 							</CardHeader>
 
@@ -72,7 +79,7 @@ export function UserEdit() {
 									<div className='flex flex-col gap-6'>
 										<div className='grid gap-2'>
 											<Label htmlFor='username'>
-												Username
+												{t('users.edit.usernameLabel')}
 											</Label>
 											<Input
 												id='username'
@@ -87,7 +94,9 @@ export function UserEdit() {
 										</div>
 
 										<div className='grid gap-2'>
-											<Label htmlFor='email'>Email</Label>
+											<Label htmlFor='email'>
+												{t('users.edit.emailLabel')}
+											</Label>
 											<Input
 												id='email'
 												type='email'
@@ -100,14 +109,17 @@ export function UserEdit() {
 											)}
 											{pm.emailChanged && (
 												<p className='text-muted-foreground text-sm'>
-													Changing the email will
-													unverify this account.
+													{t(
+														'users.edit.emailUnverifyHint',
+													)}
 												</p>
 											)}
 										</div>
 
 										<div className='grid gap-2'>
-											<Label htmlFor='role'>Role</Label>
+											<Label htmlFor='role'>
+												{t('users.edit.roleLabel')}
+											</Label>
 											{pm.isSelf ? (
 												// Your own role can't change — show
 												// it read-only as a badge.
@@ -120,8 +132,12 @@ export function UserEdit() {
 													className='w-fit'
 												>
 													{pm.user.role === 'ADMIN'
-														? 'Admin'
-														: 'Member'}
+														? t(
+																'common:roles.admin',
+															)
+														: t(
+																'common:roles.member',
+															)}
 												</Badge>
 											) : (
 												<Controller
@@ -146,10 +162,14 @@ export function UserEdit() {
 															</SelectTrigger>
 															<SelectContent>
 																<SelectItem value='USER'>
-																	Member
+																	{t(
+																		'common:roles.member',
+																	)}
 																</SelectItem>
 																<SelectItem value='ADMIN'>
-																	Admin
+																	{t(
+																		'common:roles.admin',
+																	)}
 																</SelectItem>
 															</SelectContent>
 														</Select>
@@ -158,15 +178,18 @@ export function UserEdit() {
 											)}
 											{pm.isSelf && (
 												<p className='text-muted-foreground text-sm'>
-													You can't change your own
-													role.
+													{t(
+														'users.edit.selfRoleHint',
+													)}
 												</p>
 											)}
 										</div>
 
 										<div className='flex items-center justify-between'>
 											<Label htmlFor='is_verified'>
-												Email verified
+												{t(
+													'users.edit.emailVerifiedLabel',
+												)}
 											</Label>
 											<Controller
 												control={pm.control}
@@ -189,12 +212,15 @@ export function UserEdit() {
 										<div className='flex items-center justify-between'>
 											<div>
 												<Label htmlFor='is_active'>
-													Active
+													{t(
+														'users.edit.activeLabel',
+													)}
 												</Label>
 												{pm.isSelf && (
 													<p className='text-muted-foreground text-sm'>
-														You can't deactivate
-														your own account.
+														{t(
+															'users.edit.selfDeactivateHint',
+														)}
 													</p>
 												)}
 											</div>
@@ -220,14 +246,14 @@ export function UserEdit() {
 												disabled={pm.isSaving}
 												className='flex-1'
 											>
-												Save changes
+												{t('users.edit.save')}
 											</Button>
 											<Button
 												type='button'
 												variant='ghost'
 												onClick={pm.cancel}
 											>
-												Cancel
+												{t('common:actions.cancel')}
 											</Button>
 										</div>
 									</div>
@@ -235,9 +261,12 @@ export function UserEdit() {
 
 								<ConfirmDialog
 									{...pm.confirmDeactivate}
-									title='Deactivate user'
-									description={`Deactivate ${pm.user.username}? They will be cut off on their next request and can't sign in until reactivated.`}
-									confirmLabel='Deactivate'
+									title={t('users.edit.confirmTitle')}
+									description={t(
+										'users.edit.confirmDescription',
+										{ username: pm.user.username },
+									)}
+									confirmLabel={t('users.edit.confirmLabel')}
 								/>
 							</CardContent>
 						</>

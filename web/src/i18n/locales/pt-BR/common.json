@@ -44,6 +44,29 @@
 		"next": "Próximo",
 		"summary": "Página {{page}} de {{total}}"
 	},
+	"pager": {
+		"summary": "{{from}} a {{to}} de {{total}}",
+		"page": "Página {{page}}",
+		"first": "Primeira página",
+		"previous": "Página anterior",
+		"next": "Próxima página",
+		"last": "Última página"
+	},
+	"transfer": {
+		"available": "Disponíveis",
+		"assigned": "Atribuídos",
+		"search": "Buscar…",
+		"moveSelected": "Mover selecionados",
+		"moveAll": "Mover todos",
+		"removeSelected": "Remover selecionados",
+		"removeAll": "Remover todos",
+		"dragRow": "Arrastar linha",
+		"selectRow": "Selecionar linha",
+		"selectAll": "Selecionar todos",
+		"empty": "Nada por aqui.",
+		"dragCount_one": "Mover {{count}} linha",
+		"dragCount_other": "Mover {{count}} linhas"
+	},
 	"theme": {
 		"label": "Alternar tema",
 		"light": "Claro",

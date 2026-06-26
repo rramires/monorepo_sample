@@ -1,5 +1,6 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { GripVertical } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -46,6 +47,7 @@ function DraggableRow<T>({
 	columns: TransferColumn<T>[]
 	item: T
 }) {
+	const { t } = useTranslation('common')
 	const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
 		id,
 		data: { side },
@@ -62,7 +64,7 @@ function DraggableRow<T>({
 					type='button'
 					ref={setNodeRef}
 					className='text-muted-foreground hover:text-foreground flex cursor-grab touch-none items-center active:cursor-grabbing'
-					aria-label='Drag row'
+					aria-label={t('transfer.dragRow')}
 					{...attributes}
 					{...listeners}
 				>
@@ -73,7 +75,7 @@ function DraggableRow<T>({
 				<Checkbox
 					checked={selected}
 					onCheckedChange={onToggle}
-					aria-label='Select row'
+					aria-label={t('transfer.selectRow')}
 				/>
 			</TableCell>
 			{columns.map((column) => (
@@ -100,6 +102,7 @@ export function TransferPanel<T>({
 	onQueryChange,
 	totalCount,
 }: TransferPanelProps<T>) {
+	const { t } = useTranslation('common')
 	const { setNodeRef, isOver } = useDroppable({ id: side })
 
 	return (
@@ -116,7 +119,7 @@ export function TransferPanel<T>({
 				<Input
 					value={query}
 					onChange={(event) => onQueryChange(event.target.value)}
-					placeholder='Search…'
+					placeholder={t('transfer.search')}
 					className='h-8'
 				/>
 			)}
@@ -136,7 +139,7 @@ export function TransferPanel<T>({
 								<Checkbox
 									checked={allState}
 									onCheckedChange={onToggleAll}
-									aria-label='Select all'
+									aria-label={t('transfer.selectAll')}
 								/>
 							</TableHead>
 							{columns.map((column) => (
@@ -156,7 +159,7 @@ export function TransferPanel<T>({
 									colSpan={columns.length + 2}
 									className='text-muted-foreground h-24 text-center text-sm'
 								>
-									Nothing here.
+									{t('transfer.empty')}
 								</TableCell>
 							</TableRow>
 						) : (

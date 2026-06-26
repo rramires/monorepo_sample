@@ -1,0 +1,55 @@
+{
+	"users": {
+		"pageTitle": "Usuários",
+		"title": "Usuários",
+		"description": "Gerencie contas de membros e administradores.",
+		"loading": "Carregando…",
+		"empty": "Nenhum usuário encontrado.",
+		"columns": {
+			"username": "Nome de usuário",
+			"email": "E-mail",
+			"role": "Papel",
+			"status": "Status",
+			"created": "Criado em",
+			"actions": "Ações"
+		},
+		"verified": "Verificado",
+		"unverified": "Não verificado",
+		"edit": {
+			"pageTitle": "Editar usuário",
+			"title": "Editar usuário",
+			"notFoundTitle": "Usuário não encontrado",
+			"notFoundDescription": "Este usuário não existe ou não pôde ser carregado.",
+			"backToUsers": "Voltar para usuários",
+			"description": "Atualize a conta de {{username}}.",
+			"usernameLabel": "Nome de usuário",
+			"emailLabel": "E-mail",
+			"emailUnverifyHint": "Alterar o e-mail vai desverificar esta conta.",
+			"roleLabel": "Papel",
+			"selfRoleHint": "Você não pode alterar seu próprio papel.",
+			"emailVerifiedLabel": "E-mail verificado",
+			"activeLabel": "Ativo",
+			"selfDeactivateHint": "Você não pode desativar sua própria conta.",
+			"save": "Salvar alterações",
+			"confirmTitle": "Desativar usuário",
+			"confirmDescription": "Desativar {{username}}? A conta será cortada na próxima requisição e não poderá entrar até ser reativada.",
+			"confirmLabel": "Desativar",
+			"noChanges": "Nenhuma alteração para salvar.",
+			"toast": {
+				"updated": "Usuário atualizado.",
+				"error": "Não foi possível atualizar o usuário."
+			}
+		},
+		"profiles": {
+			"title": "Perfis",
+			"description": "Atribua perfis para conceder as telas deste usuário.",
+			"adminNote": "Todos os perfis e telas estão atribuídos ao admin.",
+			"columnHeader": "Perfil",
+			"save": "Salvar perfis",
+			"toast": {
+				"updated": "Perfis atualizados.",
+				"error": "Não foi possível atualizar os perfis."
+			}
+		}
+	}
+}
