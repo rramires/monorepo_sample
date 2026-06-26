@@ -4,9 +4,11 @@ import { initReactI18next } from 'react-i18next'
 
 import enAccount from './locales/en/account.json'
 import enAuth from './locales/en/auth.json'
+import enCheckIns from './locales/en/check-ins.json'
 import enCommon from './locales/en/common.json'
 import ptBRAccount from './locales/pt-BR/account.json'
 import ptBRAuth from './locales/pt-BR/auth.json'
+import ptBRCheckIns from './locales/pt-BR/check-ins.json'
 import ptBRCommon from './locales/pt-BR/common.json'
 import { setZodLocale } from './zod-locale'
 
@@ -23,8 +25,18 @@ export function normalizeLocale(lng?: string | null): AppLocale {
 }
 
 export const resources = {
-	en: { common: enCommon, auth: enAuth, account: enAccount },
-	'pt-BR': { common: ptBRCommon, auth: ptBRAuth, account: ptBRAccount },
+	en: {
+		common: enCommon,
+		auth: enAuth,
+		account: enAccount,
+		'check-ins': enCheckIns,
+	},
+	'pt-BR': {
+		common: ptBRCommon,
+		auth: ptBRAuth,
+		account: ptBRAccount,
+		'check-ins': ptBRCheckIns,
+	},
 } as const
 
 i18n.use(LanguageDetector)
@@ -34,7 +46,7 @@ i18n.use(LanguageDetector)
 		fallbackLng: FALLBACK_LOCALE,
 		supportedLngs: SUPPORTED_LOCALES,
 		defaultNS: DEFAULT_NS,
-		ns: [DEFAULT_NS, 'auth', 'account'],
+		ns: [DEFAULT_NS, 'auth', 'account', 'check-ins'],
 		interpolation: {
 			// React already escapes; double-escaping mangles names with markup.
 			escapeValue: false,

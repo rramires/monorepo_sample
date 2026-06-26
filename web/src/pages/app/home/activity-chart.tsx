@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
 
 import {
@@ -8,14 +9,16 @@ import {
 } from '@/components/ui/chart'
 import type { ActivityDay } from '@/lib/check-in-activity'
 
-const chartConfig = {
-	count: {
-		label: 'Check-ins',
-		color: 'var(--chart-1)',
-	},
-} satisfies ChartConfig
-
 export function ActivityChart({ data }: { data: ActivityDay[] }) {
+	const { t } = useTranslation('check-ins')
+
+	const chartConfig = {
+		count: {
+			label: t('dashboard.chartLabel'),
+			color: 'var(--chart-1)',
+		},
+	} satisfies ChartConfig
+
 	return (
 		<ChartContainer config={chartConfig} className='h-[200px] w-full'>
 			<BarChart data={data} accessibilityLayer>
