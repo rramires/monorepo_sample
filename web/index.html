@@ -13,6 +13,12 @@
         const isDark =
           theme === 'dark' || (theme === 'system' && prefersDark)
         document.documentElement.classList.add(isDark ? 'dark' : 'light')
+
+        const lng =
+          localStorage.getItem('vite-ui-locale') ||
+          navigator.language ||
+          'en'
+        document.documentElement.lang = /^pt/i.test(lng) ? 'pt-BR' : 'en'
       })()
 	  </script>
     <title>Frontend Setup</title>

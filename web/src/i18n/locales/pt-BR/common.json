@@ -1,0 +1,40 @@
+{
+	"actions": {
+		"save": "Salvar",
+		"cancel": "Cancelar",
+		"delete": "Excluir",
+		"edit": "Editar",
+		"create": "Criar",
+		"add": "Adicionar",
+		"remove": "Remover",
+		"search": "Buscar",
+		"confirm": "Confirmar",
+		"close": "Fechar",
+		"back": "Voltar",
+		"next": "Próximo",
+		"previous": "Anterior",
+		"submit": "Enviar"
+	},
+	"states": {
+		"loading": "Carregando…",
+		"empty": "Nada por aqui ainda.",
+		"error": "Algo deu errado.",
+		"noResults": "Nenhum resultado encontrado."
+	},
+	"pagination": {
+		"previous": "Anterior",
+		"next": "Próximo",
+		"summary": "Página {{page}} de {{total}}"
+	},
+	"theme": {
+		"label": "Alternar tema",
+		"light": "Claro",
+		"dark": "Escuro",
+		"system": "Sistema"
+	},
+	"language": {
+		"label": "Alterar idioma",
+		"en": "en-US",
+		"pt-BR": "pt-BR"
+	}
+}

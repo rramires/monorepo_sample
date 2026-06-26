@@ -4,6 +4,7 @@ import { AppSidebar } from '@/components/app-sidebar/app-sidebar'
 import { VerifyEmailBanner } from '@/components/auth/verify-email-banner/verify-email-banner'
 import { BreadcrumbProvider } from '@/components/breadcrumb/breadcrumb-provider'
 import { Breadcrumbs } from '@/components/breadcrumb/breadcrumbs'
+import { LanguageSelector } from '@/components/locale/language-selector'
 import { ModeToggle } from '@/components/theme/mode-toggle'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -35,6 +36,7 @@ export function AppLayout() {
 							/>
 							<Breadcrumbs />
 							<div className='flex-1' />
+							<LanguageSelector />
 							<ModeToggle />
 						</header>
 						<VerifyEmailBanner />

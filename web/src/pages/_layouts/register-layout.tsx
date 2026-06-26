@@ -1,6 +1,7 @@
 import { ArrowLeft, GlobeCheck } from 'lucide-react'
 import { Link, Outlet } from 'react-router'
 
+import { LanguageSelector } from '@/components/locale/language-selector'
 import { ModeToggle } from '@/components/theme/mode-toggle'
 import { Button } from '@/components/ui/button'
 
@@ -19,6 +20,7 @@ export function RegisterLayout() {
 							Back to sign in
 						</Link>
 					</Button>
+					<LanguageSelector />
 					<ModeToggle />
 				</div>
 			</header>
