@@ -14,8 +14,19 @@ export async function gymsRoutes(app: FastifyInstance) {
 	 */
 	app.addHook('onRequest', verifyJwtMiddleware)
 	//
-	app.get('/gyms/search', searchController)
-	app.get('/gyms/nearby', nearbyController)
+	// Reads belong to the Gyms screen — guarded by its `view` grant + kill switch
+	// (requireScreen reads both fresh from the DB), so a killed/ungranted screen
+	// 403s on every route, not just the mutations.
+	app.get(
+		'/gyms/search',
+		{ onRequest: [requireScreen('gym.gyms', 'view')] },
+		searchController,
+	)
+	app.get(
+		'/gyms/nearby',
+		{ onRequest: [requireScreen('gym.gyms', 'view')] },
+		nearbyController,
+	)
 	//
 	app.post(
 		'/gyms',
