@@ -1,4 +1,5 @@
 import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
@@ -17,32 +18,39 @@ import { useProfilesPM } from './use-profiles-pm'
 
 type ProfileRow = ReturnType<typeof useProfilesPM>['profiles'][number]
 
-function flagBadges(profile: ProfileRow) {
-	return (
-		<>
-			{profile.isDefault && <Badge variant='secondary'>Default</Badge>}
-			{profile.isSystem && <Badge variant='outline'>System</Badge>}
-			{!profile.isActive && <Badge variant='outline'>Inactive</Badge>}
-		</>
-	)
-}
-
 export function AdminProfiles() {
 	const pm = useProfilesPM()
+	const { t } = useTranslation(['admin', 'common'])
+
+	const flagBadges = (profile: ProfileRow) => (
+		<>
+			{profile.isDefault && (
+				<Badge variant='secondary'>{t('profiles.flags.default')}</Badge>
+			)}
+			{profile.isSystem && (
+				<Badge variant='outline'>{t('common:status.system')}</Badge>
+			)}
+			{!profile.isActive && (
+				<Badge variant='outline'>{t('common:status.inactive')}</Badge>
+			)}
+		</>
+	)
 
 	const actions = (profile: ProfileRow) => (
 		<>
 			<Button asChild variant='outline' size='sm'>
 				<Link to={`/admin/profiles/${profile.id}`}>
 					<Pencil />
-					Grants
+					{t('profiles.grants')}
 				</Link>
 			</Button>
 			{pm.canDelete && !profile.isSystem && (
 				<ConfirmDialog
-					title='Delete profile'
-					description={`Delete "${profile.name}"? Only profiles not assigned to any user can be deleted.`}
-					confirmLabel='Delete'
+					title={t('profiles.delete.title')}
+					description={t('profiles.delete.description', {
+						name: profile.name,
+					})}
+					confirmLabel={t('profiles.delete.confirmLabel')}
 					onConfirm={() => pm.deleteProfile(profile.id)}
 					trigger={
 						<Button
@@ -61,35 +69,35 @@ export function AdminProfiles() {
 	const columns: ResponsiveListColumn<ProfileRow>[] = [
 		{
 			key: 'key',
-			header: 'Key',
+			header: t('profiles.columns.key'),
 			cell: (profile) => profile.key,
 			className: 'font-mono text-xs',
 			card: 'top',
 		},
 		{
 			key: 'name',
-			header: 'Name',
+			header: t('profiles.columns.name'),
 			cell: (profile) => profile.name,
 			className: 'font-medium',
 			card: 'top',
 		},
 		{
 			key: 'flags',
-			header: 'Flags',
+			header: t('profiles.columns.flags'),
 			cell: flagBadges,
 			className: 'space-x-1',
 			card: 'top',
 		},
 		{
 			key: 'description',
-			header: 'Description',
+			header: t('profiles.columns.description'),
 			cell: (profile) => profile.description,
 			className: 'text-muted-foreground',
 			card: 'bottom',
 		},
 		{
 			key: 'actions',
-			header: 'Actions',
+			header: t('profiles.columns.actions'),
 			cell: actions,
 			className: 'space-x-2 text-right',
 			headClassName: 'text-right',
@@ -99,19 +107,19 @@ export function AdminProfiles() {
 
 	return (
 		<>
-			<PageTitle title='Manage Profiles' />
+			<PageTitle title={t('profiles.pageTitle')} />
 
 			<div className='flex flex-1 flex-col gap-3 px-8 pt-5 pb-8'>
 				<PageHeader
-					title='Profiles'
-					description='A profile bundles screen grants assigned to users.'
+					title={t('profiles.title')}
+					description={t('profiles.description')}
 				>
 					{pm.canCreate && (
 						<ProfileDialog
 							trigger={
 								<Button size='sm'>
 									<Plus />
-									New profile
+									{t('profiles.new')}
 								</Button>
 							}
 						/>
@@ -122,7 +130,7 @@ export function AdminProfiles() {
 					<CardContent>
 						{pm.isLoading ? (
 							<p className='text-muted-foreground text-sm'>
-								Loading…
+								{t('common:states.loading')}
 							</p>
 						) : (
 							<ResponsiveList
@@ -131,7 +139,7 @@ export function AdminProfiles() {
 								getRowKey={(profile) => String(profile.id)}
 								empty={
 									<p className='text-muted-foreground text-sm'>
-										No profiles found.
+										{t('profiles.empty')}
 									</p>
 								}
 							/>

@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import { Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 import { type ModuleModel } from '@/api/modules'
 import { ConfirmDialog } from '@/components/confirm-dialog'
@@ -27,6 +28,7 @@ export function ModuleDialog({
 	trigger: ReactNode
 }) {
 	const pm = useModuleDialogPM(module)
+	const { t } = useTranslation('admin')
 
 	return (
 		<Dialog open={pm.open} onOpenChange={pm.onOpenChange}>
@@ -34,22 +36,26 @@ export function ModuleDialog({
 			<DialogContent className='sm:max-w-md'>
 				<DialogHeader>
 					<DialogTitle>
-						{pm.editing ? 'Edit module' : 'New module'}
+						{pm.editing
+							? t('modules.dialog.editTitle')
+							: t('modules.dialog.newTitle')}
 					</DialogTitle>
 					<DialogDescription>
-						A module groups related screens (e.g. "gym").
+						{t('modules.dialog.description')}
 					</DialogDescription>
 					{pm.locked && (
 						<p className='text-muted-foreground text-xs'>
-							System module — the key is locked; name, description
-							and order can change.
+							{t('modules.dialog.lockedHint')}
 						</p>
 					)}
 				</DialogHeader>
 
 				<form onSubmit={pm.onSubmit} noValidate>
 					<div className='flex flex-col gap-4'>
-						<Field label='Key' error={pm.errors.key?.message}>
+						<Field
+							label={t('modules.dialog.keyLabel')}
+							error={pm.errors.key?.message}
+						>
 							<Input
 								{...pm.register('key')}
 								placeholder='gym'
@@ -61,13 +67,19 @@ export function ModuleDialog({
 								}
 							/>
 						</Field>
-						<Field label='Name' error={pm.errors.name?.message}>
+						<Field
+							label={t('modules.dialog.nameLabel')}
+							error={pm.errors.name?.message}
+						>
 							<Input {...pm.register('name')} placeholder='Gym' />
 						</Field>
-						<Field label='Description'>
+						<Field label={t('modules.dialog.descriptionLabel')}>
 							<Input {...pm.register('description')} />
 						</Field>
-						<Field label='Order' error={pm.errors.order?.message}>
+						<Field
+							label={t('modules.dialog.orderLabel')}
+							error={pm.errors.order?.message}
+						>
 							<Input
 								type='number'
 								{...pm.register('order', {
@@ -79,11 +91,11 @@ export function ModuleDialog({
 						{pm.editing && (
 							<div className='flex items-center justify-between gap-4 border-t pt-4'>
 								<div>
-									<Label htmlFor='is_active'>Active</Label>
+									<Label htmlFor='is_active'>
+										{t('modules.dialog.activeLabel')}
+									</Label>
 									<p className='text-muted-foreground text-xs'>
-										Inactive modules are hidden when
-										targeting screens; existing screens keep
-										working.
+										{t('modules.dialog.activeHint')}
 									</p>
 								</div>
 								<Controller
@@ -102,7 +114,9 @@ export function ModuleDialog({
 
 						<DialogFooter>
 							<Button type='submit' disabled={pm.isSubmitting}>
-								{pm.editing ? 'Save changes' : 'Create module'}
+								{pm.editing
+									? t('modules.dialog.save')
+									: t('modules.dialog.create')}
 							</Button>
 						</DialogFooter>
 					</div>
@@ -110,9 +124,11 @@ export function ModuleDialog({
 
 				<ConfirmDialog
 					{...pm.confirmProps}
-					title='Deactivate module'
-					description={`Deactivate "${module?.name}"? It will be hidden when targeting screens; existing screens keep working.`}
-					confirmLabel='Deactivate'
+					title={t('modules.dialog.confirmTitle')}
+					description={t('modules.dialog.confirmDescription', {
+						name: module?.name ?? '',
+					})}
+					confirmLabel={t('modules.dialog.confirmLabel')}
 				/>
 			</DialogContent>
 		</Dialog>

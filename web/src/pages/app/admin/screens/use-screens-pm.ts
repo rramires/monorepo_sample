@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { getModules } from '@/api/modules'
@@ -9,6 +10,7 @@ import { usePermissions } from '@/hooks/use-permissions'
 
 export function useScreensPM() {
 	const queryClient = useQueryClient()
+	const { t } = useTranslation('admin')
 	const { can } = usePermissions()
 
 	const { data: screens = [], isLoading } = useQuery({
@@ -28,13 +30,13 @@ export function useScreensPM() {
 	const remove = useMutation({
 		mutationFn: deleteScreen,
 		onSuccess: () => {
-			toast.success('Screen deleted.')
+			toast.success(t('screens.toast.deleted'))
 			queryClient.invalidateQueries({ queryKey: ['screens'] })
 		},
 		onError: (err) => {
 			toast.error(
 				(isAxiosError(err) && err.response?.data?.message) ||
-					'Could not delete the screen.',
+					t('screens.toast.deleteError'),
 			)
 		},
 	})

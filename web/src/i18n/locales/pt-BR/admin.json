@@ -1,0 +1,294 @@
+{
+	"users": {
+		"pageTitle": "Usuários",
+		"title": "Usuários",
+		"description": "Gerencie contas de membros e administradores.",
+		"loading": "Carregando…",
+		"empty": "Nenhum usuário encontrado.",
+		"columns": {
+			"username": "Nome de usuário",
+			"email": "E-mail",
+			"role": "Papel",
+			"status": "Status",
+			"created": "Criado em",
+			"actions": "Ações"
+		},
+		"verified": "Verificado",
+		"unverified": "Não verificado",
+		"edit": {
+			"pageTitle": "Editar usuário",
+			"title": "Editar usuário",
+			"notFoundTitle": "Usuário não encontrado",
+			"notFoundDescription": "Este usuário não existe ou não pôde ser carregado.",
+			"backToUsers": "Voltar para usuários",
+			"description": "Atualize a conta de {{username}}.",
+			"usernameLabel": "Nome de usuário",
+			"emailLabel": "E-mail",
+			"emailUnverifyHint": "Alterar o e-mail vai desverificar esta conta.",
+			"roleLabel": "Papel",
+			"selfRoleHint": "Você não pode alterar seu próprio papel.",
+			"emailVerifiedLabel": "E-mail verificado",
+			"activeLabel": "Ativo",
+			"selfDeactivateHint": "Você não pode desativar sua própria conta.",
+			"save": "Salvar alterações",
+			"confirmTitle": "Desativar usuário",
+			"confirmDescription": "Desativar {{username}}? A conta será cortada na próxima requisição e não poderá entrar até ser reativada.",
+			"confirmLabel": "Desativar",
+			"noChanges": "Nenhuma alteração para salvar.",
+			"toast": {
+				"updated": "Usuário atualizado.",
+				"error": "Não foi possível atualizar o usuário."
+			}
+		},
+		"profiles": {
+			"title": "Perfis",
+			"description": "Atribua perfis para conceder as telas deste usuário.",
+			"adminNote": "Todos os perfis e telas estão atribuídos ao admin.",
+			"columnHeader": "Perfil",
+			"save": "Salvar perfis",
+			"toast": {
+				"updated": "Perfis atualizados.",
+				"error": "Não foi possível atualizar os perfis."
+			}
+		}
+	},
+	"fields": {
+		"keyRequired": "A chave é obrigatória.",
+		"nameRequired": "O nome é obrigatório.",
+		"pathRequired": "O caminho é obrigatório.",
+		"orderNumber": "A ordem deve ser um número.",
+		"orderInteger": "A ordem deve ser um número inteiro."
+	},
+	"modules": {
+		"pageTitle": "Gerenciar Módulos",
+		"title": "Módulos",
+		"description": "Módulos agrupam telas relacionadas.",
+		"new": "Novo módulo",
+		"empty": "Nenhum módulo encontrado.",
+		"columns": {
+			"key": "Chave",
+			"name": "Nome",
+			"order": "Ordem",
+			"description": "Descrição",
+			"actions": "Ações"
+		},
+		"delete": {
+			"title": "Excluir módulo",
+			"description": "Excluir \"{{name}}\"? As telas precisam ser removidas primeiro.",
+			"confirmLabel": "Excluir"
+		},
+		"dialog": {
+			"editTitle": "Editar módulo",
+			"newTitle": "Novo módulo",
+			"description": "Um módulo agrupa telas relacionadas (ex.: \"gym\").",
+			"lockedHint": "Módulo de sistema — a chave fica travada; nome, descrição e ordem podem mudar.",
+			"keyLabel": "Chave",
+			"nameLabel": "Nome",
+			"descriptionLabel": "Descrição",
+			"orderLabel": "Ordem",
+			"activeLabel": "Ativo",
+			"activeHint": "Módulos inativos ficam ocultos ao escolher telas; as telas existentes continuam funcionando.",
+			"save": "Salvar alterações",
+			"create": "Criar módulo",
+			"confirmTitle": "Desativar módulo",
+			"confirmDescription": "Desativar \"{{name}}\"? Ele ficará oculto ao escolher telas; as telas existentes continuam funcionando.",
+			"confirmLabel": "Desativar"
+		},
+		"toast": {
+			"created": "Módulo criado.",
+			"updated": "Módulo atualizado.",
+			"deleted": "Módulo excluído.",
+			"saveError": "Não foi possível salvar o módulo.",
+			"deleteError": "Não foi possível excluir o módulo."
+		}
+	},
+	"profiles": {
+		"pageTitle": "Gerenciar Perfis",
+		"title": "Perfis",
+		"description": "Um perfil reúne permissões de tela atribuídas aos usuários.",
+		"new": "Novo perfil",
+		"empty": "Nenhum perfil encontrado.",
+		"grants": "Permissões",
+		"flags": { "default": "Padrão" },
+		"columns": {
+			"key": "Chave",
+			"name": "Nome",
+			"flags": "Marcadores",
+			"description": "Descrição",
+			"actions": "Ações"
+		},
+		"delete": {
+			"title": "Excluir perfil",
+			"description": "Excluir \"{{name}}\"? Só é possível excluir perfis não atribuídos a nenhum usuário.",
+			"confirmLabel": "Excluir"
+		},
+		"dialog": {
+			"title": "Novo perfil",
+			"description": "Um perfil reúne permissões de tela que você atribui aos usuários. Configure as permissões após criá-lo.",
+			"keyLabel": "Chave",
+			"nameLabel": "Nome",
+			"descriptionLabel": "Descrição",
+			"defaultLabel": "Perfil padrão",
+			"defaultHint": "Anexado automaticamente a novos cadastros.",
+			"create": "Criar perfil"
+		},
+		"detail": {
+			"notFound": "Perfil não encontrado.",
+			"back": "Voltar para perfis",
+			"pageTitle": "Perfil · {{name}}",
+			"nameLabel": "Nome",
+			"descriptionLabel": "Descrição",
+			"defaultLabel": "Perfil padrão",
+			"defaultHintCurrent": "Este é o perfil padrão. Ative Padrão em outro perfil para movê-lo.",
+			"defaultHint": "Anexado automaticamente aos usuários no cadastro.",
+			"activeLabel": "Ativo",
+			"activeHint": "Perfis inativos ficam ocultos ao atribuir perfis aos usuários; as atribuições existentes continuam funcionando.",
+			"grantsTitle": "Permissões de tela",
+			"grantsDescription": "Mova telas para \"Concedidas\", escolha as permissões de cada tela e defina uma tela inicial.",
+			"filterByModule": "Filtrar disponíveis por módulo",
+			"allModules": "Todos os módulos",
+			"searchModules": "Buscar módulos…",
+			"noModules": "Nenhum módulo.",
+			"availableScreens": "Telas disponíveis",
+			"granted": "Concedidas",
+			"columns": {
+				"screen": "Tela",
+				"module": "Módulo",
+				"permissions": "Permissões",
+				"landing": "Inicial"
+			},
+			"disabled": "Desativada",
+			"noPermissionsDefined": "Nenhuma permissão definida.",
+			"noPermissions": "Sem permissões",
+			"searchPermissions": "Buscar permissões…",
+			"noPermissionsEmpty": "Nenhuma permissão.",
+			"landingAria": "{{key}} inicial",
+			"save": "Salvar alterações",
+			"confirmDefault": {
+				"title": "Substituir perfil padrão",
+				"description": "O perfil padrão atual é: {{name}}. Confirma que deseja substituí-lo como padrão?",
+				"confirmLabel": "Substituir"
+			},
+			"confirmRemove": {
+				"title": "Remover tela desativada",
+				"description": "Esta tela está desativada — se você removê-la, não poderá adicioná-la de novo até reativá-la. Remover?",
+				"confirmLabel": "Remover"
+			},
+			"confirmDeactivate": {
+				"title": "Desativar perfil",
+				"description": "Desativar \"{{name}}\"? Ele ficará oculto ao atribuir perfis aos usuários; as atribuições existentes continuam funcionando.",
+				"confirmLabel": "Desativar"
+			}
+		},
+		"toast": {
+			"deleted": "Perfil excluído.",
+			"deleteError": "Não foi possível excluir o perfil.",
+			"created": "Perfil criado.",
+			"createError": "Não foi possível criar o perfil.",
+			"saved": "Perfil salvo.",
+			"saveError": "Não foi possível salvar o perfil."
+		}
+	},
+	"screens": {
+		"pageTitle": "Gerenciar Telas",
+		"title": "Telas",
+		"description": "As telas são o que as permissões de acesso se vinculam.",
+		"new": "Nova tela",
+		"empty": "Nenhuma tela encontrada.",
+		"editPermissionsAria": "Editar permissões de {{name}}",
+		"columns": {
+			"module": "Módulo",
+			"key": "Chave",
+			"name": "Nome",
+			"path": "Caminho",
+			"actions": "Ações"
+		},
+		"delete": {
+			"title": "Excluir tela",
+			"description": "Excluir \"{{name}}\"? Só é possível excluir telas não atribuídas a nenhum perfil.",
+			"confirmLabel": "Excluir"
+		},
+		"dialog": {
+			"editTitle": "Editar tela",
+			"newTitle": "Nova tela",
+			"description": "Uma tela é a unidade à qual as permissões de acesso se vinculam.",
+			"lockedHint": "Tela de sistema — módulo, chave e caminho ficam travados; só nome, descrição e ordem podem mudar.",
+			"moduleLabel": "Módulo",
+			"moduleRequired": "O módulo é obrigatório.",
+			"selectModule": "Selecione um módulo",
+			"keyLabel": "Chave",
+			"nameLabel": "Nome",
+			"pathLabel": "Caminho",
+			"descriptionLabel": "Descrição",
+			"orderLabel": "Ordem",
+			"activeLabel": "Ativa",
+			"activeHint": "Telas inativas ficam ocultas nos seletores de \"adicionar\"; as atribuições existentes continuam funcionando.",
+			"onLabel": "Ligada",
+			"onHint": "Interruptor de emergência — desligar bloqueia a tela para todos (exceto administradores) imediatamente.",
+			"save": "Salvar alterações",
+			"create": "Criar tela",
+			"confirmDeactivate": {
+				"title": "Desativar tela",
+				"description": "Desativar \"{{name}}\"? Ela ficará oculta nos seletores de adicionar; as atribuições atuais continuam funcionando até serem removidas.",
+				"confirmLabel": "Desativar"
+			},
+			"confirmKill": {
+				"title": "Desligar tela",
+				"description": "Desligar \"{{name}}\"? Ela para de funcionar imediatamente para todos, exceto administradores.",
+				"confirmLabel": "Desligar"
+			}
+		},
+		"toast": {
+			"created": "Tela criada.",
+			"updated": "Tela atualizada.",
+			"deleted": "Tela excluída.",
+			"saveError": "Não foi possível salvar a tela.",
+			"deleteError": "Não foi possível excluir a tela."
+		},
+		"permissions": {
+			"title": "Permissões — {{name}}",
+			"description": "Selecione as operações que esta tela oferece e dê um rótulo amigável a cada uma.",
+			"operationLabel": "Operação",
+			"opPlaceholder": "Op",
+			"other": "Outra…",
+			"labelLabel": "Rótulo",
+			"labelPlaceholder": "ex.: Check-in",
+			"addAria": "Adicionar permissão",
+			"familyLabel": "Família",
+			"familyPlaceholder": "Família",
+			"nameLabel": "Nome",
+			"namePlaceholder": "check_in",
+			"keyNameAria": "Nome da chave",
+			"empty": "Nenhuma permissão ainda — adicione uma acima.",
+			"labelAria": "Rótulo de {{action}}",
+			"saveDialog": {
+				"title": "Salvar permissão",
+				"description": "Salvar as alterações desta permissão?",
+				"confirmLabel": "Salvar"
+			},
+			"saveAria": "Salvar permissão",
+			"cancelAria": "Cancelar",
+			"editAria": "Editar {{label}}",
+			"delete": {
+				"title": "Excluir permissão",
+				"description": "Excluir \"{{label}}\"? Os perfis que a concederam continuam funcionando apenas se ela não estiver em uso.",
+				"confirmLabel": "Excluir"
+			},
+			"deleteAria": "Excluir {{label}}",
+			"actions": {
+				"view": "Ver",
+				"create": "Criar",
+				"edit": "Editar",
+				"delete": "Excluir"
+			},
+			"toast": {
+				"added": "Permissão adicionada.",
+				"addError": "Não foi possível adicionar a permissão.",
+				"saved": "Permissão salva.",
+				"saveError": "Não foi possível salvar a permissão.",
+				"deleted": "Permissão excluída.",
+				"deleteError": "Não foi possível excluir a permissão."
+			}
+		}
+	}
+}

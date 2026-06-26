@@ -2,6 +2,7 @@
 
 import { CheckIcon, ChevronsUpDownIcon, XIcon } from 'lucide-react'
 import * as React from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
 	Command,
@@ -47,12 +48,13 @@ export function MultiSelect({
 	options,
 	selected,
 	onChange,
-	placeholder = 'Select…',
-	searchPlaceholder = 'Search…',
-	emptyText = 'No results.',
+	placeholder,
+	searchPlaceholder,
+	emptyText,
 	disabled,
 	className,
 }: MultiSelectProps) {
+	const { t } = useTranslation('common')
 	const [open, setOpen] = React.useState(false)
 	const selectedSet = new Set(selected)
 
@@ -87,7 +89,7 @@ export function MultiSelect({
 					<span className='flex flex-1 flex-wrap items-center gap-1'>
 						{selectedOptions.length === 0 ? (
 							<span className='text-muted-foreground'>
-								{placeholder}
+								{placeholder ?? t('multiSelect.select')}
 							</span>
 						) : (
 							selectedOptions.map((o) => (
@@ -100,7 +102,9 @@ export function MultiSelect({
 									<span
 										role='button'
 										tabIndex={-1}
-										aria-label={`Remove ${o.label}`}
+										aria-label={t('multiSelect.remove', {
+											label: o.label,
+										})}
 										className='hover:text-foreground -mr-0.5 cursor-pointer rounded-full opacity-70 transition-opacity hover:opacity-100'
 										onPointerDown={(e) => {
 											e.preventDefault()
@@ -122,9 +126,15 @@ export function MultiSelect({
 				align='start'
 			>
 				<Command>
-					<CommandInput placeholder={searchPlaceholder} />
+					<CommandInput
+						placeholder={
+							searchPlaceholder ?? t('multiSelect.search')
+						}
+					/>
 					<CommandList>
-						<CommandEmpty>{emptyText}</CommandEmpty>
+						<CommandEmpty>
+							{emptyText ?? t('multiSelect.empty')}
+						</CommandEmpty>
 						<CommandGroup>
 							{options.map((o) => {
 								const isSelected = selectedSet.has(o.value)

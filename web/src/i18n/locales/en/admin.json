@@ -1,0 +1,294 @@
+{
+	"users": {
+		"pageTitle": "Users",
+		"title": "Users",
+		"description": "Manage member and admin accounts.",
+		"loading": "Loading…",
+		"empty": "No users found.",
+		"columns": {
+			"username": "Username",
+			"email": "Email",
+			"role": "Role",
+			"status": "Status",
+			"created": "Created",
+			"actions": "Actions"
+		},
+		"verified": "Verified",
+		"unverified": "Unverified",
+		"edit": {
+			"pageTitle": "Edit user",
+			"title": "Edit user",
+			"notFoundTitle": "User not found",
+			"notFoundDescription": "This user does not exist or could not be loaded.",
+			"backToUsers": "Back to users",
+			"description": "Update {{username}}'s account.",
+			"usernameLabel": "Username",
+			"emailLabel": "Email",
+			"emailUnverifyHint": "Changing the email will unverify this account.",
+			"roleLabel": "Role",
+			"selfRoleHint": "You can't change your own role.",
+			"emailVerifiedLabel": "Email verified",
+			"activeLabel": "Active",
+			"selfDeactivateHint": "You can't deactivate your own account.",
+			"save": "Save changes",
+			"confirmTitle": "Deactivate user",
+			"confirmDescription": "Deactivate {{username}}? They will be cut off on their next request and can't sign in until reactivated.",
+			"confirmLabel": "Deactivate",
+			"noChanges": "No changes to save.",
+			"toast": {
+				"updated": "User updated.",
+				"error": "Could not update the user."
+			}
+		},
+		"profiles": {
+			"title": "Profiles",
+			"description": "Assign profiles to grant this user their screens.",
+			"adminNote": "All profiles and screens are assigned to the admin.",
+			"columnHeader": "Profile",
+			"save": "Save profiles",
+			"toast": {
+				"updated": "Profiles updated.",
+				"error": "Could not update the profiles."
+			}
+		}
+	},
+	"fields": {
+		"keyRequired": "Key is required.",
+		"nameRequired": "Name is required.",
+		"pathRequired": "Path is required.",
+		"orderNumber": "Order must be a number.",
+		"orderInteger": "Order must be an integer."
+	},
+	"modules": {
+		"pageTitle": "Manage Modules",
+		"title": "Modules",
+		"description": "Modules group related screens.",
+		"new": "New module",
+		"empty": "No modules found.",
+		"columns": {
+			"key": "Key",
+			"name": "Name",
+			"order": "Order",
+			"description": "Description",
+			"actions": "Actions"
+		},
+		"delete": {
+			"title": "Delete module",
+			"description": "Delete \"{{name}}\"? Screens must be removed first.",
+			"confirmLabel": "Delete"
+		},
+		"dialog": {
+			"editTitle": "Edit module",
+			"newTitle": "New module",
+			"description": "A module groups related screens (e.g. \"gym\").",
+			"lockedHint": "System module — the key is locked; name, description and order can change.",
+			"keyLabel": "Key",
+			"nameLabel": "Name",
+			"descriptionLabel": "Description",
+			"orderLabel": "Order",
+			"activeLabel": "Active",
+			"activeHint": "Inactive modules are hidden when targeting screens; existing screens keep working.",
+			"save": "Save changes",
+			"create": "Create module",
+			"confirmTitle": "Deactivate module",
+			"confirmDescription": "Deactivate \"{{name}}\"? It will be hidden when targeting screens; existing screens keep working.",
+			"confirmLabel": "Deactivate"
+		},
+		"toast": {
+			"created": "Module created.",
+			"updated": "Module updated.",
+			"deleted": "Module deleted.",
+			"saveError": "Could not save the module.",
+			"deleteError": "Could not delete the module."
+		}
+	},
+	"profiles": {
+		"pageTitle": "Manage Profiles",
+		"title": "Profiles",
+		"description": "A profile bundles screen grants assigned to users.",
+		"new": "New profile",
+		"empty": "No profiles found.",
+		"grants": "Grants",
+		"flags": { "default": "Default" },
+		"columns": {
+			"key": "Key",
+			"name": "Name",
+			"flags": "Flags",
+			"description": "Description",
+			"actions": "Actions"
+		},
+		"delete": {
+			"title": "Delete profile",
+			"description": "Delete \"{{name}}\"? Only profiles not assigned to any user can be deleted.",
+			"confirmLabel": "Delete"
+		},
+		"dialog": {
+			"title": "New profile",
+			"description": "A profile bundles screen grants you assign to users. Configure its grants after creating it.",
+			"keyLabel": "Key",
+			"nameLabel": "Name",
+			"descriptionLabel": "Description",
+			"defaultLabel": "Default profile",
+			"defaultHint": "Auto-attached to new registrations.",
+			"create": "Create profile"
+		},
+		"detail": {
+			"notFound": "Profile not found.",
+			"back": "Back to profiles",
+			"pageTitle": "Profile · {{name}}",
+			"nameLabel": "Name",
+			"descriptionLabel": "Description",
+			"defaultLabel": "Default profile",
+			"defaultHintCurrent": "This is the default profile. Enable Default on another profile to move it.",
+			"defaultHint": "Auto-attached to users on registration.",
+			"activeLabel": "Active",
+			"activeHint": "Inactive profiles are hidden when assigning profiles to users; existing assignments keep working.",
+			"grantsTitle": "Screen grants",
+			"grantsDescription": "Move screens to \"Granted\", pick each screen's permissions, and choose one landing screen.",
+			"filterByModule": "Filter available by module",
+			"allModules": "All modules",
+			"searchModules": "Search modules…",
+			"noModules": "No modules.",
+			"availableScreens": "Available screens",
+			"granted": "Granted",
+			"columns": {
+				"screen": "Screen",
+				"module": "Module",
+				"permissions": "Permissions",
+				"landing": "Landing"
+			},
+			"disabled": "Disabled",
+			"noPermissionsDefined": "No permissions defined.",
+			"noPermissions": "No permissions",
+			"searchPermissions": "Search permissions…",
+			"noPermissionsEmpty": "No permissions.",
+			"landingAria": "{{key}} landing",
+			"save": "Save changes",
+			"confirmDefault": {
+				"title": "Replace default profile",
+				"description": "The current default profile is: {{name}}. Do you confirm that you want to replace it as the default?",
+				"confirmLabel": "Replace"
+			},
+			"confirmRemove": {
+				"title": "Remove disabled screen",
+				"description": "This screen is disabled — if you remove it you can't re-add it until it's re-enabled. Remove?",
+				"confirmLabel": "Remove"
+			},
+			"confirmDeactivate": {
+				"title": "Deactivate profile",
+				"description": "Deactivate \"{{name}}\"? It will be hidden when assigning profiles to users; existing assignments keep working.",
+				"confirmLabel": "Deactivate"
+			}
+		},
+		"toast": {
+			"deleted": "Profile deleted.",
+			"deleteError": "Could not delete the profile.",
+			"created": "Profile created.",
+			"createError": "Could not create the profile.",
+			"saved": "Profile saved.",
+			"saveError": "Could not save the profile."
+		}
+	},
+	"screens": {
+		"pageTitle": "Manage Screens",
+		"title": "Screens",
+		"description": "Screens are what access grants attach to.",
+		"new": "New screen",
+		"empty": "No screens found.",
+		"editPermissionsAria": "Edit {{name}} permissions",
+		"columns": {
+			"module": "Module",
+			"key": "Key",
+			"name": "Name",
+			"path": "Path",
+			"actions": "Actions"
+		},
+		"delete": {
+			"title": "Delete screen",
+			"description": "Delete \"{{name}}\"? Only screens not assigned to any profile can be deleted.",
+			"confirmLabel": "Delete"
+		},
+		"dialog": {
+			"editTitle": "Edit screen",
+			"newTitle": "New screen",
+			"description": "A screen is the unit access grants attach to.",
+			"lockedHint": "System screen — module, key and path are locked; only name, description and order can change.",
+			"moduleLabel": "Module",
+			"moduleRequired": "Module is required.",
+			"selectModule": "Select a module",
+			"keyLabel": "Key",
+			"nameLabel": "Name",
+			"pathLabel": "Path",
+			"descriptionLabel": "Description",
+			"orderLabel": "Order",
+			"activeLabel": "Active",
+			"activeHint": "Inactive screens are hidden from the \"add\" pickers; existing assignments keep working.",
+			"onLabel": "On",
+			"onHint": "Emergency kill switch — turning this off blocks the screen for everyone (except admins) right away.",
+			"save": "Save changes",
+			"create": "Create screen",
+			"confirmDeactivate": {
+				"title": "Deactivate screen",
+				"description": "Deactivate \"{{name}}\"? It will be hidden from the add pickers; current assignments keep working until removed.",
+				"confirmLabel": "Deactivate"
+			},
+			"confirmKill": {
+				"title": "Turn screen off",
+				"description": "Turn \"{{name}}\" off? It stops working immediately for everyone except admins.",
+				"confirmLabel": "Turn off"
+			}
+		},
+		"toast": {
+			"created": "Screen created.",
+			"updated": "Screen updated.",
+			"deleted": "Screen deleted.",
+			"saveError": "Could not save the screen.",
+			"deleteError": "Could not delete the screen."
+		},
+		"permissions": {
+			"title": "Permissions — {{name}}",
+			"description": "Curate the operations this screen offers and give each a friendly label.",
+			"operationLabel": "Operation",
+			"opPlaceholder": "Op",
+			"other": "Other…",
+			"labelLabel": "Label",
+			"labelPlaceholder": "e.g. Check in",
+			"addAria": "Add permission",
+			"familyLabel": "Family",
+			"familyPlaceholder": "Family",
+			"nameLabel": "Name",
+			"namePlaceholder": "check_in",
+			"keyNameAria": "Key name",
+			"empty": "No permissions yet — add one above.",
+			"labelAria": "{{action}} label",
+			"saveDialog": {
+				"title": "Save permission",
+				"description": "Save changes to this permission?",
+				"confirmLabel": "Save"
+			},
+			"saveAria": "Save permission",
+			"cancelAria": "Cancel",
+			"editAria": "Edit {{label}}",
+			"delete": {
+				"title": "Delete permission",
+				"description": "Delete \"{{label}}\"? Profiles that granted it keep working only if it isn't in use.",
+				"confirmLabel": "Delete"
+			},
+			"deleteAria": "Delete {{label}}",
+			"actions": {
+				"view": "View",
+				"create": "Create",
+				"edit": "Edit",
+				"delete": "Delete"
+			},
+			"toast": {
+				"added": "Permission added.",
+				"addError": "Could not add the permission.",
+				"saved": "Permission saved.",
+				"saveError": "Could not save the permission.",
+				"deleted": "Permission deleted.",
+				"deleteError": "Could not delete the permission."
+			}
+		}
+	}
+}

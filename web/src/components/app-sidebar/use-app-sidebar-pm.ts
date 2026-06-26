@@ -9,26 +9,40 @@ import {
 	Users,
 } from 'lucide-react'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router'
 
 import { useAuth } from '@/components/auth/auth-hooks'
 import { useSidebar } from '@/components/ui/sidebar'
 import { usePermissions } from '@/hooks/use-permissions'
 
-// The screens that have a real page today, with their nav icon + a short menu
-// label (decoupled from the catalog's longer screen name). A screen only becomes
-// a nav link once it's listed here (implemented) AND it appears in the user's
-// menu (viewable, from /me/permissions) — so the menu grows as the remaining
-// pages get built.
-const NAV_ENTRIES: Record<string, { icon: LucideIcon; label: string }> = {
-	'gym.dashboard': { icon: LayoutDashboard, label: 'Dashboard' },
-	'gym.gyms': { icon: Dumbbell, label: 'Gyms' },
-	'gym.check-ins': { icon: History, label: 'Check-ins' },
-	'access-control.modules': { icon: Boxes, label: 'Modules' },
-	'access-control.screens': { icon: MonitorSmartphone, label: 'Screens' },
-	'access-control.profiles': { icon: ShieldCheck, label: 'Profiles' },
-	'access-control.users': { icon: Users, label: 'Users' },
-}
+// The screens that have a real page today, with their nav icon + the `nav`
+// translation key for their short menu label (decoupled from the catalog's
+// longer screen name). A screen only becomes a nav link once it's listed here
+// (implemented) AND it appears in the user's menu (viewable, from
+// /me/permissions) — so the menu grows as the remaining pages get built.
+type NavLabelKey =
+	| 'dashboard'
+	| 'gyms'
+	| 'checkIns'
+	| 'modules'
+	| 'screens'
+	| 'profiles'
+	| 'users'
+
+const NAV_ENTRIES: Record<string, { icon: LucideIcon; labelKey: NavLabelKey }> =
+	{
+		'gym.dashboard': { icon: LayoutDashboard, labelKey: 'dashboard' },
+		'gym.gyms': { icon: Dumbbell, labelKey: 'gyms' },
+		'gym.check-ins': { icon: History, labelKey: 'checkIns' },
+		'access-control.modules': { icon: Boxes, labelKey: 'modules' },
+		'access-control.screens': {
+			icon: MonitorSmartphone,
+			labelKey: 'screens',
+		},
+		'access-control.profiles': { icon: ShieldCheck, labelKey: 'profiles' },
+		'access-control.users': { icon: Users, labelKey: 'users' },
+	}
 
 export interface NavItem {
 	key: string
@@ -56,6 +70,7 @@ export interface NavSection {
 
 export function useAppSidebarPM() {
 	const { user, signOut } = useAuth()
+	const { t, i18n } = useTranslation(['nav', 'catalog'])
 	const { isLoading: permsLoading, permissions } = usePermissions()
 	const { setOpenMobile } = useSidebar()
 	const navigate = useNavigate()
@@ -77,7 +92,11 @@ export function useAppSidebarPM() {
 			if (!section) {
 				section = {
 					key: item.moduleKey,
-					label: item.moduleName,
+					// Module names are DB-sourced catalog: translate by key,
+					// falling back to the stored name (admin-created modules).
+					label: t(`catalog:modules.${item.moduleKey}.name`, {
+						defaultValue: item.moduleName,
+					}),
 					items: [],
 				}
 				byModule.set(item.moduleKey, section)
@@ -85,13 +104,14 @@ export function useAppSidebarPM() {
 			section.items.push({
 				key: item.screenKey,
 				to: item.path,
-				label: entry.label,
+				label: t(entry.labelKey),
 				icon: entry.icon,
 			})
 		}
 
 		return [...byModule.values()].filter((s) => s.items.length > 0)
-	}, [permissions?.menu])
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [permissions?.menu, i18n.language])
 
 	async function handleSignOut() {
 		await signOut()

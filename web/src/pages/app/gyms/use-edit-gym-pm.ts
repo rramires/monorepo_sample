@@ -1,8 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useState } from 'react'
+import type { TFunction } from 'i18next'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -15,19 +17,21 @@ import { useConfirmDeactivate } from '@/hooks/use-confirm-deactivate'
 // soft-delete toggle (deactivate / reactivate).
 const phonePattern = /^\+?[\d\s().-]{7,20}$/
 
-const editGymForm = z.object({
-	title: z.string().min(1, 'Title is required.'),
-	description: z.string(),
-	phone: z
-		.string()
-		.regex(phonePattern, 'Enter a valid phone number.')
-		.or(z.literal('')),
-	is_active: z.boolean(),
-})
-type EditGymForm = z.infer<typeof editGymForm>
+const makeEditGymForm = (t: TFunction<'gyms'>) =>
+	z.object({
+		title: z.string().min(1, t('errors.titleRequired')),
+		description: z.string(),
+		phone: z
+			.string()
+			.regex(phonePattern, t('errors.phone'))
+			.or(z.literal('')),
+		is_active: z.boolean(),
+	})
+type EditGymForm = z.infer<ReturnType<typeof makeEditGymForm>>
 
 export function useEditGymPM(gym: Gym) {
 	const queryClient = useQueryClient()
+	const { t, i18n } = useTranslation('gyms')
 	const [open, setOpen] = useState(false)
 	const deactivate = useConfirmDeactivate()
 
@@ -45,7 +49,11 @@ export function useEditGymPM(gym: Gym) {
 		reset,
 		formState: { errors },
 	} = useForm<EditGymForm>({
-		resolver: zodResolver(editGymForm),
+		resolver: useMemo(
+			() => zodResolver(makeEditGymForm(t)),
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+			[i18n.language],
+		),
 		defaultValues: defaults(),
 	})
 
@@ -60,7 +68,7 @@ export function useEditGymPM(gym: Gym) {
 	const save = useMutation({
 		mutationFn: (body: UpdateGymBody) => updateGym(gym.id, body),
 		onSuccess: async (updated) => {
-			toast.success(`Gym "${updated.title}" updated.`)
+			toast.success(t('toast.updated', { title: updated.title }))
 			// Refetch the nearby/search lists so the card reflects the change.
 			await queryClient.invalidateQueries({ queryKey: ['gyms'] })
 			setOpen(false)
@@ -68,7 +76,7 @@ export function useEditGymPM(gym: Gym) {
 		onError: (err) => {
 			const message =
 				(isAxiosError(err) && err.response?.data?.message) ||
-				'Could not update the gym.'
+				t('toast.updateError')
 			toast.error(message)
 		},
 	})

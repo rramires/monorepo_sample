@@ -1,8 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useState } from 'react'
+import type { TFunction } from 'i18next'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -14,30 +16,40 @@ import { getCurrentPosition } from '@/lib/geolocation'
 // match the API's loose phone pattern; coordinates are required, in range.
 const phonePattern = /^\+?[\d\s().-]{7,20}$/
 
-function coordinate(label: string, max: number) {
+function coordinate(requiredMsg: string, invalidMsg: string, max: number) {
 	return z
 		.string()
-		.min(1, `${label} is required.`)
+		.min(1, requiredMsg)
 		.refine((value) => {
 			const parsed = Number(value)
 			return !Number.isNaN(parsed) && parsed >= -max && parsed <= max
-		}, `Enter a valid ${label.toLowerCase()}.`)
+		}, invalidMsg)
 }
 
-const newGymForm = z.object({
-	title: z.string().min(1, 'Title is required.'),
-	description: z.string(),
-	phone: z
-		.string()
-		.regex(phonePattern, 'Enter a valid phone number.')
-		.or(z.literal('')),
-	latitude: coordinate('Latitude', 90),
-	longitude: coordinate('Longitude', 180),
-})
-type NewGymForm = z.infer<typeof newGymForm>
+const makeNewGymForm = (t: TFunction<'gyms'>) =>
+	z.object({
+		title: z.string().min(1, t('errors.titleRequired')),
+		description: z.string(),
+		phone: z
+			.string()
+			.regex(phonePattern, t('errors.phone'))
+			.or(z.literal('')),
+		latitude: coordinate(
+			t('errors.latitudeRequired'),
+			t('errors.latitudeInvalid'),
+			90,
+		),
+		longitude: coordinate(
+			t('errors.longitudeRequired'),
+			t('errors.longitudeInvalid'),
+			180,
+		),
+	})
+type NewGymForm = z.infer<ReturnType<typeof makeNewGymForm>>
 
 export function useNewGymPM() {
 	const navigate = useNavigate()
+	const { t, i18n } = useTranslation('gyms')
 	const [locating, setLocating] = useState(false)
 
 	const {
@@ -46,7 +58,11 @@ export function useNewGymPM() {
 		setValue,
 		formState: { errors, isSubmitting },
 	} = useForm<NewGymForm>({
-		resolver: zodResolver(newGymForm),
+		resolver: useMemo(
+			() => zodResolver(makeNewGymForm(t)),
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+			[i18n.language],
+		),
 		defaultValues: {
 			title: '',
 			description: '',
@@ -65,7 +81,7 @@ export function useNewGymPM() {
 			setValue('latitude', String(position.latitude))
 			setValue('longitude', String(position.longitude))
 		} catch {
-			toast.error('Could not get your location.')
+			toast.error(t('toast.locationError'))
 		} finally {
 			setLocating(false)
 		}
@@ -80,12 +96,12 @@ export function useNewGymPM() {
 				latitude: Number(data.latitude),
 				longitude: Number(data.longitude),
 			})
-			toast.success(`Gym "${gym.title}" created.`)
+			toast.success(t('toast.created', { title: gym.title }))
 			navigate('/gyms')
 		} catch (err) {
 			const message =
 				(isAxiosError(err) && err.response?.data?.message) ||
-				'Could not create the gym.'
+				t('toast.createError')
 			toast.error(message)
 		}
 	}

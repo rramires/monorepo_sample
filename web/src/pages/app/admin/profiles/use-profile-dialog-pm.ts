@@ -1,20 +1,23 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useState } from 'react'
+import type { TFunction } from 'i18next'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { createProfile } from '@/api/profiles'
 
-const profileForm = z.object({
-	key: z.string().min(1, 'Key is required.'),
-	name: z.string().min(1, 'Name is required.'),
-	description: z.string(),
-	is_default: z.boolean(),
-})
-type ProfileForm = z.infer<typeof profileForm>
+const makeProfileForm = (t: TFunction<'admin'>) =>
+	z.object({
+		key: z.string().min(1, t('fields.keyRequired')),
+		name: z.string().min(1, t('fields.nameRequired')),
+		description: z.string(),
+		is_default: z.boolean(),
+	})
+type ProfileForm = z.infer<ReturnType<typeof makeProfileForm>>
 
 const EMPTY: ProfileForm = {
 	key: '',
@@ -25,6 +28,7 @@ const EMPTY: ProfileForm = {
 
 export function useProfileDialogPM() {
 	const queryClient = useQueryClient()
+	const { t, i18n } = useTranslation('admin')
 	const [open, setOpen] = useState(false)
 
 	const {
@@ -34,7 +38,11 @@ export function useProfileDialogPM() {
 		control,
 		formState: { errors, isSubmitting },
 	} = useForm<ProfileForm>({
-		resolver: zodResolver(profileForm),
+		resolver: useMemo(
+			() => zodResolver(makeProfileForm(t)),
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+			[i18n.language],
+		),
 		defaultValues: EMPTY,
 	})
 
@@ -54,14 +62,14 @@ export function useProfileDialogPM() {
 				is_default: data.is_default,
 			}),
 		onSuccess: async () => {
-			toast.success('Profile created.')
+			toast.success(t('profiles.toast.created'))
 			await queryClient.invalidateQueries({ queryKey: ['profiles'] })
 			setOpen(false)
 		},
 		onError: (err) => {
 			toast.error(
 				(isAxiosError(err) && err.response?.data?.message) ||
-					'Could not create the profile.',
+					t('profiles.toast.createError'),
 			)
 		},
 	})

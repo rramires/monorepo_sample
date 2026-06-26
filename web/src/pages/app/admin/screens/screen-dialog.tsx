@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import { Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 import type { ModuleModel } from '@/api/modules'
 import { type ScreenModel } from '@/api/screens'
@@ -37,6 +38,7 @@ export function ScreenDialog({
 	trigger: ReactNode
 }) {
 	const pm = useScreenDialogPM(screen, modules)
+	const { t } = useTranslation('admin')
 
 	return (
 		<Dialog open={pm.open} onOpenChange={pm.onOpenChange}>
@@ -44,15 +46,16 @@ export function ScreenDialog({
 			<DialogContent className='sm:max-w-md'>
 				<DialogHeader>
 					<DialogTitle>
-						{pm.editing ? 'Edit screen' : 'New screen'}
+						{pm.editing
+							? t('screens.dialog.editTitle')
+							: t('screens.dialog.newTitle')}
 					</DialogTitle>
 					<DialogDescription>
-						A screen is the unit access grants attach to.
+						{t('screens.dialog.description')}
 					</DialogDescription>
 					{pm.locked && (
 						<p className='text-muted-foreground text-xs'>
-							System screen — module, key and path are locked;
-							only name, description and order can change.
+							{t('screens.dialog.lockedHint')}
 						</p>
 					)}
 				</DialogHeader>
@@ -60,7 +63,7 @@ export function ScreenDialog({
 				<form onSubmit={pm.onSubmit} noValidate>
 					<div className='flex flex-col gap-4'>
 						<div className='grid gap-2'>
-							<Label>Module</Label>
+							<Label>{t('screens.dialog.moduleLabel')}</Label>
 							<Controller
 								control={pm.control}
 								name='module_id'
@@ -71,7 +74,11 @@ export function ScreenDialog({
 										disabled={pm.locked}
 									>
 										<SelectTrigger>
-											<SelectValue placeholder='Select a module' />
+											<SelectValue
+												placeholder={t(
+													'screens.dialog.selectModule',
+												)}
+											/>
 										</SelectTrigger>
 										<SelectContent>
 											{pm.moduleOptions.map((m) => (
@@ -93,7 +100,10 @@ export function ScreenDialog({
 							)}
 						</div>
 
-						<Field label='Key' error={pm.errors.key?.message}>
+						<Field
+							label={t('screens.dialog.keyLabel')}
+							error={pm.errors.key?.message}
+						>
 							<Input
 								{...pm.register('key')}
 								placeholder='gym.dashboard'
@@ -105,10 +115,13 @@ export function ScreenDialog({
 								}
 							/>
 						</Field>
-						<Field label='Name' error={pm.errors.name?.message}>
+						<Field
+							label={t('screens.dialog.nameLabel')}
+							error={pm.errors.name?.message}
+						>
 							<Input {...pm.register('name')} />
 						</Field>
-						<Field label='Path'>
+						<Field label={t('screens.dialog.pathLabel')}>
 							<Input
 								{...pm.register('path')}
 								placeholder='/'
@@ -120,10 +133,13 @@ export function ScreenDialog({
 								}
 							/>
 						</Field>
-						<Field label='Description'>
+						<Field label={t('screens.dialog.descriptionLabel')}>
 							<Input {...pm.register('description')} />
 						</Field>
-						<Field label='Order' error={pm.errors.order?.message}>
+						<Field
+							label={t('screens.dialog.orderLabel')}
+							error={pm.errors.order?.message}
+						>
 							<Input
 								type='number'
 								{...pm.register('order', {
@@ -137,12 +153,10 @@ export function ScreenDialog({
 								<div className='flex items-center justify-between gap-4 border-t pt-4'>
 									<div>
 										<Label htmlFor='is_active'>
-											Active
+											{t('screens.dialog.activeLabel')}
 										</Label>
 										<p className='text-muted-foreground text-xs'>
-											Inactive screens are hidden from the
-											"add" pickers; existing assignments
-											keep working.
+											{t('screens.dialog.activeHint')}
 										</p>
 									</div>
 									<Controller
@@ -160,11 +174,11 @@ export function ScreenDialog({
 
 								<div className='flex items-center justify-between gap-4'>
 									<div>
-										<Label htmlFor='is_enabled'>On</Label>
+										<Label htmlFor='is_enabled'>
+											{t('screens.dialog.onLabel')}
+										</Label>
 										<p className='text-destructive/80 text-xs'>
-											Emergency kill switch — turning this
-											off blocks the screen for everyone
-											(except admins) right away.
+											{t('screens.dialog.onHint')}
 										</p>
 									</div>
 									<Controller
@@ -184,7 +198,9 @@ export function ScreenDialog({
 
 						<DialogFooter>
 							<Button type='submit' disabled={pm.isSubmitting}>
-								{pm.editing ? 'Save changes' : 'Create screen'}
+								{pm.editing
+									? t('screens.dialog.save')
+									: t('screens.dialog.create')}
 							</Button>
 						</DialogFooter>
 					</div>
@@ -192,15 +208,22 @@ export function ScreenDialog({
 
 				<ConfirmDialog
 					{...pm.activeConfirmProps}
-					title='Deactivate screen'
-					description={`Deactivate "${screen?.name}"? It will be hidden from the add pickers; current assignments keep working until removed.`}
-					confirmLabel='Deactivate'
+					title={t('screens.dialog.confirmDeactivate.title')}
+					description={t(
+						'screens.dialog.confirmDeactivate.description',
+						{ name: screen?.name ?? '' },
+					)}
+					confirmLabel={t(
+						'screens.dialog.confirmDeactivate.confirmLabel',
+					)}
 				/>
 				<ConfirmDialog
 					{...pm.killConfirmProps}
-					title='Turn screen off'
-					description={`Turn "${screen?.name}" off? It stops working immediately for everyone except admins.`}
-					confirmLabel='Turn off'
+					title={t('screens.dialog.confirmKill.title')}
+					description={t('screens.dialog.confirmKill.description', {
+						name: screen?.name ?? '',
+					})}
+					confirmLabel={t('screens.dialog.confirmKill.confirmLabel')}
 				/>
 			</DialogContent>
 		</Dialog>

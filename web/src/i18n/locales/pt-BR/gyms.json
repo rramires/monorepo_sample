@@ -1,0 +1,60 @@
+{
+	"pageTitle": "Academias",
+	"title": "Academias",
+	"description": "Encontre uma academia perto de você ou busque por nome.",
+	"newGym": "Nova academia",
+	"searchPlaceholder": "Buscar academias por nome…",
+	"nearbyOnly": "Apenas próximas",
+	"showDeactivated": "Mostrar desativadas",
+	"geoDenied": "Não foi possível obter sua localização — busque por nome acima.",
+	"locating": "Procurando academias perto de você…",
+	"loading": "Carregando academias…",
+	"empty": {
+		"search": "Nenhuma academia corresponde à sua busca.",
+		"none": "Nenhuma academia ainda.",
+		"nearby": "Nenhuma academia encontrada perto de você."
+	},
+	"card": {
+		"checkIn": "Fazer check-in"
+	},
+	"edit": {
+		"title": "Editar academia",
+		"description": "Atualize os detalhes desta academia. A localização não pode ser alterada.",
+		"titleLabel": "Título",
+		"descriptionLabel": "Descrição",
+		"phoneLabel": "Telefone",
+		"activeLabel": "Ativa",
+		"activeHint": "Academias inativas ficam ocultas para os membros e recusam check-ins.",
+		"save": "Salvar alterações",
+		"confirmTitle": "Desativar academia",
+		"confirmDescription": "Desativar \"{{title}}\"? Ela ficará oculta para os membros e recusará novos check-ins (o histórico existente é mantido). Você pode reativá-la a qualquer momento.",
+		"confirmLabel": "Desativar"
+	},
+	"new": {
+		"pageTitle": "Nova academia",
+		"title": "Nova academia",
+		"description": "Cadastre uma academia onde os membros possam fazer check-in.",
+		"titleLabel": "Título",
+		"descriptionLabel": "Descrição",
+		"phoneLabel": "Telefone",
+		"latitudeLabel": "Latitude",
+		"longitudeLabel": "Longitude",
+		"useMyLocation": "Usar minha localização atual",
+		"create": "Criar academia"
+	},
+	"toast": {
+		"updated": "Academia \"{{title}}\" atualizada.",
+		"updateError": "Não foi possível atualizar a academia.",
+		"created": "Academia \"{{title}}\" criada.",
+		"createError": "Não foi possível criar a academia.",
+		"locationError": "Não foi possível obter sua localização."
+	},
+	"errors": {
+		"titleRequired": "O título é obrigatório.",
+		"phone": "Informe um telefone válido.",
+		"latitudeRequired": "A latitude é obrigatória.",
+		"latitudeInvalid": "Informe uma latitude válida.",
+		"longitudeRequired": "A longitude é obrigatória.",
+		"longitudeInvalid": "Informe uma longitude válida."
+	}
+}

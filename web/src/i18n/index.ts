@@ -3,13 +3,21 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
 import enAccount from './locales/en/account.json'
+import enAdmin from './locales/en/admin.json'
 import enAuth from './locales/en/auth.json'
+import enCatalog from './locales/en/catalog.json'
 import enCheckIns from './locales/en/check-ins.json'
 import enCommon from './locales/en/common.json'
+import enGyms from './locales/en/gyms.json'
+import enNav from './locales/en/nav.json'
 import ptBRAccount from './locales/pt-BR/account.json'
+import ptBRAdmin from './locales/pt-BR/admin.json'
 import ptBRAuth from './locales/pt-BR/auth.json'
+import ptBRCatalog from './locales/pt-BR/catalog.json'
 import ptBRCheckIns from './locales/pt-BR/check-ins.json'
 import ptBRCommon from './locales/pt-BR/common.json'
+import ptBRGyms from './locales/pt-BR/gyms.json'
+import ptBRNav from './locales/pt-BR/nav.json'
 import { setZodLocale } from './zod-locale'
 
 export const SUPPORTED_LOCALES = ['en', 'pt-BR'] as const
@@ -30,12 +38,20 @@ export const resources = {
 		auth: enAuth,
 		account: enAccount,
 		'check-ins': enCheckIns,
+		nav: enNav,
+		catalog: enCatalog,
+		gyms: enGyms,
+		admin: enAdmin,
 	},
 	'pt-BR': {
 		common: ptBRCommon,
 		auth: ptBRAuth,
 		account: ptBRAccount,
 		'check-ins': ptBRCheckIns,
+		nav: ptBRNav,
+		catalog: ptBRCatalog,
+		gyms: ptBRGyms,
+		admin: ptBRAdmin,
 	},
 } as const
 
@@ -46,7 +62,16 @@ i18n.use(LanguageDetector)
 		fallbackLng: FALLBACK_LOCALE,
 		supportedLngs: SUPPORTED_LOCALES,
 		defaultNS: DEFAULT_NS,
-		ns: [DEFAULT_NS, 'auth', 'account', 'check-ins'],
+		ns: [
+			DEFAULT_NS,
+			'auth',
+			'account',
+			'check-ins',
+			'nav',
+			'catalog',
+			'gyms',
+			'admin',
+		],
 		interpolation: {
 			// React already escapes; double-escaping mangles names with markup.
 			escapeValue: false,

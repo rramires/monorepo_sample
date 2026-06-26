@@ -1,4 +1,14 @@
 {
+	"roles": {
+		"admin": "Admin",
+		"member": "Member"
+	},
+	"status": {
+		"active": "Active",
+		"inactive": "Inactive",
+		"system": "System",
+		"off": "Off"
+	},
 	"errors": {
 		"minChars": "Minimum of {{count}} characters.",
 		"maxChars": "Maximum of {{count}} characters.",
@@ -33,6 +43,35 @@
 		"previous": "Previous",
 		"next": "Next",
 		"summary": "Page {{page}} of {{total}}"
+	},
+	"pager": {
+		"summary": "{{from}} to {{to}} of {{total}}",
+		"page": "Page {{page}}",
+		"first": "First page",
+		"previous": "Previous page",
+		"next": "Next page",
+		"last": "Last page"
+	},
+	"multiSelect": {
+		"select": "Select…",
+		"search": "Search…",
+		"empty": "No results.",
+		"remove": "Remove {{label}}"
+	},
+	"transfer": {
+		"available": "Available",
+		"assigned": "Assigned",
+		"search": "Search…",
+		"moveSelected": "Move selected",
+		"moveAll": "Move all",
+		"removeSelected": "Remove selected",
+		"removeAll": "Remove all",
+		"dragRow": "Drag row",
+		"selectRow": "Select row",
+		"selectAll": "Select all",
+		"empty": "Nothing here.",
+		"dragCount_one": "Move {{count}} row",
+		"dragCount_other": "Move {{count}} rows"
 	},
 	"theme": {
 		"label": "Switch theme",

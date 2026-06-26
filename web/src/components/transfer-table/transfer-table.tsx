@@ -16,6 +16,7 @@ import {
 	ChevronsUp,
 	ChevronUp,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { useLayoutBand } from '@/hooks/use-layout-band'
@@ -36,6 +37,7 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 	const { availableColumns, assignedColumns, labels, searchable, getRowId } =
 		props
 	const pm = useTransferTablePM(props)
+	const { t } = useTranslation('common')
 
 	// Below lg the two panels stack (available on top, granted below), so the
 	// move buttons point up/down instead of left/right (assigned = down).
@@ -69,7 +71,7 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 			<div className='flex flex-col items-stretch gap-3 lg:flex-row'>
 				<TransferPanel
 					side='available'
-					title={labels?.available ?? 'Available'}
+					title={labels?.available ?? t('transfer.available')}
 					items={pm.visibleAvailable}
 					columns={availableColumns}
 					getRowId={getRowId}
@@ -90,8 +92,8 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 						size='icon'
 						onClick={pm.moveSelectedRight}
 						disabled={!pm.hasSelectionRight}
-						aria-label='Move selected right'
-						title='Move selected'
+						aria-label={t('transfer.moveSelected')}
+						title={t('transfer.moveSelected')}
 					>
 						<ToAssignedIcon />
 					</Button>
@@ -100,8 +102,8 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 						variant='outline'
 						size='icon'
 						onClick={pm.moveAllRight}
-						aria-label='Move all right'
-						title='Move all'
+						aria-label={t('transfer.moveAll')}
+						title={t('transfer.moveAll')}
 					>
 						<AllToAssignedIcon />
 					</Button>
@@ -110,8 +112,8 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 						variant='outline'
 						size='icon'
 						onClick={pm.moveAllLeft}
-						aria-label='Move all left'
-						title='Remove all'
+						aria-label={t('transfer.removeAll')}
+						title={t('transfer.removeAll')}
 					>
 						<AllToAvailableIcon />
 					</Button>
@@ -121,8 +123,8 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 						size='icon'
 						onClick={pm.moveSelectedLeft}
 						disabled={!pm.hasSelectionLeft}
-						aria-label='Move selected left'
-						title='Remove selected'
+						aria-label={t('transfer.removeSelected')}
+						title={t('transfer.removeSelected')}
 					>
 						<ToAvailableIcon />
 					</Button>
@@ -130,7 +132,7 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 
 				<TransferPanel
 					side='assigned'
-					title={labels?.assigned ?? 'Assigned'}
+					title={labels?.assigned ?? t('transfer.assigned')}
 					items={pm.visibleAssigned}
 					columns={assignedColumns}
 					getRowId={getRowId}
@@ -148,7 +150,7 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 			<DragOverlay>
 				{pm.activeId ? (
 					<div className='bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm shadow-lg'>
-						Move {pm.dragCount} {pm.dragCount > 1 ? 'rows' : 'row'}
+						{t('transfer.dragCount', { count: pm.dragCount })}
 					</div>
 				) : null}
 			</DragOverlay>

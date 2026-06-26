@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { getProfiles } from '@/api/profiles'
@@ -10,6 +11,7 @@ import { usePermissions } from '@/hooks/use-permissions'
 
 export function useUserProfilesPM(userId: string) {
 	const queryClient = useQueryClient()
+	const { t } = useTranslation('admin')
 	const { can } = usePermissions()
 	const { user } = useAuth()
 
@@ -42,7 +44,7 @@ export function useUserProfilesPM(userId: string) {
 	const save = useMutation({
 		mutationFn: () => setUserProfiles(userId, assignedIds),
 		onSuccess: async () => {
-			toast.success('Profiles updated.')
+			toast.success(t('users.profiles.toast.updated'))
 			await queryClient.invalidateQueries({
 				queryKey: ['user-profiles', userId],
 			})
@@ -56,7 +58,7 @@ export function useUserProfilesPM(userId: string) {
 		onError: (err) => {
 			toast.error(
 				(isAxiosError(err) && err.response?.data?.message) ||
-					'Could not update the profiles.',
+					t('users.profiles.toast.error'),
 			)
 		},
 	})

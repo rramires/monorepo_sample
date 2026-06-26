@@ -1,0 +1,64 @@
+{
+	"modules": {
+		"gym": {
+			"name": "Gym",
+			"description": "Dashboard, gyms and check-ins."
+		},
+		"access-control": {
+			"name": "Access Control",
+			"description": "Modules, screens, profiles, users."
+		}
+	},
+	"screens": {
+		"gym.dashboard": {
+			"name": "Dashboard",
+			"description": "Activity at a glance."
+		},
+		"gym.gyms": {
+			"name": "Gyms",
+			"description": "Browse and manage gyms."
+		},
+		"gym.check-ins": {
+			"name": "Check-ins",
+			"description": "Check in to a gym and validate members."
+		},
+		"access-control.modules": {
+			"name": "Manage Modules",
+			"description": "Group screens into modules."
+		},
+		"access-control.screens": {
+			"name": "Manage Screens",
+			"description": "Screens and their permissions."
+		},
+		"access-control.profiles": {
+			"name": "Manage Profiles",
+			"description": "Bundle permissions into profiles."
+		},
+		"access-control.users": {
+			"name": "Manage Users",
+			"description": "Users and their profiles."
+		}
+	},
+	"actions": {
+		"view": "View",
+		"create": "Add",
+		"edit": "Edit",
+		"delete": "Remove",
+		"create_checkin": "Check in",
+		"edit_validate": "Validate"
+	},
+	"profiles": {
+		"gym-member": {
+			"name": "Gym Member",
+			"description": "Default profile granted on registration."
+		},
+		"gym-manager": {
+			"name": "Gym Manager",
+			"description": "Runs a gym: manages gyms and validates check-ins."
+		},
+		"support": {
+			"name": "Support",
+			"description": "Back-office: administers profiles and user access."
+		}
+	}
+}

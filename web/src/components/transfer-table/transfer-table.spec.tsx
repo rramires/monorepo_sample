@@ -41,7 +41,7 @@ describe('TransferTable', () => {
 	it('moves all rows right with the move-all button', () => {
 		renderWithProviders(<Harness />)
 
-		fireEvent.click(screen.getByLabelText('Move all right'))
+		fireEvent.click(screen.getByLabelText('Move all'))
 
 		expect(screen.getByTestId('assigned')).toHaveTextContent('1,2,3')
 	})
@@ -53,7 +53,7 @@ describe('TransferTable', () => {
 		const bravoRow = screen.getByText('Bravo').closest('tr')!
 		fireEvent.click(within(bravoRow).getByLabelText('Select row'))
 
-		fireEvent.click(screen.getByLabelText('Move selected right'))
+		fireEvent.click(screen.getByLabelText('Move selected'))
 
 		expect(screen.getByTestId('assigned')).toHaveTextContent('2')
 	})
@@ -62,7 +62,7 @@ describe('TransferTable', () => {
 		renderWithProviders(<Harness initial={['1', '2']} />)
 		expect(screen.getByTestId('assigned')).toHaveTextContent('1,2')
 
-		fireEvent.click(screen.getByLabelText('Move all left'))
+		fireEvent.click(screen.getByLabelText('Remove all'))
 
 		expect(screen.getByTestId('assigned')).toHaveTextContent('')
 	})

@@ -1,4 +1,5 @@
 import { Pencil } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { PageHeader } from '@/components/page-header'
@@ -16,93 +17,107 @@ import { useUsersPM } from './use-users-pm'
 
 type UserRow = ReturnType<typeof useUsersPM>['rows'][number]
 
-function roleBadge(row: UserRow) {
-	return (
+export function AdminUsers() {
+	const pm = useUsersPM()
+	const { t } = useTranslation(['admin', 'common'])
+
+	const roleBadge = (row: UserRow) => (
 		<Badge variant={row.role === 'ADMIN' ? 'default' : 'secondary'}>
-			{row.role === 'ADMIN' ? 'Admin' : 'Member'}
+			{row.role === 'ADMIN'
+				? t('common:roles.admin')
+				: t('common:roles.member')}
 		</Badge>
 	)
-}
 
-function statusBadges(row: UserRow) {
-	return (
+	const statusBadges = (row: UserRow) => (
 		<>
 			<Badge variant={row.verified ? 'default' : 'outline'}>
-				{row.verified ? 'Verified' : 'Unverified'}
+				{row.verified ? t('users.verified') : t('users.unverified')}
 			</Badge>
-			{!row.active && <Badge variant='destructive'>Inactive</Badge>}
+			{!row.active && (
+				<Badge variant='destructive'>
+					{t('common:status.inactive')}
+				</Badge>
+			)}
 		</>
 	)
-}
 
-function editButton(row: UserRow) {
-	return (
+	const editButton = (row: UserRow) => (
 		<Button asChild variant='outline' size='sm' className='w-16 lg:w-auto'>
-			<Link to={`/admin/users/${row.id}`} aria-label='Edit'>
+			<Link
+				to={`/admin/users/${row.id}`}
+				aria-label={t('common:actions.edit')}
+			>
 				<Pencil />
 			</Link>
 		</Button>
 	)
-}
 
-const columns: ResponsiveListColumn<UserRow>[] = [
-	{
-		key: 'username',
-		header: 'Username',
-		cell: (row) => row.username,
-		className: 'font-medium',
-		card: 'top',
-	},
-	{ key: 'email', header: 'Email', cell: (row) => row.email, card: 'top' },
-	{ key: 'role', header: 'Role', cell: roleBadge, card: 'top' },
-	{
-		key: 'status',
-		header: 'Status',
-		cell: statusBadges,
-		className: 'space-x-1',
-		card: 'bottom',
-	},
-	{
-		key: 'created',
-		header: 'Created',
-		cell: (row) => row.created,
-		className: 'text-muted-foreground',
-		card: 'bottom',
-	},
-	{
-		key: 'actions',
-		header: 'Actions',
-		cell: editButton,
-		className: 'text-right',
-		headClassName: 'text-right',
-		card: 'actions',
-	},
-]
-
-export function AdminUsers() {
-	const pm = useUsersPM()
+	const columns: ResponsiveListColumn<UserRow>[] = [
+		{
+			key: 'username',
+			header: t('users.columns.username'),
+			cell: (row) => row.username,
+			className: 'font-medium',
+			card: 'top',
+		},
+		{
+			key: 'email',
+			header: t('users.columns.email'),
+			cell: (row) => row.email,
+			card: 'top',
+		},
+		{
+			key: 'role',
+			header: t('users.columns.role'),
+			cell: roleBadge,
+			card: 'top',
+		},
+		{
+			key: 'status',
+			header: t('users.columns.status'),
+			cell: statusBadges,
+			className: 'space-x-1',
+			card: 'bottom',
+		},
+		{
+			key: 'created',
+			header: t('users.columns.created'),
+			cell: (row) => row.created,
+			className: 'text-muted-foreground',
+			card: 'bottom',
+		},
+		{
+			key: 'actions',
+			header: t('users.columns.actions'),
+			cell: editButton,
+			className: 'text-right',
+			headClassName: 'text-right',
+			card: 'actions',
+		},
+	]
 
 	return (
 		<>
-			<PageTitle title='Users' />
+			<PageTitle title={t('users.pageTitle')} />
 
 			<div className='flex flex-1 flex-col gap-3 px-8 pt-5 pb-8'>
 				<PageHeader
-					title='Users'
-					description='Manage member and admin accounts.'
+					title={t('users.title')}
+					description={t('users.description')}
 				/>
 
 				<Card>
 					<CardContent>
 						{pm.status === 'loading' && (
 							<p className='text-muted-foreground text-sm'>
-								Loading…
+								{t('users.loading')}
 							</p>
 						)}
 
 						{pm.status === 'empty' && (
 							<p className='text-muted-foreground text-sm'>
-								No users found.
+								{t('users.empty')}
 							</p>
 						)}
 

@@ -1,4 +1,5 @@
 import { ArrowLeft, LoaderCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
@@ -25,6 +26,7 @@ import { type ScreenRow, useProfileDetailPM } from './use-profile-detail-pm'
 
 export function ProfileDetail() {
 	const pm = useProfileDetailPM()
+	const { t } = useTranslation(['admin', 'common'])
 
 	if (pm.isLoading) {
 		return (
@@ -38,12 +40,12 @@ export function ProfileDetail() {
 		return (
 			<div className='flex flex-1 flex-col gap-4 p-4 sm:p-8'>
 				<p className='text-muted-foreground text-sm'>
-					Profile not found.
+					{t('profiles.detail.notFound')}
 				</p>
 				<Button asChild variant='outline' className='w-fit'>
 					<Link to='/admin/profiles'>
 						<ArrowLeft />
-						Back to profiles
+						{t('profiles.detail.back')}
 					</Link>
 				</Button>
 			</div>
@@ -52,7 +54,7 @@ export function ProfileDetail() {
 
 	const nameColumn: TransferColumn<ScreenRow> = {
 		key: 'name',
-		header: 'Screen',
+		header: t('profiles.detail.columns.screen'),
 		cell: (s) => (
 			<div className='flex flex-col'>
 				<span className='flex items-center gap-2 font-medium'>
@@ -60,7 +62,11 @@ export function ProfileDetail() {
 					<span className={cn(!s.isActive && 'opacity-50')}>
 						{s.name}
 					</span>
-					{!s.isActive && <Badge variant='outline'>Disabled</Badge>}
+					{!s.isActive && (
+						<Badge variant='outline'>
+							{t('profiles.detail.disabled')}
+						</Badge>
+					)}
 				</span>
 				<span
 					className={cn(
@@ -76,7 +82,7 @@ export function ProfileDetail() {
 
 	const moduleColumn: TransferColumn<ScreenRow> = {
 		key: 'module',
-		header: 'Module',
+		header: t('profiles.detail.columns.module'),
 		cell: (s) => (
 			<span
 				className={cn(
@@ -99,7 +105,7 @@ export function ProfileDetail() {
 		moduleColumn,
 		{
 			key: 'permissions',
-			header: 'Permissions',
+			header: t('profiles.detail.columns.permissions'),
 			className: 'min-w-56',
 			cell: (s: ScreenRow) => {
 				const options = (pm.permsByScreen.get(s.id) ?? []).map((p) => ({
@@ -114,7 +120,7 @@ export function ProfileDetail() {
 								!s.isActive && 'opacity-50',
 							)}
 						>
-							No permissions defined.
+							{t('profiles.detail.noPermissionsDefined')}
 						</span>
 					)
 				}
@@ -125,16 +131,18 @@ export function ProfileDetail() {
 						onChange={(ids) => pm.setScreenPermissions(s.id, ids)}
 						// A disabled screen is on its way out — lock its permissions.
 						disabled={!pm.canEdit || !s.isActive}
-						placeholder='No permissions'
-						searchPlaceholder='Search permissions…'
-						emptyText='No permissions.'
+						placeholder={t('profiles.detail.noPermissions')}
+						searchPlaceholder={t(
+							'profiles.detail.searchPermissions',
+						)}
+						emptyText={t('profiles.detail.noPermissionsEmpty')}
 					/>
 				)
 			},
 		},
 		{
 			key: 'landing',
-			header: 'Landing',
+			header: t('profiles.detail.columns.landing'),
 			className: 'text-center',
 			cell: (s: ScreenRow) => (
 				<Checkbox
@@ -144,7 +152,9 @@ export function ProfileDetail() {
 					disabled={
 						!pm.canEdit || !pm.isViewable(s.id) || !s.isActive
 					}
-					aria-label={`${s.key} landing`}
+					aria-label={t('profiles.detail.landingAria', {
+						key: s.key,
+					})}
 				/>
 			),
 		},
@@ -152,13 +162,20 @@ export function ProfileDetail() {
 
 	return (
 		<>
-			<PageTitle title={`Profile · ${pm.profile.name}`} />
+			<PageTitle
+				title={t('profiles.detail.pageTitle', {
+					name: pm.profile.name,
+				})}
+			/>
 
 			<div className='flex flex-1 flex-col gap-6 px-8 pt-5 pb-8'>
 				<PageHeader
 					leading={
 						<Button asChild variant='ghost' size='icon'>
-							<Link to='/admin/profiles' aria-label='Back'>
+							<Link
+								to='/admin/profiles'
+								aria-label={t('common:actions.back')}
+							>
 								<ArrowLeft />
 							</Link>
 						</Button>
@@ -167,7 +184,9 @@ export function ProfileDetail() {
 						<span className='flex items-center gap-2'>
 							{pm.profile.name}
 							{pm.profile.isSystem && (
-								<Badge variant='outline'>System</Badge>
+								<Badge variant='outline'>
+									{t('common:status.system')}
+								</Badge>
 							)}
 						</span>
 					}
@@ -179,7 +198,7 @@ export function ProfileDetail() {
 				>
 					{pm.canEdit && (
 						<Button onClick={pm.save} disabled={pm.isSaving}>
-							Save changes
+							{t('profiles.detail.save')}
 						</Button>
 					)}
 				</PageHeader>
@@ -188,7 +207,9 @@ export function ProfileDetail() {
 					<CardContent className='flex flex-col gap-4'>
 						<div className='grid gap-4 lg:grid-cols-2'>
 							<div className='grid gap-2'>
-								<Label htmlFor='profile-name'>Name</Label>
+								<Label htmlFor='profile-name'>
+									{t('profiles.detail.nameLabel')}
+								</Label>
 								<Input
 									id='profile-name'
 									autoFocus
@@ -199,7 +220,7 @@ export function ProfileDetail() {
 							</div>
 							<div className='grid gap-2'>
 								<Label htmlFor='profile-description'>
-									Description
+									{t('profiles.detail.descriptionLabel')}
 								</Label>
 								<Input
 									id='profile-description'
@@ -214,17 +235,21 @@ export function ProfileDetail() {
 
 						<div className='flex items-center justify-between gap-4 border-t pt-4'>
 							<div>
-								<Label>Default profile</Label>
+								<Label>
+									{t('profiles.detail.defaultLabel')}
+								</Label>
 								<p className='text-muted-foreground text-xs'>
 									{pm.profile.isDefault
-										? 'This is the default profile. Enable Default on another profile to move it.'
-										: 'Auto-attached to users on registration.'}
+										? t(
+												'profiles.detail.defaultHintCurrent',
+											)
+										: t('profiles.detail.defaultHint')}
 								</p>
 							</div>
 							<Switch
 								checked={pm.isDefault}
 								onCheckedChange={pm.setIsDefault}
-								aria-label='Default profile'
+								aria-label={t('profiles.detail.defaultLabel')}
 								// The current default can't be switched off (it
 								// would leave zero); promote another profile.
 								disabled={!pm.canEdit || pm.profile.isDefault}
@@ -233,17 +258,17 @@ export function ProfileDetail() {
 
 						<div className='flex items-center justify-between gap-4 border-t pt-4'>
 							<div>
-								<Label>Active</Label>
+								<Label>
+									{t('profiles.detail.activeLabel')}
+								</Label>
 								<p className='text-muted-foreground text-xs'>
-									Inactive profiles are hidden when assigning
-									profiles to users; existing assignments keep
-									working.
+									{t('profiles.detail.activeHint')}
 								</p>
 							</div>
 							<Switch
 								checked={pm.isActive}
 								onCheckedChange={pm.setIsActive}
-								aria-label='Active'
+								aria-label={t('profiles.detail.activeLabel')}
 								disabled={!pm.canEdit}
 							/>
 						</div>
@@ -252,10 +277,11 @@ export function ProfileDetail() {
 
 				<Card>
 					<CardHeader>
-						<CardTitle>Screen grants</CardTitle>
+						<CardTitle>
+							{t('profiles.detail.grantsTitle')}
+						</CardTitle>
 						<CardDescription>
-							Move screens to "Granted", pick each screen's
-							permissions, and choose one landing screen.
+							{t('profiles.detail.grantsDescription')}
 						</CardDescription>
 					</CardHeader>
 					<CardContent className='flex flex-col gap-6'>
@@ -265,15 +291,19 @@ export function ProfileDetail() {
 						<div className='flex flex-col gap-3 lg:flex-row'>
 							<div className='flex min-w-0 flex-1 flex-col gap-1.5'>
 								<Label className='text-muted-foreground text-xs'>
-									Filter available by module
+									{t('profiles.detail.filterByModule')}
 								</Label>
 								<MultiSelect
 									options={pm.moduleOptions}
 									selected={pm.moduleFilter}
 									onChange={pm.setModuleFilter}
-									placeholder='All modules'
-									searchPlaceholder='Search modules…'
-									emptyText='No modules.'
+									placeholder={t(
+										'profiles.detail.allModules',
+									)}
+									searchPlaceholder={t(
+										'profiles.detail.searchModules',
+									)}
+									emptyText={t('profiles.detail.noModules')}
 								/>
 							</div>
 							<div className='hidden w-8 lg:block' aria-hidden />
@@ -291,8 +321,10 @@ export function ProfileDetail() {
 							availableColumns={availableColumns}
 							assignedColumns={assignedColumns}
 							labels={{
-								available: 'Available screens',
-								assigned: 'Granted',
+								available: t(
+									'profiles.detail.availableScreens',
+								),
+								assigned: t('profiles.detail.granted'),
 							}}
 							searchable
 							getSearchText={(s) =>
@@ -304,23 +336,35 @@ export function ProfileDetail() {
 
 				<ConfirmDialog
 					{...pm.confirmDefault}
-					title='Replace default profile'
-					description={`The current default profile is: ${pm.currentDefaultName}. Do you confirm that you want to replace it as the default?`}
-					confirmLabel='Replace'
+					title={t('profiles.detail.confirmDefault.title')}
+					description={t(
+						'profiles.detail.confirmDefault.description',
+						{ name: pm.currentDefaultName ?? '' },
+					)}
+					confirmLabel={t(
+						'profiles.detail.confirmDefault.confirmLabel',
+					)}
 				/>
 
 				<ConfirmDialog
 					{...pm.confirmRemoveDisabled}
-					title='Remove disabled screen'
-					description="This screen is disabled — if you remove it you can't re-add it until it's re-enabled. Remove?"
-					confirmLabel='Remove'
+					title={t('profiles.detail.confirmRemove.title')}
+					description={t('profiles.detail.confirmRemove.description')}
+					confirmLabel={t(
+						'profiles.detail.confirmRemove.confirmLabel',
+					)}
 				/>
 
 				<ConfirmDialog
 					{...pm.confirmDeactivate}
-					title='Deactivate profile'
-					description={`Deactivate "${pm.profile.name}"? It will be hidden when assigning profiles to users; existing assignments keep working.`}
-					confirmLabel='Deactivate'
+					title={t('profiles.detail.confirmDeactivate.title')}
+					description={t(
+						'profiles.detail.confirmDeactivate.description',
+						{ name: pm.profile.name },
+					)}
+					confirmLabel={t(
+						'profiles.detail.confirmDeactivate.confirmLabel',
+					)}
 				/>
 			</div>
 		</>
