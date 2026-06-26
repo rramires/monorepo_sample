@@ -253,7 +253,7 @@ test('a disabled screen is marked in a profile and confirms on removal', async (
 
 	// Removing it (one-way) prompts a confirm first.
 	await grantedRow.getByRole('checkbox', { name: 'Select row' }).check()
-	await page.getByRole('button', { name: 'Move selected left' }).click()
+	await page.getByRole('button', { name: 'Remove selected' }).click()
 	await expect(page.getByText('Remove disabled screen')).toBeVisible()
 
 	await waitForUIInspection(page)

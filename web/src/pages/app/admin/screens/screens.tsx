@@ -1,4 +1,5 @@
 import { ClipboardPen, Pencil, Plus, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { PageHeader } from '@/components/page-header'
@@ -17,20 +18,25 @@ import { useScreensPM } from './use-screens-pm'
 
 type ScreenRow = ReturnType<typeof useScreensPM>['rows'][number]
 
-function nameWithFlag(screen: ScreenRow) {
-	return (
-		<>
-			{screen.name}
-			{screen.isSystem && <Badge variant='outline'>System</Badge>}
-			{!screen.isActive && <Badge variant='outline'>Inactive</Badge>}
-			{/* Killed by the emergency switch (Screen.is_enabled = off). */}
-			{!screen.isEnabled && <Badge variant='destructive'>Off</Badge>}
-		</>
-	)
-}
-
 export function AdminScreens() {
 	const pm = useScreensPM()
+	const { t } = useTranslation(['admin', 'common'])
+
+	const nameWithFlag = (screen: ScreenRow) => (
+		<>
+			{screen.name}
+			{screen.isSystem && (
+				<Badge variant='outline'>{t('common:status.system')}</Badge>
+			)}
+			{!screen.isActive && (
+				<Badge variant='outline'>{t('common:status.inactive')}</Badge>
+			)}
+			{/* Killed by the emergency switch (Screen.is_enabled = off). */}
+			{!screen.isEnabled && (
+				<Badge variant='destructive'>{t('common:status.off')}</Badge>
+			)}
+		</>
+	)
 
 	const actions = (screen: ScreenRow) => (
 		<>
@@ -42,7 +48,9 @@ export function AdminScreens() {
 							variant='outline'
 							size='sm'
 							className='w-16 lg:w-auto'
-							aria-label={`Edit ${screen.name} permissions`}
+							aria-label={t('screens.editPermissionsAria', {
+								name: screen.name,
+							})}
 						>
 							<ClipboardPen />
 						</Button>
@@ -66,9 +74,11 @@ export function AdminScreens() {
 			)}
 			{pm.canDelete && !screen.isSystem && (
 				<ConfirmDialog
-					title='Delete screen'
-					description={`Delete "${screen.name}"? Only screens not assigned to any profile can be deleted.`}
-					confirmLabel='Delete'
+					title={t('screens.delete.title')}
+					description={t('screens.delete.description', {
+						name: screen.name,
+					})}
+					confirmLabel={t('screens.delete.confirmLabel')}
 					onConfirm={() => pm.deleteScreen(screen.id)}
 					trigger={
 						<Button
@@ -87,34 +97,34 @@ export function AdminScreens() {
 	const columns: ResponsiveListColumn<ScreenRow>[] = [
 		{
 			key: 'module',
-			header: 'Module',
+			header: t('screens.columns.module'),
 			cell: (screen) => pm.moduleName(screen.moduleId),
 			card: 'bottom',
 		},
 		{
 			key: 'key',
-			header: 'Key',
+			header: t('screens.columns.key'),
 			cell: (screen) => screen.key,
 			className: 'font-mono text-xs',
 			card: 'top',
 		},
 		{
 			key: 'name',
-			header: 'Name',
+			header: t('screens.columns.name'),
 			cell: nameWithFlag,
 			className: 'space-x-1 font-medium',
 			card: 'top',
 		},
 		{
 			key: 'path',
-			header: 'Path',
+			header: t('screens.columns.path'),
 			cell: (screen) => screen.path,
 			className: 'text-muted-foreground font-mono text-xs',
 			card: 'top',
 		},
 		{
 			key: 'actions',
-			header: 'Actions',
+			header: t('screens.columns.actions'),
 			cell: actions,
 			className: 'space-x-2 text-right',
 			headClassName: 'text-right',
@@ -124,12 +134,12 @@ export function AdminScreens() {
 
 	return (
 		<>
-			<PageTitle title='Manage Screens' />
+			<PageTitle title={t('screens.pageTitle')} />
 
 			<div className='flex flex-1 flex-col gap-3 px-8 pt-5 pb-8'>
 				<PageHeader
-					title='Screens'
-					description='Screens are what access grants attach to.'
+					title={t('screens.title')}
+					description={t('screens.description')}
 				>
 					{pm.canCreate && (
 						<ScreenDialog
@@ -137,7 +147,7 @@ export function AdminScreens() {
 							trigger={
 								<Button size='sm'>
 									<Plus />
-									New screen
+									{t('screens.new')}
 								</Button>
 							}
 						/>
@@ -148,7 +158,7 @@ export function AdminScreens() {
 					<CardContent>
 						{pm.isLoading ? (
 							<p className='text-muted-foreground text-sm'>
-								Loading…
+								{t('common:states.loading')}
 							</p>
 						) : (
 							<ResponsiveList
@@ -157,7 +167,7 @@ export function AdminScreens() {
 								getRowKey={(screen) => String(screen.id)}
 								empty={
 									<p className='text-muted-foreground text-sm'>
-										No screens found.
+										{t('screens.empty')}
 									</p>
 								}
 							/>

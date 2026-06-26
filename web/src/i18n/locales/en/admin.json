@@ -188,5 +188,107 @@
 			"saved": "Profile saved.",
 			"saveError": "Could not save the profile."
 		}
+	},
+	"screens": {
+		"pageTitle": "Manage Screens",
+		"title": "Screens",
+		"description": "Screens are what access grants attach to.",
+		"new": "New screen",
+		"empty": "No screens found.",
+		"editPermissionsAria": "Edit {{name}} permissions",
+		"columns": {
+			"module": "Module",
+			"key": "Key",
+			"name": "Name",
+			"path": "Path",
+			"actions": "Actions"
+		},
+		"delete": {
+			"title": "Delete screen",
+			"description": "Delete \"{{name}}\"? Only screens not assigned to any profile can be deleted.",
+			"confirmLabel": "Delete"
+		},
+		"dialog": {
+			"editTitle": "Edit screen",
+			"newTitle": "New screen",
+			"description": "A screen is the unit access grants attach to.",
+			"lockedHint": "System screen — module, key and path are locked; only name, description and order can change.",
+			"moduleLabel": "Module",
+			"moduleRequired": "Module is required.",
+			"selectModule": "Select a module",
+			"keyLabel": "Key",
+			"nameLabel": "Name",
+			"pathLabel": "Path",
+			"descriptionLabel": "Description",
+			"orderLabel": "Order",
+			"activeLabel": "Active",
+			"activeHint": "Inactive screens are hidden from the \"add\" pickers; existing assignments keep working.",
+			"onLabel": "On",
+			"onHint": "Emergency kill switch — turning this off blocks the screen for everyone (except admins) right away.",
+			"save": "Save changes",
+			"create": "Create screen",
+			"confirmDeactivate": {
+				"title": "Deactivate screen",
+				"description": "Deactivate \"{{name}}\"? It will be hidden from the add pickers; current assignments keep working until removed.",
+				"confirmLabel": "Deactivate"
+			},
+			"confirmKill": {
+				"title": "Turn screen off",
+				"description": "Turn \"{{name}}\" off? It stops working immediately for everyone except admins.",
+				"confirmLabel": "Turn off"
+			}
+		},
+		"toast": {
+			"created": "Screen created.",
+			"updated": "Screen updated.",
+			"deleted": "Screen deleted.",
+			"saveError": "Could not save the screen.",
+			"deleteError": "Could not delete the screen."
+		},
+		"permissions": {
+			"title": "Permissions — {{name}}",
+			"description": "Curate the operations this screen offers and give each a friendly label.",
+			"operationLabel": "Operation",
+			"opPlaceholder": "Op",
+			"other": "Other…",
+			"labelLabel": "Label",
+			"labelPlaceholder": "e.g. Check in",
+			"addAria": "Add permission",
+			"familyLabel": "Family",
+			"familyPlaceholder": "Family",
+			"nameLabel": "Name",
+			"namePlaceholder": "check_in",
+			"keyNameAria": "Key name",
+			"empty": "No permissions yet — add one above.",
+			"labelAria": "{{action}} label",
+			"saveDialog": {
+				"title": "Save permission",
+				"description": "Save changes to this permission?",
+				"confirmLabel": "Save"
+			},
+			"saveAria": "Save permission",
+			"cancelAria": "Cancel",
+			"editAria": "Edit {{label}}",
+			"delete": {
+				"title": "Delete permission",
+				"description": "Delete \"{{label}}\"? Profiles that granted it keep working only if it isn't in use.",
+				"confirmLabel": "Delete"
+			},
+			"deleteAria": "Delete {{label}}",
+			"actions": {
+				"view": "View",
+				"create": "Create",
+				"edit": "Edit",
+				"delete": "Delete"
+			},
+			"toast": {
+				"added": "Permission added.",
+				"addError": "Could not add the permission.",
+				"saved": "Permission saved.",
+				"saveError": "Could not save the permission.",
+				"deleted": "Permission deleted.",
+				"deleteError": "Could not delete the permission."
+			}
+		}
 	}
 }

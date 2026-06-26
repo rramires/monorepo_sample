@@ -9,6 +9,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import {
@@ -18,25 +19,21 @@ import {
 	updatePermission,
 } from '@/api/permissions'
 
-// The four CRUD families + how the op Select labels them (distinct from the
-// user's friendly grant label, which is free text). A screen's action can also be
-// a composed key (`create_checkin`) — see `opBadge` for how those render.
+// The four CRUD families that the op Select offers (distinct from the user's
+// friendly grant label, which is free text). A screen's action can also be a
+// composed key (`create_checkin`) — see `opBadge` for how those render.
 export const ALL_ACTIONS: readonly PermissionFamily[] = PERMISSION_FAMILIES
-export const ACTION_LABEL: Record<PermissionFamily, string> = {
-	view: 'View',
-	create: 'Create',
-	edit: 'Edit',
-	delete: 'Delete',
-}
 
-// The badge text for a permission's action key: a bare family shows its friendly
-// op label (`create` → "Create"); a composed key shows the raw key
-// (`create_checkin`) so its extra-op nature is visible at a glance.
-export function opBadge(action: string): string {
+// The badge text for a permission's action key: a bare family shows its
+// localized op label (`create` → "Create"); a composed key shows the raw key
+// (`create_checkin`) so its extra-op nature is visible at a glance. `label`
+// resolves a family to its localized name (from the `admin` namespace).
+export function opBadge(
+	action: string,
+	label: (family: PermissionFamily) => string,
+): string {
 	const family = actionFamily(action)
-	return action === family
-		? (ACTION_LABEL[family as PermissionFamily] ?? action)
-		: action
+	return action === family ? label(family as PermissionFamily) : action
 }
 
 function message(err: unknown, fallback: string): string {
@@ -49,6 +46,7 @@ function message(err: unknown, fallback: string): string {
 // query stays idle until the dialog opens.
 export function usePermissionsEditorPM(screenId: string) {
 	const queryClient = useQueryClient()
+	const { t } = useTranslation('admin')
 
 	const [open, setOpen] = useState(false)
 
@@ -103,7 +101,7 @@ export function usePermissionsEditorPM(screenId: string) {
 				label: newLabel.trim(),
 			}),
 		onSuccess: async () => {
-			toast.success('Permission added.')
+			toast.success(t('screens.permissions.toast.added'))
 			setOp('')
 			setNewFamily('')
 			setNewName('')
@@ -111,30 +109,32 @@ export function usePermissionsEditorPM(screenId: string) {
 			await invalidate()
 		},
 		onError: (err) =>
-			toast.error(message(err, 'Could not add the permission.')),
+			toast.error(message(err, t('screens.permissions.toast.addError'))),
 	})
 
 	const rename = useMutation({
 		mutationFn: ({ id, label }: { id: string; label: string }) =>
 			updatePermission(id, { label: label.trim() }),
 		onSuccess: async () => {
-			toast.success('Permission saved.')
+			toast.success(t('screens.permissions.toast.saved'))
 			setEditingId(null)
 			setDraftLabel('')
 			await invalidate()
 		},
 		onError: (err) =>
-			toast.error(message(err, 'Could not save the permission.')),
+			toast.error(message(err, t('screens.permissions.toast.saveError'))),
 	})
 
 	const remove = useMutation({
 		mutationFn: (id: string) => deletePermission(id),
 		onSuccess: async () => {
-			toast.success('Permission deleted.')
+			toast.success(t('screens.permissions.toast.deleted'))
 			await invalidate()
 		},
 		onError: (err) =>
-			toast.error(message(err, 'Could not delete the permission.')),
+			toast.error(
+				message(err, t('screens.permissions.toast.deleteError')),
+			),
 	})
 
 	function startEdit(id: string, label: string) {

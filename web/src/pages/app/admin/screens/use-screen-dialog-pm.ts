@@ -1,8 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useState } from 'react'
+import type { TFunction } from 'i18next'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -10,20 +12,21 @@ import type { ModuleModel } from '@/api/modules'
 import { createScreen, type ScreenModel, updateScreen } from '@/api/screens'
 import { useConfirmDeactivate } from '@/hooks/use-confirm-deactivate'
 
-const screenForm = z.object({
-	module_id: z.string().min(1, 'Module is required.'),
-	key: z.string().min(1, 'Key is required.'),
-	name: z.string().min(1, 'Name is required.'),
-	path: z.string(),
-	description: z.string(),
-	order: z
-		.number({ message: 'Order must be a number.' })
-		.int('Order must be an integer.'),
-	// Lifecycle (disable) + kill switch (On) — only editable, default true.
-	is_active: z.boolean(),
-	is_enabled: z.boolean(),
-})
-type ScreenForm = z.infer<typeof screenForm>
+const makeScreenForm = (t: TFunction<'admin'>) =>
+	z.object({
+		module_id: z.string().min(1, t('screens.dialog.moduleRequired')),
+		key: z.string().min(1, t('fields.keyRequired')),
+		name: z.string().min(1, t('fields.nameRequired')),
+		path: z.string(),
+		description: z.string(),
+		order: z
+			.number({ message: t('fields.orderNumber') })
+			.int(t('fields.orderInteger')),
+		// Lifecycle (disable) + kill switch (On) — only editable, default true.
+		is_active: z.boolean(),
+		is_enabled: z.boolean(),
+	})
+type ScreenForm = z.infer<ReturnType<typeof makeScreenForm>>
 
 function defaults(screen?: ScreenModel): ScreenForm {
 	return {
@@ -43,6 +46,7 @@ export function useScreenDialogPM(
 	modules: ModuleModel[],
 ) {
 	const queryClient = useQueryClient()
+	const { t, i18n } = useTranslation('admin')
 	const [open, setOpen] = useState(false)
 	const editing = !!screen
 	// A system screen's identity (module/key/path) is locked; the backend
@@ -66,7 +70,11 @@ export function useScreenDialogPM(
 		control,
 		formState: { errors, isSubmitting },
 	} = useForm<ScreenForm>({
-		resolver: zodResolver(screenForm),
+		resolver: useMemo(
+			() => zodResolver(makeScreenForm(t)),
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+			[i18n.language],
+		),
 		defaultValues: defaults(screen),
 	})
 
@@ -101,7 +109,11 @@ export function useScreenDialogPM(
 			})
 		},
 		onSuccess: async () => {
-			toast.success(editing ? 'Screen updated.' : 'Screen created.')
+			toast.success(
+				editing
+					? t('screens.toast.updated')
+					: t('screens.toast.created'),
+			)
 			// Lifecycle/kill changes can shift the menu + guards for everyone.
 			await queryClient.invalidateQueries({ queryKey: ['screens'] })
 			await queryClient.invalidateQueries({
@@ -112,7 +124,7 @@ export function useScreenDialogPM(
 		onError: (err) => {
 			toast.error(
 				(isAxiosError(err) && err.response?.data?.message) ||
-					'Could not save the screen.',
+					t('screens.toast.saveError'),
 			)
 		},
 	})

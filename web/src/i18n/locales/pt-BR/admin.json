@@ -188,5 +188,107 @@
 			"saved": "Perfil salvo.",
 			"saveError": "Não foi possível salvar o perfil."
 		}
+	},
+	"screens": {
+		"pageTitle": "Gerenciar Telas",
+		"title": "Telas",
+		"description": "As telas são o que as permissões de acesso se vinculam.",
+		"new": "Nova tela",
+		"empty": "Nenhuma tela encontrada.",
+		"editPermissionsAria": "Editar permissões de {{name}}",
+		"columns": {
+			"module": "Módulo",
+			"key": "Chave",
+			"name": "Nome",
+			"path": "Caminho",
+			"actions": "Ações"
+		},
+		"delete": {
+			"title": "Excluir tela",
+			"description": "Excluir \"{{name}}\"? Só é possível excluir telas não atribuídas a nenhum perfil.",
+			"confirmLabel": "Excluir"
+		},
+		"dialog": {
+			"editTitle": "Editar tela",
+			"newTitle": "Nova tela",
+			"description": "Uma tela é a unidade à qual as permissões de acesso se vinculam.",
+			"lockedHint": "Tela de sistema — módulo, chave e caminho ficam travados; só nome, descrição e ordem podem mudar.",
+			"moduleLabel": "Módulo",
+			"moduleRequired": "O módulo é obrigatório.",
+			"selectModule": "Selecione um módulo",
+			"keyLabel": "Chave",
+			"nameLabel": "Nome",
+			"pathLabel": "Caminho",
+			"descriptionLabel": "Descrição",
+			"orderLabel": "Ordem",
+			"activeLabel": "Ativa",
+			"activeHint": "Telas inativas ficam ocultas nos seletores de \"adicionar\"; as atribuições existentes continuam funcionando.",
+			"onLabel": "Ligada",
+			"onHint": "Interruptor de emergência — desligar bloqueia a tela para todos (exceto administradores) imediatamente.",
+			"save": "Salvar alterações",
+			"create": "Criar tela",
+			"confirmDeactivate": {
+				"title": "Desativar tela",
+				"description": "Desativar \"{{name}}\"? Ela ficará oculta nos seletores de adicionar; as atribuições atuais continuam funcionando até serem removidas.",
+				"confirmLabel": "Desativar"
+			},
+			"confirmKill": {
+				"title": "Desligar tela",
+				"description": "Desligar \"{{name}}\"? Ela para de funcionar imediatamente para todos, exceto administradores.",
+				"confirmLabel": "Desligar"
+			}
+		},
+		"toast": {
+			"created": "Tela criada.",
+			"updated": "Tela atualizada.",
+			"deleted": "Tela excluída.",
+			"saveError": "Não foi possível salvar a tela.",
+			"deleteError": "Não foi possível excluir a tela."
+		},
+		"permissions": {
+			"title": "Permissões — {{name}}",
+			"description": "Selecione as operações que esta tela oferece e dê um rótulo amigável a cada uma.",
+			"operationLabel": "Operação",
+			"opPlaceholder": "Op",
+			"other": "Outra…",
+			"labelLabel": "Rótulo",
+			"labelPlaceholder": "ex.: Check-in",
+			"addAria": "Adicionar permissão",
+			"familyLabel": "Família",
+			"familyPlaceholder": "Família",
+			"nameLabel": "Nome",
+			"namePlaceholder": "check_in",
+			"keyNameAria": "Nome da chave",
+			"empty": "Nenhuma permissão ainda — adicione uma acima.",
+			"labelAria": "Rótulo de {{action}}",
+			"saveDialog": {
+				"title": "Salvar permissão",
+				"description": "Salvar as alterações desta permissão?",
+				"confirmLabel": "Salvar"
+			},
+			"saveAria": "Salvar permissão",
+			"cancelAria": "Cancelar",
+			"editAria": "Editar {{label}}",
+			"delete": {
+				"title": "Excluir permissão",
+				"description": "Excluir \"{{label}}\"? Os perfis que a concederam continuam funcionando apenas se ela não estiver em uso.",
+				"confirmLabel": "Excluir"
+			},
+			"deleteAria": "Excluir {{label}}",
+			"actions": {
+				"view": "Ver",
+				"create": "Criar",
+				"edit": "Editar",
+				"delete": "Excluir"
+			},
+			"toast": {
+				"added": "Permissão adicionada.",
+				"addError": "Não foi possível adicionar a permissão.",
+				"saved": "Permissão salva.",
+				"saveError": "Não foi possível salvar a permissão.",
+				"deleted": "Permissão excluída.",
+				"deleteError": "Não foi possível excluir a permissão."
+			}
+		}
 	}
 }

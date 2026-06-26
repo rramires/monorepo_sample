@@ -1,6 +1,7 @@
 import { PERMISSION_FAMILIES, type PermissionFamily } from '@root/contracts'
 import { Check, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { ScreenModel } from '@/api/screens'
 import { ConfirmDialog } from '@/components/confirm-dialog'
@@ -24,11 +25,7 @@ import {
 	SelectValue,
 } from '@/components/ui/select'
 
-import {
-	ACTION_LABEL,
-	opBadge,
-	usePermissionsEditorPM,
-} from './use-permissions-editor-pm'
+import { opBadge, usePermissionsEditorPM } from './use-permissions-editor-pm'
 
 // Todo-style permission editor for one screen: add a curated op + friendly
 // label, rename a row (unlock → confirm), delete a non-system row (confirm).
@@ -40,16 +37,20 @@ export function PermissionsEditor({
 	trigger: ReactNode
 }) {
 	const pm = usePermissionsEditorPM(screen.id)
+	const { t } = useTranslation(['admin', 'common'])
+	const familyLabel = (f: PermissionFamily) =>
+		t(`screens.permissions.actions.${f}`)
 
 	return (
 		<Dialog open={pm.open} onOpenChange={pm.setOpen}>
 			<DialogTrigger asChild>{trigger}</DialogTrigger>
 			<DialogContent className='sm:max-w-lg'>
 				<DialogHeader>
-					<DialogTitle>Permissions — {screen.name}</DialogTitle>
+					<DialogTitle>
+						{t('screens.permissions.title', { name: screen.name })}
+					</DialogTitle>
 					<DialogDescription>
-						Curate the operations this screen offers and give each a
-						friendly label.
+						{t('screens.permissions.description')}
 					</DialogDescription>
 				</DialogHeader>
 
@@ -58,7 +59,7 @@ export function PermissionsEditor({
 					<div className='flex items-end gap-2'>
 						<div className='grid gap-1.5'>
 							<Label className='text-muted-foreground text-xs'>
-								Operation
+								{t('screens.permissions.operationLabel')}
 							</Label>
 							<Select
 								value={pm.op}
@@ -67,34 +68,40 @@ export function PermissionsEditor({
 								}
 							>
 								<SelectTrigger className='w-32'>
-									<SelectValue placeholder='Op' />
+									<SelectValue
+										placeholder={t(
+											'screens.permissions.opPlaceholder',
+										)}
+									/>
 								</SelectTrigger>
 								<SelectContent>
 									{pm.availableFamilies.map((a) => (
 										<SelectItem key={a} value={a}>
-											{ACTION_LABEL[a]}
+											{familyLabel(a)}
 										</SelectItem>
 									))}
 									<SelectItem value='other'>
-										Other…
+										{t('screens.permissions.other')}
 									</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
 						<div className='grid flex-1 gap-1.5'>
 							<Label className='text-muted-foreground text-xs'>
-								Label
+								{t('screens.permissions.labelLabel')}
 							</Label>
 							<Input
 								value={pm.newLabel}
 								onChange={(e) => pm.setNewLabel(e.target.value)}
-								placeholder='e.g. Check in'
+								placeholder={t(
+									'screens.permissions.labelPlaceholder',
+								)}
 							/>
 						</div>
 						<Button
 							onClick={pm.add}
 							disabled={!pm.canAdd || pm.isAdding}
-							aria-label='Add permission'
+							aria-label={t('screens.permissions.addAria')}
 						>
 							<Plus />
 						</Button>
@@ -105,7 +112,7 @@ export function PermissionsEditor({
 						<div className='flex items-end gap-2'>
 							<div className='grid gap-1.5'>
 								<Label className='text-muted-foreground text-xs'>
-									Family
+									{t('screens.permissions.familyLabel')}
 								</Label>
 								<Select
 									value={pm.newFamily}
@@ -114,12 +121,16 @@ export function PermissionsEditor({
 									}
 								>
 									<SelectTrigger className='w-32'>
-										<SelectValue placeholder='Family' />
+										<SelectValue
+											placeholder={t(
+												'screens.permissions.familyPlaceholder',
+											)}
+										/>
 									</SelectTrigger>
 									<SelectContent>
 										{PERMISSION_FAMILIES.map((f) => (
 											<SelectItem key={f} value={f}>
-												{ACTION_LABEL[f]}
+												{familyLabel(f)}
 											</SelectItem>
 										))}
 									</SelectContent>
@@ -127,15 +138,19 @@ export function PermissionsEditor({
 							</div>
 							<div className='grid flex-1 gap-1.5'>
 								<Label className='text-muted-foreground text-xs'>
-									Name
+									{t('screens.permissions.nameLabel')}
 								</Label>
 								<Input
 									value={pm.newName}
 									onChange={(e) =>
 										pm.setNewName(e.target.value)
 									}
-									placeholder='check_in'
-									aria-label='Key name'
+									placeholder={t(
+										'screens.permissions.namePlaceholder',
+									)}
+									aria-label={t(
+										'screens.permissions.keyNameAria',
+									)}
 								/>
 							</div>
 						</div>
@@ -151,11 +166,11 @@ export function PermissionsEditor({
 				<div className='flex flex-col gap-2'>
 					{pm.isLoading ? (
 						<p className='text-muted-foreground text-sm'>
-							Loading…
+							{t('common:states.loading')}
 						</p>
 					) : pm.permissions.length === 0 ? (
 						<p className='text-muted-foreground text-sm'>
-							No permissions yet — add one above.
+							{t('screens.permissions.empty')}
 						</p>
 					) : (
 						pm.permissions.map((perm) => (
@@ -167,7 +182,7 @@ export function PermissionsEditor({
 									variant='secondary'
 									className='justify-center'
 								>
-									{opBadge(perm.action)}
+									{opBadge(perm.action, familyLabel)}
 								</Badge>
 
 								{pm.editingId === perm.id ? (
@@ -179,12 +194,21 @@ export function PermissionsEditor({
 											}
 											autoFocus
 											className='flex-1'
-											aria-label={`${perm.action} label`}
+											aria-label={t(
+												'screens.permissions.labelAria',
+												{ action: perm.action },
+											)}
 										/>
 										<ConfirmDialog
-											title='Save permission'
-											description='Save changes to this permission?'
-											confirmLabel='Save'
+											title={t(
+												'screens.permissions.saveDialog.title',
+											)}
+											description={t(
+												'screens.permissions.saveDialog.description',
+											)}
+											confirmLabel={t(
+												'screens.permissions.saveDialog.confirmLabel',
+											)}
 											onConfirm={() =>
 												pm.saveEdit(perm.id)
 											}
@@ -196,7 +220,9 @@ export function PermissionsEditor({
 														!pm.draftLabel.trim() ||
 														pm.isSaving
 													}
-													aria-label='Save permission'
+													aria-label={t(
+														'screens.permissions.saveAria',
+													)}
 												>
 													<Check />
 												</Button>
@@ -206,7 +232,9 @@ export function PermissionsEditor({
 											size='icon'
 											variant='ghost'
 											onClick={pm.cancelEdit}
-											aria-label='Cancel'
+											aria-label={t(
+												'screens.permissions.cancelAria',
+											)}
 										>
 											<X />
 										</Button>
@@ -217,7 +245,7 @@ export function PermissionsEditor({
 											{perm.label}
 											{perm.isSystem && (
 												<Badge variant='outline'>
-													System
+													{t('common:status.system')}
 												</Badge>
 											)}
 										</span>
@@ -230,16 +258,26 @@ export function PermissionsEditor({
 													perm.label,
 												)
 											}
-											aria-label={`Edit ${perm.label}`}
+											aria-label={t(
+												'screens.permissions.editAria',
+												{ label: perm.label },
+											)}
 										>
 											<Pencil />
 										</Button>
 										{/* System permissions are protected from deletion. */}
 										{!perm.isSystem && (
 											<ConfirmDialog
-												title='Delete permission'
-												description={`Delete "${perm.label}"? Profiles that granted it keep working only if it isn't in use.`}
-												confirmLabel='Delete'
+												title={t(
+													'screens.permissions.delete.title',
+												)}
+												description={t(
+													'screens.permissions.delete.description',
+													{ label: perm.label },
+												)}
+												confirmLabel={t(
+													'screens.permissions.delete.confirmLabel',
+												)}
 												onConfirm={() =>
 													pm.remove(perm.id)
 												}
@@ -247,7 +285,12 @@ export function PermissionsEditor({
 													<Button
 														size='icon'
 														variant='ghost'
-														aria-label={`Delete ${perm.label}`}
+														aria-label={t(
+															'screens.permissions.deleteAria',
+															{
+																label: perm.label,
+															},
+														)}
 													>
 														<Trash2 />
 													</Button>
