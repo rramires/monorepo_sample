@@ -1,4 +1,5 @@
 import { Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { PageTitle } from '@/components/title/page-title'
@@ -22,20 +23,22 @@ import { useForgotPasswordPM } from './use-forgot-password-pm'
 
 export function ForgotPassword() {
 	const pm = useForgotPasswordPM()
+	const { t } = useTranslation('auth')
 
 	return (
 		<>
-			<PageTitle title='Forgot password' />
+			<PageTitle title={t('forgotPassword.pageTitle')} />
 
 			<div className='flex flex-1 items-center justify-center p-4 sm:p-8'>
 				<Card className='w-full max-w-sm'>
 					{pm.step === 'request' ? (
 						<>
 							<CardHeader>
-								<CardTitle>Forgot your password?</CardTitle>
+								<CardTitle>
+									{t('forgotPassword.request.title')}
+								</CardTitle>
 								<CardDescription>
-									Enter your email and we'll send a reset
-									code.
+									{t('forgotPassword.request.description')}
 								</CardDescription>
 							</CardHeader>
 
@@ -43,12 +46,18 @@ export function ForgotPassword() {
 								<form onSubmit={pm.handleRequest}>
 									<div className='flex flex-col gap-6'>
 										<div className='grid gap-2'>
-											<Label htmlFor='email'>Email</Label>
+											<Label htmlFor='email'>
+												{t(
+													'forgotPassword.request.emailLabel',
+												)}
+											</Label>
 											<Input
 												id='email'
 												type='email'
 												autoFocus
-												placeholder='m@example.com'
+												placeholder={t(
+													'forgotPassword.request.emailPlaceholder',
+												)}
 												{...pm.register('email')}
 											/>
 											{pm.errors.email && (
@@ -63,7 +72,7 @@ export function ForgotPassword() {
 											disabled={pm.isSubmitting}
 											className='w-full'
 										>
-											Send reset code
+											{t('forgotPassword.request.submit')}
 										</Button>
 									</div>
 								</form>
@@ -72,10 +81,13 @@ export function ForgotPassword() {
 					) : (
 						<>
 							<CardHeader>
-								<CardTitle>Reset your password</CardTitle>
+								<CardTitle>
+									{t('forgotPassword.reset.title')}
+								</CardTitle>
 								<CardDescription>
-									Enter the code sent to {pm.email} and your
-									new password.
+									{t('forgotPassword.reset.description', {
+										email: pm.email,
+									})}
 								</CardDescription>
 							</CardHeader>
 
@@ -84,7 +96,9 @@ export function ForgotPassword() {
 									<div className='flex flex-col gap-6'>
 										<div className='grid gap-2'>
 											<Label htmlFor='code'>
-												Verification code
+												{t(
+													'forgotPassword.reset.codeLabel',
+												)}
 											</Label>
 											<Controller
 												control={pm.resetControl}
@@ -135,7 +149,9 @@ export function ForgotPassword() {
 
 										<div className='grid gap-2'>
 											<Label htmlFor='password'>
-												New password
+												{t(
+													'forgotPassword.reset.newPasswordLabel',
+												)}
 											</Label>
 											<Input
 												id='password'
@@ -156,7 +172,9 @@ export function ForgotPassword() {
 
 										<div className='grid gap-2'>
 											<Label htmlFor='confirmPassword'>
-												Confirm password
+												{t(
+													'forgotPassword.reset.confirmPasswordLabel',
+												)}
 											</Label>
 											<Input
 												id='confirmPassword'
@@ -181,7 +199,7 @@ export function ForgotPassword() {
 											disabled={pm.resetIsSubmitting}
 											className='w-full'
 										>
-											Reset password
+											{t('forgotPassword.reset.submit')}
 										</Button>
 
 										<button
@@ -189,7 +207,9 @@ export function ForgotPassword() {
 											onClick={pm.backToRequest}
 											className='text-muted-foreground text-sm underline-offset-4 hover:underline'
 										>
-											Use a different email
+											{t(
+												'forgotPassword.reset.differentEmail',
+											)}
 										</button>
 									</div>
 								</form>
@@ -202,7 +222,7 @@ export function ForgotPassword() {
 							to='/sign-in'
 							className='underline-offset-4 hover:underline'
 						>
-							Back to login
+							{t('forgotPassword.backToLogin')}
 						</Link>
 					</div>
 				</Card>

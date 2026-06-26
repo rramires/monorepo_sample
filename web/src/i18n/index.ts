@@ -2,7 +2,9 @@ import i18n from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
+import enAuth from './locales/en/auth.json'
 import enCommon from './locales/en/common.json'
+import ptBRAuth from './locales/pt-BR/auth.json'
 import ptBRCommon from './locales/pt-BR/common.json'
 import { setZodLocale } from './zod-locale'
 
@@ -19,8 +21,8 @@ export function normalizeLocale(lng?: string | null): AppLocale {
 }
 
 export const resources = {
-	en: { common: enCommon },
-	'pt-BR': { common: ptBRCommon },
+	en: { common: enCommon, auth: enAuth },
+	'pt-BR': { common: ptBRCommon, auth: ptBRAuth },
 } as const
 
 i18n.use(LanguageDetector)
@@ -30,7 +32,7 @@ i18n.use(LanguageDetector)
 		fallbackLng: FALLBACK_LOCALE,
 		supportedLngs: SUPPORTED_LOCALES,
 		defaultNS: DEFAULT_NS,
-		ns: [DEFAULT_NS],
+		ns: [DEFAULT_NS, 'auth'],
 		interpolation: {
 			// React already escapes; double-escaping mangles names with markup.
 			escapeValue: false,

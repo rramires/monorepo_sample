@@ -2,8 +2,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { makePasswordSchema } from '@root/contracts'
 import { useMutation } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useState } from 'react'
+import type { TFunction } from 'i18next'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -14,34 +16,40 @@ import { env } from '@/env'
 
 const passwordMin = env.VITE_PASSWORD_MIN_LENGTH
 
-// Shared password shape (@root/contracts) + this app's env policy + UX messages.
-const password = makePasswordSchema({
-	min: passwordMin,
-	pattern: new RegExp(env.VITE_PASSWORD_PATTERN),
-	message: env.VITE_PASSWORD_MESSAGE,
-	minMessage: `Minimum of ${passwordMin} characters.`,
-	maxMessage: 'Maximum of 72 characters.',
-})
-
-const requestForm = z.object({
-	email: z.email('Enter a valid email.'),
-})
-type RequestForm = z.infer<typeof requestForm>
-
-const resetForm = z
-	.object({
-		code: z.string().length(6, 'Enter the 6-digit code.'),
-		password,
-		confirmPassword: z.string(),
+// Shared password shape (@root/contracts) + env policy + localized messages.
+// The pattern message stays env-driven (deployment policy text); length messages
+// are localized.
+const makePassword = (t: TFunction<'auth'>) =>
+	makePasswordSchema({
+		min: passwordMin,
+		pattern: new RegExp(env.VITE_PASSWORD_PATTERN),
+		message: env.VITE_PASSWORD_MESSAGE,
+		minMessage: t('errors.minChars', { count: passwordMin }),
+		maxMessage: t('errors.maxChars', { count: 72 }),
 	})
-	.refine((data) => data.password === data.confirmPassword, {
-		message: 'Passwords do not match.',
-		path: ['confirmPassword'],
+
+const makeRequestForm = (t: TFunction<'auth'>) =>
+	z.object({
+		email: z.email(t('errors.email')),
 	})
-type ResetForm = z.infer<typeof resetForm>
+type RequestForm = z.infer<ReturnType<typeof makeRequestForm>>
+
+const makeResetForm = (t: TFunction<'auth'>) =>
+	z
+		.object({
+			code: z.string().length(6, t('errors.codeLength')),
+			password: makePassword(t),
+			confirmPassword: z.string(),
+		})
+		.refine((data) => data.password === data.confirmPassword, {
+			message: t('errors.passwordsMismatch'),
+			path: ['confirmPassword'],
+		})
+type ResetForm = z.infer<ReturnType<typeof makeResetForm>>
 
 export function useForgotPasswordPM() {
 	const navigate = useNavigate()
+	const { t, i18n } = useTranslation('auth')
 	const [step, setStep] = useState<'request' | 'reset'>('request')
 	const [email, setEmail] = useState('')
 
@@ -49,14 +57,26 @@ export function useForgotPasswordPM() {
 		register,
 		handleSubmit: submitRequest,
 		formState: { errors, isSubmitting },
-	} = useForm<RequestForm>({ resolver: zodResolver(requestForm) })
+	} = useForm<RequestForm>({
+		resolver: useMemo(
+			() => zodResolver(makeRequestForm(t)),
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+			[i18n.language],
+		),
+	})
 
 	const {
 		register: resetRegister,
 		control: resetControl,
 		handleSubmit: submitReset,
 		formState: { errors: resetErrors, isSubmitting: resetIsSubmitting },
-	} = useForm<ResetForm>({ resolver: zodResolver(resetForm) })
+	} = useForm<ResetForm>({
+		resolver: useMemo(
+			() => zodResolver(makeResetForm(t)),
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+			[i18n.language],
+		),
+	})
 
 	const { mutateAsync: requestReset } = useMutation({
 		mutationFn: forgotPassword,
@@ -70,15 +90,13 @@ export function useForgotPasswordPM() {
 			await requestReset({ email: data.email })
 			setEmail(data.email)
 			setStep('reset')
-			toast.success(
-				'If the email exists, a code was sent. Check the backend console (dev).',
-			)
+			toast.success(t('forgotPassword.toast.requestSuccess'))
 		} catch (err) {
 			if (isAxiosError(err) && err.response?.status === 429) {
-				toast.error('Too many attempts. Please wait a moment.')
+				toast.error(t('forgotPassword.toast.tooManyAttempts'))
 				return
 			}
-			toast.error('Could not start password reset.')
+			toast.error(t('forgotPassword.toast.requestError'))
 		}
 	}
 
@@ -89,16 +107,16 @@ export function useForgotPasswordPM() {
 				code: data.code,
 				newPassword: data.password,
 			})
-			toast.success('Password reset. You can sign in now.')
+			toast.success(t('forgotPassword.toast.resetSuccess'))
 			navigate('/sign-in')
 		} catch (err) {
 			if (isAxiosError(err) && err.response?.status === 429) {
-				toast.error('Too many attempts. Please wait a moment.')
+				toast.error(t('forgotPassword.toast.tooManyAttempts'))
 				return
 			}
 			const message =
 				(isAxiosError(err) && err.response?.data?.message) ||
-				'Could not reset password.'
+				t('forgotPassword.toast.resetError')
 			toast.error(message)
 		}
 	}

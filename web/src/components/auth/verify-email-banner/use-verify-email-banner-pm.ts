@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { sendVerification } from '@/api/send-verification'
@@ -9,6 +10,7 @@ import { useAuth } from '@/components/auth/auth-hooks'
 
 export function useVerifyEmailBannerPM() {
 	const auth = useAuth()
+	const { t } = useTranslation('auth')
 	const [open, setOpen] = useState(false)
 	const [code, setCode] = useState('')
 
@@ -22,21 +24,21 @@ export function useVerifyEmailBannerPM() {
 	async function handleSendCode() {
 		try {
 			await send()
-			toast.success(
-				'Verification code sent. Check the backend console (dev).',
-			)
+			toast.success(t('verifyEmailBanner.toast.codeSent'))
 			setOpen(true)
 		} catch (err) {
 			if (isAxiosError(err) && err.response?.status === 429) {
 				const retryAfter = err.response.data?.retryAfter
 				toast.error(
 					retryAfter
-						? `Please wait ${retryAfter}s before requesting a new code.`
-						: 'Please wait before requesting a new code.',
+						? t('verifyEmailBanner.toast.retryAfter', {
+								seconds: retryAfter,
+							})
+						: t('verifyEmailBanner.toast.retryGeneric'),
 				)
 				return
 			}
-			toast.error('Could not send the verification code.')
+			toast.error(t('verifyEmailBanner.toast.sendError'))
 		}
 	}
 
@@ -44,13 +46,13 @@ export function useVerifyEmailBannerPM() {
 		try {
 			await verify({ code })
 			await auth.reloadUser()
-			toast.success('Email verified.')
+			toast.success(t('verifyEmailBanner.toast.verified'))
 			setOpen(false)
 			setCode('')
 		} catch (err) {
 			const message =
 				(isAxiosError(err) && err.response?.data?.message) ||
-				'Invalid or expired code.'
+				t('verifyEmailBanner.toast.invalidCode')
 			toast.error(message)
 		}
 	}

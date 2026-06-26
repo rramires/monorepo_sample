@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { PageTitle } from '@/components/title/page-title'
@@ -16,19 +17,20 @@ import { useResetPasswordPM } from './use-reset-password-pm'
 
 export function ResetPassword() {
 	const pm = useResetPasswordPM()
+	const { t } = useTranslation('auth')
 
 	return (
 		<>
-			<PageTitle title='Reset password' />
+			<PageTitle title={t('resetPassword.pageTitle')} />
 
 			<div className='flex flex-1 items-center justify-center p-4 sm:p-8'>
 				<Card className='w-full max-w-sm'>
 					<CardHeader>
-						<CardTitle>Reset your password</CardTitle>
+						<CardTitle>{t('resetPassword.title')}</CardTitle>
 						<CardDescription>
 							{pm.hasToken
-								? 'Choose a new password for your account.'
-								: 'This reset link is invalid or incomplete.'}
+								? t('resetPassword.descriptionHasToken')
+								: t('resetPassword.descriptionNoToken')}
 						</CardDescription>
 					</CardHeader>
 
@@ -38,7 +40,9 @@ export function ResetPassword() {
 								<div className='flex flex-col gap-6'>
 									<div className='grid gap-2'>
 										<Label htmlFor='password'>
-											New password
+											{t(
+												'resetPassword.newPasswordLabel',
+											)}
 										</Label>
 										<Input
 											id='password'
@@ -54,7 +58,9 @@ export function ResetPassword() {
 
 									<div className='grid gap-2'>
 										<Label htmlFor='confirmPassword'>
-											Confirm password
+											{t(
+												'resetPassword.confirmPasswordLabel',
+											)}
 										</Label>
 										<Input
 											id='confirmPassword'
@@ -76,14 +82,14 @@ export function ResetPassword() {
 										disabled={pm.isSubmitting}
 										className='w-full'
 									>
-										Reset password
+										{t('resetPassword.submit')}
 									</Button>
 								</div>
 							</form>
 						) : (
 							<Button asChild className='w-full'>
 								<Link to='/forgot-password'>
-									Request a new link
+									{t('resetPassword.requestNewLink')}
 								</Link>
 							</Button>
 						)}

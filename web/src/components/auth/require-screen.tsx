@@ -1,4 +1,5 @@
 import { LoaderCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Outlet } from 'react-router'
 
 import { type ScreenAction } from '@/hooks/use-permissions'
@@ -19,6 +20,7 @@ export function RequireScreen({
 	action?: ScreenAction
 }) {
 	const pm = useRequireScreenPM(screen, action)
+	const { t } = useTranslation('auth')
 
 	return (
 		<>
@@ -30,15 +32,15 @@ export function RequireScreen({
 
 			{pm.status === 'no-access' && (
 				<Forbidden
-					title='403 — No access'
-					message="You don't have access to this screen yet."
+					title={t('forbidden.noAccessTitle')}
+					message={t('forbidden.noAccessMessage')}
 				/>
 			)}
 
 			{pm.status === 'disabled' && (
 				<Forbidden
-					title='Temporarily unavailable'
-					message='This screen is temporarily unavailable.'
+					title={t('forbidden.unavailableTitle')}
+					message={t('forbidden.unavailableMessage')}
 				/>
 			)}
 
