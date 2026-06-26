@@ -51,5 +51,55 @@
 				"error": "Não foi possível atualizar os perfis."
 			}
 		}
+	},
+	"fields": {
+		"keyRequired": "A chave é obrigatória.",
+		"nameRequired": "O nome é obrigatório.",
+		"pathRequired": "O caminho é obrigatório.",
+		"orderNumber": "A ordem deve ser um número.",
+		"orderInteger": "A ordem deve ser um número inteiro."
+	},
+	"modules": {
+		"pageTitle": "Gerenciar Módulos",
+		"title": "Módulos",
+		"description": "Módulos agrupam telas relacionadas.",
+		"new": "Novo módulo",
+		"empty": "Nenhum módulo encontrado.",
+		"columns": {
+			"key": "Chave",
+			"name": "Nome",
+			"order": "Ordem",
+			"description": "Descrição",
+			"actions": "Ações"
+		},
+		"delete": {
+			"title": "Excluir módulo",
+			"description": "Excluir \"{{name}}\"? As telas precisam ser removidas primeiro.",
+			"confirmLabel": "Excluir"
+		},
+		"dialog": {
+			"editTitle": "Editar módulo",
+			"newTitle": "Novo módulo",
+			"description": "Um módulo agrupa telas relacionadas (ex.: \"gym\").",
+			"lockedHint": "Módulo de sistema — a chave fica travada; nome, descrição e ordem podem mudar.",
+			"keyLabel": "Chave",
+			"nameLabel": "Nome",
+			"descriptionLabel": "Descrição",
+			"orderLabel": "Ordem",
+			"activeLabel": "Ativo",
+			"activeHint": "Módulos inativos ficam ocultos ao escolher telas; as telas existentes continuam funcionando.",
+			"save": "Salvar alterações",
+			"create": "Criar módulo",
+			"confirmTitle": "Desativar módulo",
+			"confirmDescription": "Desativar \"{{name}}\"? Ele ficará oculto ao escolher telas; as telas existentes continuam funcionando.",
+			"confirmLabel": "Desativar"
+		},
+		"toast": {
+			"created": "Módulo criado.",
+			"updated": "Módulo atualizado.",
+			"deleted": "Módulo excluído.",
+			"saveError": "Não foi possível salvar o módulo.",
+			"deleteError": "Não foi possível excluir o módulo."
+		}
 	}
 }

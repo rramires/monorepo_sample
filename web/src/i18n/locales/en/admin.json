@@ -51,5 +51,55 @@
 				"error": "Could not update the profiles."
 			}
 		}
+	},
+	"fields": {
+		"keyRequired": "Key is required.",
+		"nameRequired": "Name is required.",
+		"pathRequired": "Path is required.",
+		"orderNumber": "Order must be a number.",
+		"orderInteger": "Order must be an integer."
+	},
+	"modules": {
+		"pageTitle": "Manage Modules",
+		"title": "Modules",
+		"description": "Modules group related screens.",
+		"new": "New module",
+		"empty": "No modules found.",
+		"columns": {
+			"key": "Key",
+			"name": "Name",
+			"order": "Order",
+			"description": "Description",
+			"actions": "Actions"
+		},
+		"delete": {
+			"title": "Delete module",
+			"description": "Delete \"{{name}}\"? Screens must be removed first.",
+			"confirmLabel": "Delete"
+		},
+		"dialog": {
+			"editTitle": "Edit module",
+			"newTitle": "New module",
+			"description": "A module groups related screens (e.g. \"gym\").",
+			"lockedHint": "System module — the key is locked; name, description and order can change.",
+			"keyLabel": "Key",
+			"nameLabel": "Name",
+			"descriptionLabel": "Description",
+			"orderLabel": "Order",
+			"activeLabel": "Active",
+			"activeHint": "Inactive modules are hidden when targeting screens; existing screens keep working.",
+			"save": "Save changes",
+			"create": "Create module",
+			"confirmTitle": "Deactivate module",
+			"confirmDescription": "Deactivate \"{{name}}\"? It will be hidden when targeting screens; existing screens keep working.",
+			"confirmLabel": "Deactivate"
+		},
+		"toast": {
+			"created": "Module created.",
+			"updated": "Module updated.",
+			"deleted": "Module deleted.",
+			"saveError": "Could not save the module.",
+			"deleteError": "Could not delete the module."
+		}
 	}
 }

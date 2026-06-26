@@ -1,25 +1,28 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useState } from 'react'
+import type { TFunction } from 'i18next'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { createModule, type ModuleModel, updateModule } from '@/api/modules'
 import { useConfirmDeactivate } from '@/hooks/use-confirm-deactivate'
 
-const moduleForm = z.object({
-	key: z.string().min(1, 'Key is required.'),
-	name: z.string().min(1, 'Name is required.'),
-	description: z.string(),
-	order: z
-		.number({ message: 'Order must be a number.' })
-		.int('Order must be an integer.'),
-	// Lifecycle (disable) — editable only, default true.
-	is_active: z.boolean(),
-})
-type ModuleForm = z.infer<typeof moduleForm>
+const makeModuleForm = (t: TFunction<'admin'>) =>
+	z.object({
+		key: z.string().min(1, t('fields.keyRequired')),
+		name: z.string().min(1, t('fields.nameRequired')),
+		description: z.string(),
+		order: z
+			.number({ message: t('fields.orderNumber') })
+			.int(t('fields.orderInteger')),
+		// Lifecycle (disable) — editable only, default true.
+		is_active: z.boolean(),
+	})
+type ModuleForm = z.infer<ReturnType<typeof makeModuleForm>>
 
 function defaults(module?: ModuleModel): ModuleForm {
 	return {
@@ -33,6 +36,7 @@ function defaults(module?: ModuleModel): ModuleForm {
 
 export function useModuleDialogPM(module?: ModuleModel) {
 	const queryClient = useQueryClient()
+	const { t, i18n } = useTranslation('admin')
 	const [open, setOpen] = useState(false)
 	const editing = !!module
 	// A system module's key is locked; the backend rejects a rename with 409.
@@ -47,7 +51,11 @@ export function useModuleDialogPM(module?: ModuleModel) {
 		control,
 		formState: { errors, isSubmitting },
 	} = useForm<ModuleForm>({
-		resolver: zodResolver(moduleForm),
+		resolver: useMemo(
+			() => zodResolver(makeModuleForm(t)),
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+			[i18n.language],
+		),
 		defaultValues: defaults(module),
 	})
 
@@ -77,14 +85,18 @@ export function useModuleDialogPM(module?: ModuleModel) {
 			})
 		},
 		onSuccess: async () => {
-			toast.success(editing ? 'Module updated.' : 'Module created.')
+			toast.success(
+				editing
+					? t('modules.toast.updated')
+					: t('modules.toast.created'),
+			)
 			await queryClient.invalidateQueries({ queryKey: ['modules'] })
 			setOpen(false)
 		},
 		onError: (err) => {
 			toast.error(
 				(isAxiosError(err) && err.response?.data?.message) ||
-					'Could not save the module.',
+					t('modules.toast.saveError'),
 			)
 		},
 	})
