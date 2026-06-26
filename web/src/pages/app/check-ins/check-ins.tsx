@@ -1,4 +1,5 @@
 import { CircleCheck, Clock, LoaderCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { PageHeader } from '@/components/page-header'
 import { PageTitle } from '@/components/title/page-title'
@@ -10,27 +11,25 @@ import { useCheckInsPM } from './use-check-ins-pm'
 
 export function CheckIns() {
 	const pm = useCheckInsPM()
+	const { t } = useTranslation(['check-ins', 'common'])
 
 	return (
 		<>
-			<PageTitle title='Check-ins' />
+			<PageTitle title={t('pageTitle')} />
 
 			<div className='flex flex-1 flex-col gap-3 px-8 pt-5 pb-8'>
-				<PageHeader
-					title='Check-ins'
-					description='Your recent gym check-ins.'
-				/>
+				<PageHeader title={t('title')} description={t('description')} />
 
 				{pm.status === 'loading' && (
 					<div className='text-muted-foreground flex items-center gap-2 text-sm'>
 						<LoaderCircle className='size-4 animate-spin' />
-						Loading check-ins…
+						{t('loading')}
 					</div>
 				)}
 
 				{pm.status === 'empty' && (
 					<p className='text-muted-foreground text-sm'>
-						No check-ins yet — check in from the Gyms page.
+						{t('empty')}
 					</p>
 				)}
 
@@ -62,8 +61,8 @@ export function CheckIns() {
 											}
 										>
 											{item.validated
-												? 'Validated'
-												: 'Pending'}
+												? t('validated')
+												: t('pending')}
 										</Badge>
 
 										{pm.canValidate && !item.validated && (
@@ -80,7 +79,7 @@ export function CheckIns() {
 												{pm.validatingId === item.id ? (
 													<LoaderCircle className='size-4 animate-spin' />
 												) : null}
-												Validate
+												{t('validate')}
 											</Button>
 										)}
 									</div>
@@ -98,10 +97,10 @@ export function CheckIns() {
 							onClick={pm.prevPage}
 							disabled={!pm.hasPrevPage}
 						>
-							Previous
+							{t('common:pagination.previous')}
 						</Button>
 						<span className='text-muted-foreground text-sm'>
-							Page {pm.page}
+							{t('page', { page: pm.page })}
 						</span>
 						<Button
 							variant='outline'
@@ -109,7 +108,7 @@ export function CheckIns() {
 							onClick={pm.nextPage}
 							disabled={!pm.hasNextPage}
 						>
-							Next
+							{t('common:pagination.next')}
 						</Button>
 					</div>
 				)}

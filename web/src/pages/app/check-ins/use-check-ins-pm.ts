@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { getCheckInsHistory } from '@/api/get-check-ins-history'
@@ -23,6 +24,7 @@ export interface CheckInItem {
 
 export function useCheckInsPM() {
 	const { can } = usePermissions()
+	const { t } = useTranslation('check-ins')
 	const { dateLocale } = useLocale()
 	const queryClient = useQueryClient()
 	const [page, setPage] = useState(1)
@@ -35,13 +37,13 @@ export function useCheckInsPM() {
 	const validate = useMutation({
 		mutationFn: validateCheckIn,
 		onSuccess: () => {
-			toast.success('Check-in validated.')
+			toast.success(t('toast.validated'))
 			queryClient.invalidateQueries({ queryKey: ['check-ins'] })
 		},
 		onError: (err) => {
 			const message =
 				(isAxiosError(err) && err.response?.data?.message) ||
-				'Could not validate the check-in.'
+				t('toast.validateError')
 			toast.error(message)
 		},
 	})

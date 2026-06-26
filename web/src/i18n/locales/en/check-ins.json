@@ -1,0 +1,28 @@
+{
+	"pageTitle": "Check-ins",
+	"title": "Check-ins",
+	"description": "Your recent gym check-ins.",
+	"loading": "Loading check-ins…",
+	"empty": "No check-ins yet — check in from the Gyms page.",
+	"validated": "Validated",
+	"pending": "Pending",
+	"validate": "Validate",
+	"page": "Page {{page}}",
+	"toast": {
+		"validated": "Check-in validated.",
+		"validateError": "Could not validate the check-in.",
+		"checkedIn": "Checked in!",
+		"checkInError": "Could not check in.",
+		"locationError": "Could not get your location."
+	},
+	"dashboard": {
+		"pageTitle": "Dashboard",
+		"welcome": "Welcome back, {{name}}!",
+		"welcomeDescription": "Here's your recent gym activity.",
+		"totalCheckIns": "Total check-ins",
+		"recentActivity": "Recent activity",
+		"recentActivityDescription": "Check-ins over the last 7 days",
+		"loadingActivity": "Loading activity…",
+		"chartLabel": "Check-ins"
+	}
+}

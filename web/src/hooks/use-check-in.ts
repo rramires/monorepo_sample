@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { createCheckIn } from '@/api/create-check-in'
@@ -12,6 +13,7 @@ import { getCurrentPosition } from '@/lib/geolocation'
 // card's own button is the only one that shows a pending state.
 export function useCheckIn() {
 	const queryClient = useQueryClient()
+	const { t } = useTranslation('check-ins')
 	const [locating, setLocating] = useState(false)
 
 	const { mutateAsync, isPending } = useMutation({
@@ -24,7 +26,7 @@ export function useCheckIn() {
 		try {
 			position = await getCurrentPosition()
 		} catch {
-			toast.error('Could not get your location.')
+			toast.error(t('toast.locationError'))
 			return
 		} finally {
 			setLocating(false)
@@ -36,12 +38,12 @@ export function useCheckIn() {
 				latitude: position.latitude,
 				longitude: position.longitude,
 			})
-			toast.success('Checked in!')
+			toast.success(t('toast.checkedIn'))
 			await queryClient.invalidateQueries({ queryKey: ['check-ins'] })
 		} catch (err) {
 			const message =
 				(isAxiosError(err) && err.response?.data?.message) ||
-				'Could not check in.'
+				t('toast.checkInError')
 			toast.error(message)
 		}
 	}

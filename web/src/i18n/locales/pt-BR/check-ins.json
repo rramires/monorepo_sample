@@ -1,0 +1,28 @@
+{
+	"pageTitle": "Check-ins",
+	"title": "Check-ins",
+	"description": "Seus check-ins recentes na academia.",
+	"loading": "Carregando check-ins…",
+	"empty": "Nenhum check-in ainda — faça check-in na página de Academias.",
+	"validated": "Validado",
+	"pending": "Pendente",
+	"validate": "Validar",
+	"page": "Página {{page}}",
+	"toast": {
+		"validated": "Check-in validado.",
+		"validateError": "Não foi possível validar o check-in.",
+		"checkedIn": "Check-in realizado!",
+		"checkInError": "Não foi possível fazer check-in.",
+		"locationError": "Não foi possível obter sua localização."
+	},
+	"dashboard": {
+		"pageTitle": "Painel",
+		"welcome": "Bem-vindo de volta, {{name}}!",
+		"welcomeDescription": "Veja sua atividade recente na academia.",
+		"totalCheckIns": "Total de check-ins",
+		"recentActivity": "Atividade recente",
+		"recentActivityDescription": "Check-ins nos últimos 7 dias",
+		"loadingActivity": "Carregando atividade…",
+		"chartLabel": "Check-ins"
+	}
+}

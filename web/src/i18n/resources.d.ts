@@ -2,6 +2,7 @@ import 'i18next'
 
 import type enAccount from './locales/en/account.json'
 import type enAuth from './locales/en/auth.json'
+import type enCheckIns from './locales/en/check-ins.json'
 import type enCommon from './locales/en/common.json'
 
 /**
@@ -17,6 +18,7 @@ declare module 'i18next' {
 			common: typeof enCommon
 			auth: typeof enAuth
 			account: typeof enAccount
+			'check-ins': typeof enCheckIns
 		}
 	}
 }
