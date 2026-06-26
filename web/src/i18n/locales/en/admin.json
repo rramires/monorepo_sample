@@ -101,5 +101,92 @@
 			"saveError": "Could not save the module.",
 			"deleteError": "Could not delete the module."
 		}
+	},
+	"profiles": {
+		"pageTitle": "Manage Profiles",
+		"title": "Profiles",
+		"description": "A profile bundles screen grants assigned to users.",
+		"new": "New profile",
+		"empty": "No profiles found.",
+		"grants": "Grants",
+		"flags": { "default": "Default" },
+		"columns": {
+			"key": "Key",
+			"name": "Name",
+			"flags": "Flags",
+			"description": "Description",
+			"actions": "Actions"
+		},
+		"delete": {
+			"title": "Delete profile",
+			"description": "Delete \"{{name}}\"? Only profiles not assigned to any user can be deleted.",
+			"confirmLabel": "Delete"
+		},
+		"dialog": {
+			"title": "New profile",
+			"description": "A profile bundles screen grants you assign to users. Configure its grants after creating it.",
+			"keyLabel": "Key",
+			"nameLabel": "Name",
+			"descriptionLabel": "Description",
+			"defaultLabel": "Default profile",
+			"defaultHint": "Auto-attached to new registrations.",
+			"create": "Create profile"
+		},
+		"detail": {
+			"notFound": "Profile not found.",
+			"back": "Back to profiles",
+			"pageTitle": "Profile · {{name}}",
+			"nameLabel": "Name",
+			"descriptionLabel": "Description",
+			"defaultLabel": "Default profile",
+			"defaultHintCurrent": "This is the default profile. Enable Default on another profile to move it.",
+			"defaultHint": "Auto-attached to users on registration.",
+			"activeLabel": "Active",
+			"activeHint": "Inactive profiles are hidden when assigning profiles to users; existing assignments keep working.",
+			"grantsTitle": "Screen grants",
+			"grantsDescription": "Move screens to \"Granted\", pick each screen's permissions, and choose one landing screen.",
+			"filterByModule": "Filter available by module",
+			"allModules": "All modules",
+			"searchModules": "Search modules…",
+			"noModules": "No modules.",
+			"availableScreens": "Available screens",
+			"granted": "Granted",
+			"columns": {
+				"screen": "Screen",
+				"module": "Module",
+				"permissions": "Permissions",
+				"landing": "Landing"
+			},
+			"disabled": "Disabled",
+			"noPermissionsDefined": "No permissions defined.",
+			"noPermissions": "No permissions",
+			"searchPermissions": "Search permissions…",
+			"noPermissionsEmpty": "No permissions.",
+			"landingAria": "{{key}} landing",
+			"save": "Save changes",
+			"confirmDefault": {
+				"title": "Replace default profile",
+				"description": "The current default profile is: {{name}}. Do you confirm that you want to replace it as the default?",
+				"confirmLabel": "Replace"
+			},
+			"confirmRemove": {
+				"title": "Remove disabled screen",
+				"description": "This screen is disabled — if you remove it you can't re-add it until it's re-enabled. Remove?",
+				"confirmLabel": "Remove"
+			},
+			"confirmDeactivate": {
+				"title": "Deactivate profile",
+				"description": "Deactivate \"{{name}}\"? It will be hidden when assigning profiles to users; existing assignments keep working.",
+				"confirmLabel": "Deactivate"
+			}
+		},
+		"toast": {
+			"deleted": "Profile deleted.",
+			"deleteError": "Could not delete the profile.",
+			"created": "Profile created.",
+			"createError": "Could not create the profile.",
+			"saved": "Profile saved.",
+			"saveError": "Could not save the profile."
+		}
 	}
 }

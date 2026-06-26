@@ -101,5 +101,92 @@
 			"saveError": "Não foi possível salvar o módulo.",
 			"deleteError": "Não foi possível excluir o módulo."
 		}
+	},
+	"profiles": {
+		"pageTitle": "Gerenciar Perfis",
+		"title": "Perfis",
+		"description": "Um perfil reúne permissões de tela atribuídas aos usuários.",
+		"new": "Novo perfil",
+		"empty": "Nenhum perfil encontrado.",
+		"grants": "Permissões",
+		"flags": { "default": "Padrão" },
+		"columns": {
+			"key": "Chave",
+			"name": "Nome",
+			"flags": "Marcadores",
+			"description": "Descrição",
+			"actions": "Ações"
+		},
+		"delete": {
+			"title": "Excluir perfil",
+			"description": "Excluir \"{{name}}\"? Só é possível excluir perfis não atribuídos a nenhum usuário.",
+			"confirmLabel": "Excluir"
+		},
+		"dialog": {
+			"title": "Novo perfil",
+			"description": "Um perfil reúne permissões de tela que você atribui aos usuários. Configure as permissões após criá-lo.",
+			"keyLabel": "Chave",
+			"nameLabel": "Nome",
+			"descriptionLabel": "Descrição",
+			"defaultLabel": "Perfil padrão",
+			"defaultHint": "Anexado automaticamente a novos cadastros.",
+			"create": "Criar perfil"
+		},
+		"detail": {
+			"notFound": "Perfil não encontrado.",
+			"back": "Voltar para perfis",
+			"pageTitle": "Perfil · {{name}}",
+			"nameLabel": "Nome",
+			"descriptionLabel": "Descrição",
+			"defaultLabel": "Perfil padrão",
+			"defaultHintCurrent": "Este é o perfil padrão. Ative Padrão em outro perfil para movê-lo.",
+			"defaultHint": "Anexado automaticamente aos usuários no cadastro.",
+			"activeLabel": "Ativo",
+			"activeHint": "Perfis inativos ficam ocultos ao atribuir perfis aos usuários; as atribuições existentes continuam funcionando.",
+			"grantsTitle": "Permissões de tela",
+			"grantsDescription": "Mova telas para \"Concedidas\", escolha as permissões de cada tela e defina uma tela inicial.",
+			"filterByModule": "Filtrar disponíveis por módulo",
+			"allModules": "Todos os módulos",
+			"searchModules": "Buscar módulos…",
+			"noModules": "Nenhum módulo.",
+			"availableScreens": "Telas disponíveis",
+			"granted": "Concedidas",
+			"columns": {
+				"screen": "Tela",
+				"module": "Módulo",
+				"permissions": "Permissões",
+				"landing": "Inicial"
+			},
+			"disabled": "Desativada",
+			"noPermissionsDefined": "Nenhuma permissão definida.",
+			"noPermissions": "Sem permissões",
+			"searchPermissions": "Buscar permissões…",
+			"noPermissionsEmpty": "Nenhuma permissão.",
+			"landingAria": "{{key}} inicial",
+			"save": "Salvar alterações",
+			"confirmDefault": {
+				"title": "Substituir perfil padrão",
+				"description": "O perfil padrão atual é: {{name}}. Confirma que deseja substituí-lo como padrão?",
+				"confirmLabel": "Substituir"
+			},
+			"confirmRemove": {
+				"title": "Remover tela desativada",
+				"description": "Esta tela está desativada — se você removê-la, não poderá adicioná-la de novo até reativá-la. Remover?",
+				"confirmLabel": "Remover"
+			},
+			"confirmDeactivate": {
+				"title": "Desativar perfil",
+				"description": "Desativar \"{{name}}\"? Ele ficará oculto ao atribuir perfis aos usuários; as atribuições existentes continuam funcionando.",
+				"confirmLabel": "Desativar"
+			}
+		},
+		"toast": {
+			"deleted": "Perfil excluído.",
+			"deleteError": "Não foi possível excluir o perfil.",
+			"created": "Perfil criado.",
+			"createError": "Não foi possível criar o perfil.",
+			"saved": "Perfil salvo.",
+			"saveError": "Não foi possível salvar o perfil."
+		}
 	}
 }

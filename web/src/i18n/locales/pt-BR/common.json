@@ -52,6 +52,12 @@
 		"next": "Próxima página",
 		"last": "Última página"
 	},
+	"multiSelect": {
+		"select": "Selecionar…",
+		"search": "Buscar…",
+		"empty": "Nenhum resultado.",
+		"remove": "Remover {{label}}"
+	},
 	"transfer": {
 		"available": "Disponíveis",
 		"assigned": "Atribuídos",

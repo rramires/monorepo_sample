@@ -52,6 +52,12 @@
 		"next": "Next page",
 		"last": "Last page"
 	},
+	"multiSelect": {
+		"select": "Select…",
+		"search": "Search…",
+		"empty": "No results.",
+		"remove": "Remove {{label}}"
+	},
 	"transfer": {
 		"available": "Available",
 		"assigned": "Assigned",

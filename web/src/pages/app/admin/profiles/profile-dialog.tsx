@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import { Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -19,23 +20,23 @@ import { useProfileDialogPM } from './use-profile-dialog-pm'
 
 export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
 	const pm = useProfileDialogPM()
+	const { t } = useTranslation('admin')
 
 	return (
 		<Dialog open={pm.open} onOpenChange={pm.onOpenChange}>
 			<DialogTrigger asChild>{trigger}</DialogTrigger>
 			<DialogContent className='sm:max-w-md'>
 				<DialogHeader>
-					<DialogTitle>New profile</DialogTitle>
+					<DialogTitle>{t('profiles.dialog.title')}</DialogTitle>
 					<DialogDescription>
-						A profile bundles screen grants you assign to users.
-						Configure its grants after creating it.
+						{t('profiles.dialog.description')}
 					</DialogDescription>
 				</DialogHeader>
 
 				<form onSubmit={pm.onSubmit} noValidate>
 					<div className='flex flex-col gap-4'>
 						<div className='grid gap-2'>
-							<Label>Key</Label>
+							<Label>{t('profiles.dialog.keyLabel')}</Label>
 							<Input
 								{...pm.register('key')}
 								placeholder='gym-member'
@@ -47,7 +48,7 @@ export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
 							)}
 						</div>
 						<div className='grid gap-2'>
-							<Label>Name</Label>
+							<Label>{t('profiles.dialog.nameLabel')}</Label>
 							<Input {...pm.register('name')} />
 							{pm.errors.name && (
 								<p className='text-destructive text-sm'>
@@ -56,14 +57,18 @@ export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
 							)}
 						</div>
 						<div className='grid gap-2'>
-							<Label>Description</Label>
+							<Label>
+								{t('profiles.dialog.descriptionLabel')}
+							</Label>
 							<Input {...pm.register('description')} />
 						</div>
 						<div className='flex items-center justify-between'>
 							<div>
-								<Label>Default profile</Label>
+								<Label>
+									{t('profiles.dialog.defaultLabel')}
+								</Label>
 								<p className='text-muted-foreground text-xs'>
-									Auto-attached to new registrations.
+									{t('profiles.dialog.defaultHint')}
 								</p>
 							</div>
 							<Controller
@@ -80,7 +85,7 @@ export function ProfileDialog({ trigger }: { trigger: ReactNode }) {
 
 						<DialogFooter>
 							<Button type='submit' disabled={pm.isSubmitting}>
-								Create profile
+								{t('profiles.dialog.create')}
 							</Button>
 						</DialogFooter>
 					</div>

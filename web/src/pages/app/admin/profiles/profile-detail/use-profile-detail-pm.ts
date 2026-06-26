@@ -2,6 +2,7 @@ import { actionFamily } from '@root/contracts'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 
@@ -40,6 +41,7 @@ function actionRank(action: string): number {
 
 export function useProfileDetailPM() {
 	const { profileId = '' } = useParams()
+	const { t } = useTranslation('admin')
 	const navigate = useNavigate()
 	const queryClient = useQueryClient()
 	const { can } = usePermissions()
@@ -271,7 +273,7 @@ export function useProfileDetailPM() {
 			await setProfileGrants(profileId, list, defaultScreenId)
 		},
 		onSuccess: async () => {
-			toast.success('Profile saved.')
+			toast.success(t('profiles.toast.saved'))
 			await queryClient.invalidateQueries({ queryKey: ['profiles'] })
 			await queryClient.invalidateQueries({
 				queryKey: ['profile', profileId],
@@ -285,7 +287,7 @@ export function useProfileDetailPM() {
 		onError: (err) => {
 			toast.error(
 				(isAxiosError(err) && err.response?.data?.message) ||
-					'Could not save the profile.',
+					t('profiles.toast.saveError'),
 			)
 		},
 	})
