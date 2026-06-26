@@ -95,9 +95,11 @@ Vitest · Playwright
   deactivated** que revela as inativas na lista, mais um **Nearby only** pra
   simular a visão por geolocalização do membro.
 - **Presentation Model** — toda tela com lógica é um par: `x.tsx` (view pura) +
-  `use-x-pm.ts` (estado, dados, formatação). As views não carregam lógica. Cada
-  par vive em **sua própria pasta de mesmo nome**, pra o PM (prefixo `use-`)
-  ficar ao lado da view em vez de ser ordenado pra longe dela.
+  `use-x-pm.ts` (estado, dados, formatação). As views não carregam lógica — o
+  corpo da view é só `const pm = useXxxPM()` e depois `return`. O par fica **flat,
+  lado a lado na mesma pasta** (padrão-ouro: `account/email-card`); uma página de
+  rota ou um componente com sub-árvore própria ganha uma pasta de mesmo nome
+  contendo esse mesmo par.
 - **Responsivo em três faixas** — mobile (`< md`), tablet (`md–lg`) e desktop
   (`≥ lg`) via `useLayoutBand`: a sidebar é um Sheet deslizante no mobile, um rail
   de ícones no tablet e expandida no desktop (o toggle re-snapa para o default da

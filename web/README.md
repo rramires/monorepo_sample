@@ -95,9 +95,11 @@ Vitest · Playwright
   gyms in the list, plus a **Nearby only** toggle to preview the member's
   geolocation view.
 - **Presentation Model** — every screen with logic is a pair: `x.tsx` (pure
-  view) + `use-x-pm.ts` (state, data, formatting). Views carry no logic. Each
-  pair lives in its **own same-named folder**, so the `use-`-prefixed PM stays
-  next to its view instead of sorting away from it.
+  view) + `use-x-pm.ts` (state, data, formatting). Views carry no logic — the
+  view body is just `const pm = useXxxPM()` then `return`. The pair sits **flat,
+  side by side in the same folder** (gold standard: `account/email-card`); a
+  route-level page or a component with its own sub-tree gets a folder named after
+  it holding that same pair.
 - **Responsive across three bands** — mobile (`< md`), tablet (`md–lg`) and
   desktop (`≥ lg`) via `useLayoutBand`: the sidebar is a slide-over Sheet on
   mobile, an icon rail on tablet and expanded on desktop (the toggle re-snaps to

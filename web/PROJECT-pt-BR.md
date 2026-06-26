@@ -73,18 +73,18 @@ Todo componente com lógica é um **par**:
   validação, valores derivados/formatados, handlers de evento. Retorna um objeto
   plano que a view espalha (`const pm = useXPM()`).
 
-Componentes triviais, sem lógica, permanecem em arquivo único. A separação deixa
-as views trivialmente legíveis e a lógica testável isoladamente. Veja
-`sign-in.tsx` + `use-sign-in-pm.ts` como exemplo canônico.
+Componentes triviais, sem lógica, permanecem em arquivo único. O corpo da view se
+resume a `const pm = useXPM()` e depois `return` — nada entre os dois (sem
+`useState`, hook, valor derivado ou handler). A separação deixa as views
+trivialmente legíveis e a lógica testável isoladamente. Padrão-ouro:
+`account/email-card.tsx` + `account/use-email-card-pm.ts`.
 
-**Uma pasta por par.** Como todo PM tem o prefixo `use-`, um diretório plano
-ordena o `use-x-pm.ts` alfabeticamente **longe** do seu `x.tsx`. Por isso um
-componente que tem PM vive em **uma pasta própria com o nome dele**
-(`sign-in/sign-in.tsx` + `sign-in/use-sign-in-pm.ts`), mantendo a view e seu
-model adjacentes. Isso é obrigatório sempre que uma área tem **mais de um**
-componente principal com PM — dê a cada um sua própria pasta de mesmo nome, em
-vez de deixar todos os `use-…-pm.ts` migrarem para o topo de um diretório
-compartilhado, longe das views a que pertencem.
+**Par flat.** Mantenha o `use-x-pm.ts` **ao lado** do seu `x.tsx`, na mesma pasta.
+O prefixo `use-` ordenar um passo longe da view é um custo menor aceito — o par
+fica flat (veja `account/`, `gyms/`, as páginas de lista/diálogo do admin). Uma
+**página de rota** ou um componente com **sub-árvore própria** (sub-componentes,
+arquivos aninhados) ganha uma pasta com o nome dele — `auth/sign-in/`,
+`…/profiles/profile-detail/`, `…/users/user-edit/` — contendo esse mesmo par flat.
 
 ### 2.3 Context para estado transversal — o padrão de 3 arquivos
 

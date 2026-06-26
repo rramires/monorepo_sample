@@ -71,17 +71,18 @@ Any component with logic is a **pair**:
   validation, derived/formatted values, event handlers. Returns a flat object
   the view spreads (`const pm = useXPM()`).
 
-Trivial, logic-free components stay single-file. The split keeps views trivially
-readable and the logic unit-testable in isolation. See `sign-in.tsx` +
-`use-sign-in-pm.ts` for the canonical example.
+Trivial, logic-free components stay single-file. The view body is reduced to
+`const pm = useXPM()` then `return` — nothing in between (no `useState`, hook,
+derived value or handler). The split keeps views trivially readable and the logic
+unit-testable in isolation. Gold standard: `account/email-card.tsx` +
+`account/use-email-card-pm.ts`.
 
-**Folder per pair.** Because every PM is prefixed `use-`, a flat directory sorts
-`use-x-pm.ts` alphabetically **away** from its `x.tsx`. So a component that has a
-PM lives in **its own folder named after it** (`sign-in/sign-in.tsx` +
-`sign-in/use-sign-in-pm.ts`), keeping the view and its model adjacent. This is
-mandatory whenever an area holds **more than one** main component with a PM —
-give each its own same-named folder, instead of letting all the `use-…-pm.ts`
-files drift to the top of a shared directory, far from the views they belong to.
+**Flat pair.** Keep `use-x-pm.ts` **next to** its `x.tsx` in the same folder. The
+`use-` prefix sorting a step away from the view is an accepted minor cost — the
+pair stays flat (see `account/`, `gyms/`, the admin list/dialog pages). A
+**route-level page** or a component with its **own sub-tree** (sub-components,
+nested files) gets a folder named after it — `auth/sign-in/`,
+`…/profiles/profile-detail/`, `…/users/user-edit/` — holding that same flat pair.
 
 ### 2.3 Context for cross-cutting state — the 3-file pattern
 

@@ -56,10 +56,13 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## Frontend patterns (must follow — details in PROJECT.md)
 
 - **Presentation Model:** a component with logic is a pair — `x.tsx` (pure view)
-  and `use-x-pm.ts` (state/data/formatting). Views carry no logic; trivial
-  components stay single-file. Each pair lives in **its own same-named folder**
-  (the `use-` prefix would otherwise sort the PM away from its view) — mandatory
-  when an area holds more than one main component with a PM.
+  and `use-x-pm.ts` (state/data/formatting). The view body is just
+  `const pm = useXxxPM()` then `return` — **nothing** between them (no `useState`,
+  hook, derived value or handler). Trivial components stay single-file. Keep the
+  pair **flat — side by side in the same folder** (gold standard:
+  `account/email-card.tsx` + `account/use-email-card-pm.ts`). A route-level page
+  or a component with its own sub-tree gets a folder named after it
+  (`auth/sign-in/`, `…/profile-detail/`) holding that same flat pair.
 - **Context = 3 files:** `x-context.ts` + `x-provider.tsx` + `x-hooks.ts`. Use it
   for session/UI state (auth, theme, title) — **not** for server state.
 - **Server state = TanStack Query** (`useQuery`/`useMutation` + invalidation),
