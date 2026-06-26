@@ -11,18 +11,12 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card'
-import { useCheckIn } from '@/hooks/use-check-in'
-import { usePermissions } from '@/hooks/use-permissions'
 
 import { EditGymDialog } from './edit-gym-dialog'
+import { useGymCardPM } from './use-gym-card-pm'
 
 export function GymCard({ gym }: { gym: Gym }) {
-	const { handleCheckIn, isCheckingIn } = useCheckIn()
-	const { can } = usePermissions()
-	const canEdit = can('gym.gyms', 'edit')
-	// Check-in is an extra op of the Gyms screen (composed key), not its own
-	// screen — so the button lives here but its grant is gym.gyms.create_checkin.
-	const canCheckIn = can('gym.gyms', 'create_checkin')
+	const pm = useGymCardPM(gym)
 
 	return (
 		<Card className='flex flex-col'>
@@ -54,14 +48,14 @@ export function GymCard({ gym }: { gym: Gym }) {
 			<CardFooter className='flex-col gap-2'>
 				{/* Check-in needs the gym.gyms `create_checkin` grant; members
 				    without it never see the button (the action also 403s). */}
-				{canCheckIn && (
+				{pm.canCheckIn && (
 					<Button
 						variant='outline'
 						className='w-full'
-						disabled={isCheckingIn || !gym.is_active}
-						onClick={() => handleCheckIn(gym.id)}
+						disabled={pm.isCheckingIn || !gym.is_active}
+						onClick={pm.checkIn}
 					>
-						{isCheckingIn ? (
+						{pm.isCheckingIn ? (
 							<LoaderCircle className='size-4 animate-spin' />
 						) : (
 							<CircleCheck className='size-4' />
@@ -72,7 +66,7 @@ export function GymCard({ gym }: { gym: Gym }) {
 
 				{/* Editing a gym needs the gym.gyms `edit` grant (the route-level
 				    guard still protects it; hiding the button is just UX). */}
-				{canEdit && <EditGymDialog gym={gym} />}
+				{pm.canEdit && <EditGymDialog gym={gym} />}
 			</CardFooter>
 		</Card>
 	)
