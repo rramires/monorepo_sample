@@ -23,7 +23,7 @@ import { usePermissions } from '@/hooks/use-permissions'
 const NAV_ENTRIES: Record<string, { icon: LucideIcon; label: string }> = {
 	'gym.dashboard': { icon: LayoutDashboard, label: 'Dashboard' },
 	'gym.gyms': { icon: Dumbbell, label: 'Gyms' },
-	'gym.check-in': { icon: History, label: 'Check-ins' },
+	'gym.check-ins': { icon: History, label: 'Check-ins' },
 	'access-control.modules': { icon: Boxes, label: 'Modules' },
 	'access-control.screens': { icon: MonitorSmartphone, label: 'Screens' },
 	'access-control.profiles': { icon: ShieldCheck, label: 'Profiles' },

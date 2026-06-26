@@ -1,5 +1,3 @@
-import type { PermissionAction } from '@/prisma-client/enums'
-
 import type {
 	EffectiveScreenPermission,
 	IPermissionsRepository,
@@ -7,14 +5,14 @@ import type {
 } from '../i-permissions-repository'
 
 // In-memory permissions store for unit tests. Seed `userProfiles`, `grants`
-// (one row per granted profile+screen+action), `memberships`, `defaults`,
+// (one row per granted profile+screen+action key), `memberships`, `defaults`,
 // `screenKeys` and `catalog` directly.
 export class InMemoryPermissionsRepository implements IPermissionsRepository {
 	public userProfiles: { user_id: string; profile_id: string }[] = []
 	public grants: {
 		profile_id: string
 		screen_key: string
-		action: PermissionAction
+		action: string
 	}[] = []
 	public memberships: { profile_id: string; screen_key: string }[] = []
 	public defaults: {
@@ -38,22 +36,19 @@ export class InMemoryPermissionsRepository implements IPermissionsRepository {
 		userId: string,
 	): Promise<EffectiveScreenPermission[]> {
 		const mine = this.myProfiles(userId)
-		const byKey = new Map<string, EffectiveScreenPermission>()
+		const byKey = new Map<string, Set<string>>()
 		for (const grant of this.grants) {
 			if (!mine.has(grant.profile_id)) {
 				continue
 			}
-			const entry = byKey.get(grant.screen_key) ?? {
-				screen_key: grant.screen_key,
-				view: false,
-				create: false,
-				edit: false,
-				delete: false,
-			}
-			entry[grant.action] = true
-			byKey.set(grant.screen_key, entry)
+			const set = byKey.get(grant.screen_key) ?? new Set<string>()
+			set.add(grant.action)
+			byKey.set(grant.screen_key, set)
 		}
-		return [...byKey.values()]
+		return [...byKey.entries()].map(([screen_key, set]) => ({
+			screen_key,
+			actions: [...set],
+		}))
 	}
 
 	async getMembershipScreenKeys(userId: string): Promise<string[]> {

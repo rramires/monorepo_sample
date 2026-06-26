@@ -3,9 +3,9 @@ import { FastifyRequest } from 'fastify'
 import { makeGetUserPermissionsUseCase } from '@/use-cases/factories/make-get-user-permissions-use-case'
 
 // Seeing deactivated gyms is a management capability. The /gyms/search and
-// /gyms/nearby routes serve both members and managers (only verifyJwt, no
-// requireScreen), so the `includeInactive` flag is gated here: honored only when
-// the caller can edit gyms (ADMIN bypasses). A member passing it still gets
+// /gyms/nearby routes are guarded by gym.gyms.view (any granted member can
+// browse), so the `includeInactive` flag is gated separately here: honored only
+// when the caller can edit gyms (ADMIN bypasses). A member passing it still gets
 // active-only.
 export async function resolveIncludeInactive(
 	request: FastifyRequest,
@@ -22,6 +22,10 @@ export async function resolveIncludeInactive(
 
 	return (
 		role === 'ADMIN' ||
-		Boolean(screens.find((s) => s.screen_key === 'gym.gyms')?.edit)
+		Boolean(
+			screens
+				.find((s) => s.screen_key === 'gym.gyms')
+				?.actions.includes('edit'),
+		)
 	)
 }

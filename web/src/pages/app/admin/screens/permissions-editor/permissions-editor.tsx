@@ -1,4 +1,4 @@
-import type { PermissionAction } from '@root/contracts'
+import { PERMISSION_FAMILIES, type PermissionFamily } from '@root/contracts'
 import { Check, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 
@@ -26,6 +26,7 @@ import {
 
 import {
 	ACTION_LABEL,
+	opBadge,
 	usePermissionsEditorPM,
 } from './use-permissions-editor-pm'
 
@@ -40,7 +41,6 @@ export function PermissionsEditor({
 }) {
 	const [open, setOpen] = useState(false)
 	const pm = usePermissionsEditorPM(screen.id, open)
-	const noneLeft = pm.availableActions.length === 0
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
@@ -55,54 +55,98 @@ export function PermissionsEditor({
 				</DialogHeader>
 
 				{/* Add row */}
-				<div className='flex items-end gap-2'>
-					<div className='grid gap-1.5'>
-						<Label className='text-muted-foreground text-xs'>
-							Operation
-						</Label>
-						<Select
-							value={pm.newAction}
-							onValueChange={(v) =>
-								pm.setNewAction(v as PermissionAction)
-							}
-							disabled={noneLeft}
-						>
-							<SelectTrigger className='w-28'>
-								<SelectValue placeholder='Op' />
-							</SelectTrigger>
-							<SelectContent>
-								{pm.availableActions.map((a) => (
-									<SelectItem key={a} value={a}>
-										{ACTION_LABEL[a]}
+				<div className='flex flex-col gap-2'>
+					<div className='flex items-end gap-2'>
+						<div className='grid gap-1.5'>
+							<Label className='text-muted-foreground text-xs'>
+								Operation
+							</Label>
+							<Select
+								value={pm.op}
+								onValueChange={(v) =>
+									pm.setOp(v as PermissionFamily | 'other')
+								}
+							>
+								<SelectTrigger className='w-32'>
+									<SelectValue placeholder='Op' />
+								</SelectTrigger>
+								<SelectContent>
+									{pm.availableFamilies.map((a) => (
+										<SelectItem key={a} value={a}>
+											{ACTION_LABEL[a]}
+										</SelectItem>
+									))}
+									<SelectItem value='other'>
+										Other…
 									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+								</SelectContent>
+							</Select>
+						</div>
+						<div className='grid flex-1 gap-1.5'>
+							<Label className='text-muted-foreground text-xs'>
+								Label
+							</Label>
+							<Input
+								value={pm.newLabel}
+								onChange={(e) => pm.setNewLabel(e.target.value)}
+								placeholder='e.g. Check in'
+							/>
+						</div>
+						<Button
+							onClick={pm.add}
+							disabled={!pm.canAdd || pm.isAdding}
+							aria-label='Add permission'
+						>
+							<Plus />
+						</Button>
 					</div>
-					<div className='grid flex-1 gap-1.5'>
-						<Label className='text-muted-foreground text-xs'>
-							Label
-						</Label>
-						<Input
-							value={pm.newLabel}
-							onChange={(e) => pm.setNewLabel(e.target.value)}
-							placeholder='e.g. Check in'
-							disabled={noneLeft}
-						/>
-					</div>
-					<Button
-						onClick={pm.add}
-						disabled={!pm.canAdd || pm.isAdding}
-						aria-label='Add permission'
-					>
-						<Plus />
-					</Button>
+
+					{/* Other… → compose a free key from a CRUD family + a name. */}
+					{pm.isOther && (
+						<div className='flex items-end gap-2'>
+							<div className='grid gap-1.5'>
+								<Label className='text-muted-foreground text-xs'>
+									Family
+								</Label>
+								<Select
+									value={pm.newFamily}
+									onValueChange={(v) =>
+										pm.setNewFamily(v as PermissionFamily)
+									}
+								>
+									<SelectTrigger className='w-32'>
+										<SelectValue placeholder='Family' />
+									</SelectTrigger>
+									<SelectContent>
+										{PERMISSION_FAMILIES.map((f) => (
+											<SelectItem key={f} value={f}>
+												{ACTION_LABEL[f]}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+							<div className='grid flex-1 gap-1.5'>
+								<Label className='text-muted-foreground text-xs'>
+									Name
+								</Label>
+								<Input
+									value={pm.newName}
+									onChange={(e) =>
+										pm.setNewName(e.target.value)
+									}
+									placeholder='check_in'
+									aria-label='Key name'
+								/>
+							</div>
+						</div>
+					)}
+					{pm.isOther && pm.composedKey && (
+						<p className='text-muted-foreground font-mono text-xs'>
+							→ {pm.composedKey}
+						</p>
+					)}
 				</div>
-				{noneLeft && (
-					<p className='text-muted-foreground text-xs'>
-						All operations have been added.
-					</p>
-				)}
 
 				{/* List */}
 				<div className='flex flex-col gap-2'>
@@ -122,9 +166,9 @@ export function PermissionsEditor({
 							>
 								<Badge
 									variant='secondary'
-									className='w-16 justify-center'
+									className='justify-center'
 								>
-									{ACTION_LABEL[perm.action]}
+									{opBadge(perm.action)}
 								</Badge>
 
 								{pm.editingId === perm.id ? (

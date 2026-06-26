@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { PermissionAction } from '@/prisma-client/enums'
 
 import {
 	IPermissionCatalogRepository,
@@ -24,7 +23,7 @@ export class PrismaPermissionCatalogRepository implements IPermissionCatalogRepo
 		})
 	}
 
-	async actionExists(screenId: string, action: PermissionAction) {
+	async actionExists(screenId: string, action: string) {
 		const found = await prisma.permission.findUnique({
 			where: { screen_id_action: { screen_id: screenId, action } },
 			select: { id: true },
@@ -34,7 +33,7 @@ export class PrismaPermissionCatalogRepository implements IPermissionCatalogRepo
 
 	async create(data: {
 		screen_id: string
-		action: PermissionAction
+		action: string
 		label: string
 		is_system: boolean
 	}) {

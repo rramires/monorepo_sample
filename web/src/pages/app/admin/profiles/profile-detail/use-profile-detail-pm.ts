@@ -1,3 +1,4 @@
+import { actionFamily } from '@root/contracts'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -24,8 +25,17 @@ export interface ScreenRow extends ScreenModel {
 	moduleName: string
 }
 
-// Stable display/order of curated ops.
-const ACTION_ORDER = { view: 0, create: 1, edit: 2, delete: 3 } as const
+// Stable display/order of curated ops: by CRUD family (view→create→edit→delete),
+// then composed keys after their bare family, alphabetically.
+const FAMILY_ORDER: Record<string, number> = {
+	view: 0,
+	create: 1,
+	edit: 2,
+	delete: 3,
+}
+function actionRank(action: string): number {
+	return FAMILY_ORDER[actionFamily(action)] ?? 99
+}
 
 export function useProfileDetailPM() {
 	const { profileId = '' } = useParams()
@@ -92,7 +102,11 @@ export function useProfileDetailPM() {
 			map.set(p.screenId, list)
 		}
 		for (const list of map.values()) {
-			list.sort((a, b) => ACTION_ORDER[a.action] - ACTION_ORDER[b.action])
+			list.sort(
+				(a, b) =>
+					actionRank(a.action) - actionRank(b.action) ||
+					a.action.localeCompare(b.action),
+			)
 		}
 		return map
 	}, [permissions])

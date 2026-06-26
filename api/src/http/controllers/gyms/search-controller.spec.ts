@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto'
+
 import request from 'supertest'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
@@ -6,6 +8,45 @@ import { prisma } from '@/lib/prisma'
 import { Role } from '@/prisma-client/enums'
 import createAndAuthUser from '@/utils/tests/create-and-auth-user'
 import getTestCoordinates from '@/utils/tests/get-test-coordinates'
+
+// Grant a user the gym.gyms `view` op (search/nearby are screen-guarded now), so
+// a plain member can browse — without `edit`, so includeInactive stays gated.
+async function grantGymView(email: string) {
+	const user = await prisma.user.findUniqueOrThrow({ where: { email } })
+	const moduleRow = await prisma.module.upsert({
+		where: { key: 'gym' },
+		update: {},
+		create: { key: 'gym', name: 'Gym', order: 0 },
+	})
+	const screen = await prisma.screen.upsert({
+		where: { key: 'gym.gyms' },
+		update: {},
+		create: {
+			module_id: moduleRow.id,
+			key: 'gym.gyms',
+			name: 'Gyms',
+			path: '/gyms',
+			order: 0,
+		},
+	})
+	const permission = await prisma.permission.upsert({
+		where: { screen_id_action: { screen_id: screen.id, action: 'view' } },
+		update: {},
+		create: { screen_id: screen.id, action: 'view', label: 'View' },
+	})
+	const profile = await prisma.profile.create({
+		data: { key: `member-${randomUUID()}`, name: 'Member' },
+	})
+	await prisma.profileScreen.create({
+		data: { profile_id: profile.id, screen_id: screen.id },
+	})
+	await prisma.profilePermission.create({
+		data: { profile_id: profile.id, permission_id: permission.id },
+	})
+	await prisma.userProfile.create({
+		data: { user_id: user.id, profile_id: profile.id },
+	})
+}
 
 // Inline identities — createAndAuthUser hard-codes one user per file.
 async function createAdmin(email: string, username: string) {
@@ -100,6 +141,8 @@ describe('Search Gyms (e2e)', () => {
 			'search-member@example.com',
 			'searchmember',
 		)
+		// The member can browse (gym.gyms.view) but can't manage (no edit).
+		await grantGymView('search-member@example.com')
 		const { coordinates } = getTestCoordinates()
 
 		// one active + one inactive gym sharing a unique title token

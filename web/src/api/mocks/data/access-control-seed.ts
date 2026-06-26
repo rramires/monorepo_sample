@@ -1,10 +1,4 @@
-import type {
-	Module,
-	Permission,
-	PermissionAction,
-	Profile,
-	Screen,
-} from '@root/contracts'
+import type { Module, Permission, Profile, Screen } from '@root/contracts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Access-control seed — the single source of truth for the RBAC demo dataset.
@@ -71,35 +65,11 @@ export const screens: Screen[] = [
 	{
 		id: 'scr-gym-checkin',
 		module_id: 'mod-gym',
-		key: 'gym.check-in',
-		name: 'Check-in',
+		key: 'gym.check-ins',
+		name: 'Check-ins',
 		path: '/check-ins',
-		description: 'Check in to a gym.',
+		description: 'Check in to a gym and validate members.',
 		order: 2,
-		is_system: false,
-		is_active: true,
-		is_enabled: true,
-	},
-	{
-		id: 'scr-gym-history',
-		module_id: 'mod-gym',
-		key: 'gym.history',
-		name: 'Check-in History',
-		path: '/history',
-		description: 'Your past check-ins.',
-		order: 3,
-		is_system: false,
-		is_active: true,
-		is_enabled: true,
-	},
-	{
-		id: 'scr-gym-validations',
-		module_id: 'mod-gym',
-		key: 'gym.validations',
-		name: 'Validate Check-ins',
-		path: '/validations',
-		description: 'Approve member check-ins.',
-		order: 4,
 		is_system: false,
 		is_active: true,
 		is_enabled: true,
@@ -160,18 +130,18 @@ export const screens: Screen[] = [
 // `is_system` mirrors the screen. UNIQUE(screen_id, action) holds by construction.
 // `gym.gyms` and `access-control.users` deliberately have NO `delete` (they
 // deactivate via the Active switch), which is what kills the phantom ops.
-type PermSpec = { screen_key: string; action: PermissionAction; label: string }
+type PermSpec = { screen_key: string; action: string; label: string }
 
 const PERMISSION_SPECS: PermSpec[] = [
 	{ screen_key: 'gym.dashboard', action: 'view', label: 'View' },
 	{ screen_key: 'gym.gyms', action: 'view', label: 'View' },
 	{ screen_key: 'gym.gyms', action: 'create', label: 'Add' },
 	{ screen_key: 'gym.gyms', action: 'edit', label: 'Edit' },
-	{ screen_key: 'gym.check-in', action: 'view', label: 'View' },
-	{ screen_key: 'gym.check-in', action: 'create', label: 'Check in' },
-	{ screen_key: 'gym.history', action: 'view', label: 'View' },
-	{ screen_key: 'gym.validations', action: 'view', label: 'View' },
-	{ screen_key: 'gym.validations', action: 'create', label: 'Validate' },
+	// Extra create op on the Gyms screen — kills the old phantom gym.check-in.
+	{ screen_key: 'gym.gyms', action: 'create_checkin', label: 'Check in' },
+	{ screen_key: 'gym.check-ins', action: 'view', label: 'View' },
+	// Extra edit op on the Check-ins screen — kills the old phantom gym.validations.
+	{ screen_key: 'gym.check-ins', action: 'edit_validate', label: 'Validate' },
 	{ screen_key: 'access-control.modules', action: 'view', label: 'View' },
 	{ screen_key: 'access-control.modules', action: 'create', label: 'Add' },
 	{ screen_key: 'access-control.modules', action: 'edit', label: 'Edit' },
@@ -202,7 +172,7 @@ function screenByKey(key: string): Screen {
 }
 
 // `perm-<screen-suffix>-<action>` e.g. perm-gym-gyms-create / perm-ac-modules-delete.
-function permId(screen: Screen, action: PermissionAction): string {
+function permId(screen: Screen, action: string): string {
 	return `perm-${screen.id.replace(/^scr-/, '')}-${action}`
 }
 
@@ -218,7 +188,7 @@ export const permissions: Permission[] = PERMISSION_SPECS.map((spec) => {
 })
 
 // Look up a catalog permission id by screen key + action (seed authoring helper).
-function grantId(screenKey: string, action: PermissionAction): string {
+function grantId(screenKey: string, action: string): string {
 	const screen = screenByKey(screenKey)
 	const id = permId(screen, action)
 	if (!permissions.some((p) => p.id === id)) {
@@ -265,23 +235,23 @@ export const profiles: Profile[] = [
 // empty `ops` would be member-only — staged rollout — none seeded by default).
 type ProfileSpec = {
 	screen_key: string
-	ops: PermissionAction[]
+	ops: string[]
 	landing?: boolean
 }
 
 const PROFILE_SPECS: Record<string, ProfileSpec[]> = {
 	'prof-gym-member': [
 		{ screen_key: 'gym.dashboard', ops: ['view'], landing: true },
-		{ screen_key: 'gym.check-in', ops: ['view', 'create'] },
-		{ screen_key: 'gym.gyms', ops: ['view'] },
-		{ screen_key: 'gym.history', ops: ['view'] },
+		{ screen_key: 'gym.gyms', ops: ['view', 'create_checkin'] },
+		{ screen_key: 'gym.check-ins', ops: ['view'] },
 	],
 	'prof-gym-manager': [
 		{ screen_key: 'gym.dashboard', ops: ['view'], landing: true },
-		{ screen_key: 'gym.check-in', ops: ['view', 'create'] },
-		{ screen_key: 'gym.gyms', ops: ['view', 'create', 'edit'] },
-		{ screen_key: 'gym.history', ops: ['view'] },
-		{ screen_key: 'gym.validations', ops: ['view', 'create'] },
+		{
+			screen_key: 'gym.gyms',
+			ops: ['view', 'create', 'edit', 'create_checkin'],
+		},
+		{ screen_key: 'gym.check-ins', ops: ['view', 'edit_validate'] },
 		{ screen_key: 'access-control.users', ops: ['view', 'create'] },
 	],
 	'prof-support': [

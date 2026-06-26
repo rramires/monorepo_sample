@@ -106,7 +106,9 @@ test('support lands on a permitted screen, not Forbidden', async ({ page }) => {
 	await waitForUIInspection(page)
 })
 
-test('admin curates a screen’s permissions in the editor', async ({ page }) => {
+test('admin adds a free-key (Other) op in the permission editor', async ({
+	page,
+}) => {
 	await signIn(page, 'admin')
 
 	await page.getByRole('link', { name: 'Screens', exact: true }).click()
@@ -124,14 +126,61 @@ test('admin curates a screen’s permissions in the editor', async ({ page }) =>
 	// Seeded with just the View op (op badge + its friendly label both read "View").
 	await expect(dialog.getByText('View').first()).toBeVisible()
 
-	// Add an "Edit" op with a friendly label.
-	await dialog.getByRole('combobox').click()
-	await page.getByRole('option', { name: 'Edit' }).click()
-	await dialog.getByPlaceholder('e.g. Check in').fill('Tweak')
+	// Operation → Other… reveals a Family select + a Name input that compose a
+	// free key (create_export), previewed live before saving.
+	await dialog.getByRole('combobox').first().click()
+	await page.getByRole('option', { name: 'Other…' }).click()
+	await dialog.getByRole('combobox').nth(1).click()
+	await page.getByRole('option', { name: 'Create' }).click()
+	await dialog.getByLabel('Key name').fill('export')
+	await expect(dialog.getByText('→ create_export')).toBeVisible()
+	await dialog.getByPlaceholder('e.g. Check in').fill('Export CSV')
 	await dialog.getByRole('button', { name: 'Add permission' }).click()
 
 	await expect(page.getByText('Permission added.')).toBeVisible()
-	await expect(dialog.getByText('Tweak')).toBeVisible()
+	// The composed key shows as a raw-key badge alongside its friendly label.
+	await expect(dialog.getByText('create_export')).toBeVisible()
+	await expect(dialog.getByText('Export CSV')).toBeVisible()
+
+	await waitForUIInspection(page)
+})
+
+test('the Check-in button on Gyms follows the create_checkin grant', async ({
+	page,
+}) => {
+	// Member (johndoe) has gym.gyms.create_checkin but no edit grant → Check in
+	// renders on each card, Edit does not. Kills the old cross-screen confusion.
+	await signIn(page, 'johndoe')
+	await page.getByRole('link', { name: 'Gyms', exact: true }).click()
+	await expect(page).toHaveURL('/gyms')
+
+	// Search by name so a card renders without depending on geolocation.
+	await page.getByPlaceholder('Search gyms by name…').fill('Iron')
+	await expect(page.getByText('Iron Temple')).toBeVisible()
+
+	await expect(
+		page.getByRole('button', { name: 'Check in' }).first(),
+	).toBeVisible()
+	await expect(page.getByRole('button', { name: 'Edit' })).toHaveCount(0)
+
+	await waitForUIInspection(page)
+})
+
+test('a manager sees both Check in and Edit on Gyms', async ({ page }) => {
+	// Manager adds the gym.gyms edit grant → both buttons render.
+	await signIn(page, 'manager')
+	await page.getByRole('link', { name: 'Gyms', exact: true }).click()
+	await expect(page).toHaveURL('/gyms')
+
+	await page.getByPlaceholder('Search gyms by name…').fill('Iron')
+	await expect(page.getByText('Iron Temple')).toBeVisible()
+
+	await expect(
+		page.getByRole('button', { name: 'Check in' }).first(),
+	).toBeVisible()
+	await expect(
+		page.getByRole('button', { name: 'Edit' }).first(),
+	).toBeVisible()
 
 	await waitForUIInspection(page)
 })
@@ -171,11 +220,11 @@ test('a disabled screen is marked in a profile and confirms on removal', async (
 }) => {
 	await signIn(page, 'admin')
 
-	// Disable the Check-in History screen (gym.history) via its edit dialog.
+	// Disable the Check-ins screen (gym.check-ins) via its edit dialog.
 	await page.getByRole('link', { name: 'Screens', exact: true }).click()
 	await page
 		.getByRole('row')
-		.filter({ hasText: 'gym.history' })
+		.filter({ hasText: 'gym.check-ins' })
 		.getByRole('button')
 		.nth(1)
 		.click()
@@ -183,7 +232,7 @@ test('a disabled screen is marked in a profile and confirms on removal', async (
 	await expect(screenDialog.getByText('Edit screen')).toBeVisible()
 	await screenDialog.getByRole('switch', { name: 'Active' }).click()
 	await screenDialog.getByRole('button', { name: 'Save changes' }).click()
-	await expect(page.getByText(/Deactivate "Check-in History"\?/)).toBeVisible()
+	await expect(page.getByText(/Deactivate "Check-ins"\?/)).toBeVisible()
 	await page.getByRole('button', { name: 'Deactivate' }).click()
 	await expect(page.getByText('Screen updated.')).toBeVisible()
 
@@ -197,7 +246,9 @@ test('a disabled screen is marked in a profile and confirms on removal', async (
 		.click()
 	await expect(page).toHaveURL(/\/admin\/profiles\/.+/)
 
-	const grantedRow = page.getByRole('row').filter({ hasText: 'gym.history' })
+	const grantedRow = page
+		.getByRole('row')
+		.filter({ hasText: 'gym.check-ins' })
 	await expect(grantedRow.getByText('Disabled')).toBeVisible()
 
 	// Removing it (one-way) prompts a confirm first.

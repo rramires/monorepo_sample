@@ -15,18 +15,37 @@ export async function checkInsRoutes(app: FastifyInstance) {
 	 */
 	app.addHook('onRequest', verifyJwtMiddleware)
 	//
-	app.get('/check-ins/history', historyController)
-	app.get('/check-ins/metrics', metricsController)
+	// History is the Check-ins screen; metrics feed the Dashboard. Guard each by
+	// its screen's `view` grant + kill switch (read fresh from the DB).
+	app.get(
+		'/check-ins/history',
+		{ onRequest: [requireScreen('gym.check-ins', 'view')] },
+		historyController,
+	)
+	app.get(
+		'/check-ins/metrics',
+		{ onRequest: [requireScreen('gym.dashboard', 'view')] },
+		metricsController,
+	)
 	//
+	// Check-in is an extra op of the Gyms screen (the button lives on /gyms), so
+	// the action grant is gym.gyms.create_checkin. requireScreen reads the grant
+	// AND the screen kill switch fresh from the DB each request — email-verify
+	// runs first so an unverified user still gets that message.
 	app.post(
 		'/gyms/:gymId/check-ins',
-		{ onRequest: [verifyEmailVerified] },
+		{
+			onRequest: [
+				verifyEmailVerified,
+				requireScreen('gym.gyms', 'create_checkin'),
+			],
+		},
 		checkInController,
 	)
 	//
 	app.patch(
 		'/check-ins/:checkInId/validate',
-		{ onRequest: [requireScreen('gym.validations', 'create')] },
+		{ onRequest: [requireScreen('gym.check-ins', 'edit_validate')] },
 		validateController,
 	)
 }

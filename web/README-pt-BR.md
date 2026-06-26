@@ -55,11 +55,13 @@ Vitest · Playwright
   `USER` segue os grants) mais **Profiles** dinâmicos. Um profile é
   **membership** (quais telas aparecem na sidebar) + **permissões concedidas**
   (por tela) + uma **tela de destino**. As permissões vivem num **catálogo
-  curado por tela com rótulos amigáveis e editáveis** (ex.: Check-in oferece
-  "View" + "Check in"; `gym.gyms` e `access-control.users` não têm delete —
-  desativam pelo switch Active). O enum de ação (`view`/`create`/`edit`/`delete`)
-  permanece o contrato de código do `can(screenKey, action)`; o rótulo é só
-  apresentação. `view` agora é um **grant explícito**, não mais true por padrão.
+  curado por tela com rótulos amigáveis e editáveis** (ex.: `gym.gyms` oferece
+  "View" + "Add" + "Check in"; `gym.gyms` e `access-control.users` não têm delete —
+  desativam pelo switch Active). Uma ação é uma **CHAVE string livre** — família
+  CRUD pura (`create`) ou composta `family_name` (`create_checkin`); a família tem
+  que ser uma de `view`/`create`/`edit`/`delete`. O `can(screenKey, action)` checa
+  a chave; o rótulo é só apresentação. `view` agora é um **grant explícito**, não
+  mais true por padrão.
   **Modules** agrupam **Screens**; os profiles carregam `is_default` (anexado no
   registro), e profiles, modules e screens carregam `is_system` — o catálogo de
   access-control do seed é protegido contra exclusão/renomeação de key (badge
@@ -212,7 +214,7 @@ screen='<chave>' [action]` (o mesmo `can()` que o menu usa).
 | ----------------------------- | ------------------------- | ------------------ | ----------------------------------------------------------------------- |
 | `/`                           | Protected                 | LandingRoute       | Resolve a tela de destino do usuário (dashboard/primeira)               |
 | `/gyms`                       | `gym.gyms`                | Gyms               | Próximas (geolocalização) + busca por nome                              |
-| `/check-ins`                  | `gym.check-in`            | CheckIns           | Histórico; ADMIN vê **Validate**                                        |
+| `/check-ins`                  | `gym.check-ins`           | CheckIns           | Histórico; **Validate** precisa de `gym.check-ins.edit_validate`        |
 | `/account`                    | Protected                 | Account            | Editar username · trocar e-mail · escolher tela de destino              |
 | `/gyms/new`                   | `gym.gyms` (create)       | NewGym             | Criar academia                                                          |
 | `/admin/users`                | `access-control.users`    | AdminUsers         | Tabela de usuários paginada                                             |

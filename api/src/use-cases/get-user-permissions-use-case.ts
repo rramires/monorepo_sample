@@ -1,3 +1,5 @@
+import { PERMISSION_FAMILIES } from '@root/contracts'
+
 import type { Role } from '@/prisma-client'
 import type {
 	EffectiveScreenPermission,
@@ -49,12 +51,12 @@ export class GetUserPermissionsUseCase {
 		let membership: Set<string>
 		if (user.role === 'ADMIN') {
 			const keys = await this.permissionsRepository.listAllScreenKeys()
+			// Admin authorizes by ROLE bypass (requireScreen/can short-circuit),
+			// so this list is informational — each screen carries the base CRUD
+			// families to signal "all base ops".
 			screens = keys.map((screen_key) => ({
 				screen_key,
-				view: true,
-				create: true,
-				edit: true,
-				delete: true,
+				actions: [...PERMISSION_FAMILIES],
 			}))
 			// Admin sees every screen in the menu.
 			membership = new Set(keys)
@@ -69,7 +71,9 @@ export class GetUserPermissionsUseCase {
 		}
 
 		const viewable = new Set(
-			screens.filter((s) => s.view).map((s) => s.screen_key),
+			screens
+				.filter((s) => s.actions.includes('view'))
+				.map((s) => s.screen_key),
 		)
 		const default_screen_key = await this.resolveDefault(
 			userId,

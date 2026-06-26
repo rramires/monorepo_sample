@@ -326,7 +326,8 @@ username `transform`) stay local. See the monorepo
   factory_). It reads the authenticated user's **effective permissions from the
   database** (by `request.user.sub`, via `GetUserPermissionsUseCase` — the same
   use-case as `GET /me/permissions`) and allows the request only when the user
-  `can()` perform `action` (`view`/`create`/`edit`/`delete`) on `screenKey` **and**
+  `can()` perform `action` (a free action KEY — a bare CRUD family like `create`
+  or a composed `family_name` like `create_checkin`) on `screenKey` **and**
   that screen isn't killed (`Screen.is_enabled=false` → `403 "This screen is
 temporarily unavailable."` for non-admins). An `ADMIN` bypasses every check. The
   signed `role`/grant claims are never trusted for access control, so a grant,
@@ -358,14 +359,14 @@ temporarily unavailable."` for non-admins). An `ADMIN` bypasses every check. The
 | POST   | `/auth/me/email`                 |     ✅     | —                                  | self: request email change (confirm to new addr)                 |
 | POST   | `/auth/me/email/confirm`         |     ✅     | —                                  | self: confirm email change via OTP                               |
 | GET    | `/me/permissions`                |     ✅     | —                                  | effective grants + membership menu (w/ `is_enabled`) + default   |
-| GET    | `/gyms/search`                   |     ✅     | —                                  | search by title (active only; managers: `includeInactive`)       |
-| GET    | `/gyms/nearby`                   |     ✅     | —                                  | search by proximity (active only; managers: `includeInactive`)   |
+| GET    | `/gyms/search`                   |     ✅     | `gym.gyms` · view                  | search by title (active only; managers: `includeInactive`)       |
+| GET    | `/gyms/nearby`                   |     ✅     | `gym.gyms` · view                  | search by proximity (active only; managers: `includeInactive`)   |
 | POST   | `/gyms`                          |     ✅     | `gym.gyms` · create                | create a gym                                                     |
 | PATCH  | `/gyms/:gymId`                   |     ✅     | `gym.gyms` · edit                  | edit a gym (title/description/phone, `is_active`)                |
-| GET    | `/check-ins/history`             |     ✅     | —                                  | own history                                                      |
-| GET    | `/check-ins/metrics`             |     ✅     | —                                  | own total                                                        |
-| POST   | `/gyms/:gymId/check-ins`         |     ✅     | —                                  | check in (verified email if flag on; `403` if gym inactive)      |
-| PATCH  | `/check-ins/:checkInId/validate` |     ✅     | `gym.validations` · create         | validate check-in                                                |
+| GET    | `/check-ins/history`             |     ✅     | `gym.check-ins` · view             | own history                                                      |
+| GET    | `/check-ins/metrics`             |     ✅     | `gym.dashboard` · view             | own total                                                        |
+| POST   | `/gyms/:gymId/check-ins`         |     ✅     | `gym.gyms` · create_checkin        | check in (verified email if flag on; `403` if gym inactive)      |
+| PATCH  | `/check-ins/:checkInId/validate` |     ✅     | `gym.check-ins` · edit_validate    | validate check-in                                                |
 | POST   | `/users/send-verification`       |     ✅     | —                                  | send verification email (link + OTP)                             |
 | GET    | `/users/verify-email`            |     ❌     | —                                  | verify email via link token (`?token=`)                          |
 | POST   | `/users/verify-email/otp`        |     ✅     | —                                  | verify email via OTP code                                        |
@@ -556,10 +557,10 @@ lifecycle **disable** (`is_active` on module/screen/profile).
   Authenticated-but-ungranted → `403 { "message": "Forbidden." }`; an unknown user
   (`ResourceNotFoundError`) → `401`.
 - **Effective permissions** (`get-user-permissions-use-case.ts`): for a non-admin,
-  the per-screen actions (`view`/`create`/`edit`/`delete`) are the **OR across all
-  the user's profile grants** — `view` is now an explicit granted permission (no
-  longer default-true). For an `ADMIN`, every catalog screen is returned with all
-  four actions `true`.
+  each screen's `actions: string[]` is the **union of granted action keys across
+  all the user's profile grants** — `view` is an explicit granted key (no longer
+  default-true), extra ops are composed keys (`create_checkin`). For an `ADMIN`,
+  every catalog screen is returned with the base CRUD families (role bypass stands).
 - **`GET /me/permissions`** returns `{ role, screens, menu, default_screen_key }`:
     - `screens` — the effective per-screen grants (drives the frontend `can()` gate).
     - `menu` — the user's **membership** screens that have a `path` (`screen_key`,
@@ -730,11 +731,13 @@ The screen-grant model behind §5.7 — global (no tenant; a cloning project add
   1—N `ProfileScreen` (membership; the screen side is `onDelete: Restrict`, so a
   screen still a member somewhere can't be deleted) (table `screens`). `is_system`
   protects the seeded access-control screens.
-- `Permission` (`id` uuid, `screen_id` FK `onDelete: Cascade`, `action` enum
-  (`view`/`create`/`edit`/`delete`), `label` (friendly, editable), `is_system`
-  bool — mirrors the owning screen; **`@@unique([screen_id, action])`**) (table
-  `permissions`). The curated catalog of ops a screen offers; `is_system`
-  permissions can't be deleted and their `action` is locked. A deletable screen
+- `Permission` (`id` uuid, `screen_id` FK `onDelete: Cascade`, `action` free
+  string key — a bare CRUD family or a composed `family_name` (`create_checkin`);
+  the family must be one of view/create/edit/delete — `label` (friendly, editable),
+  `is_system` bool — mirrors the owning screen; **`@@unique([screen_id, action])`**
+  so a screen can carry many ops of one family) (table `permissions`). The curated
+  catalog of ops a screen offers; `is_system` permissions can't be deleted and
+  their `action` is locked. A deletable screen
   cascades its (ungranted) permissions; a granted one is `Restrict`ed (the join's
   permission side), so it can't be deleted while granted.
 - `Profile` (`id` uuid, **unique `key`**, `name`, `description?`, `is_system`

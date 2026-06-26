@@ -4,7 +4,7 @@ import { hash } from 'bcryptjs'
 
 import { env } from '@/env'
 import { prisma } from '@/lib/prisma'
-import { PermissionAction, Role } from '@/prisma-client/enums'
+import { Role } from '@/prisma-client/enums'
 
 // Idempotent ADMIN seed: creates the admin user from environment-provided
 // credentials if it does not exist yet. Safe to run repeatedly — an existing
@@ -43,9 +43,7 @@ const SCREENS = [
 	// gym (demo content — deletable)
 	{ key: 'gym.dashboard', name: 'Dashboard', module: 'gym', path: '/', description: 'Activity at a glance.', order: 0, is_system: false },
 	{ key: 'gym.gyms', name: 'Gyms', module: 'gym', path: '/gyms', description: 'Browse and manage gyms.', order: 1, is_system: false },
-	{ key: 'gym.check-in', name: 'Check-in', module: 'gym', path: '/check-ins', description: 'Check in to a gym.', order: 2, is_system: false },
-	{ key: 'gym.history', name: 'Check-in History', module: 'gym', path: '/history', description: 'Your past check-ins.', order: 3, is_system: false },
-	{ key: 'gym.validations', name: 'Validate Check-ins', module: 'gym', path: '/validations', description: 'Approve member check-ins.', order: 4, is_system: false },
+	{ key: 'gym.check-ins', name: 'Check-ins', module: 'gym', path: '/check-ins', description: 'Check in to a gym and validate members.', order: 2, is_system: false },
 	// access-control (system — protected)
 	{ key: 'access-control.modules', name: 'Manage Modules', module: 'access-control', path: '/admin/modules', description: 'Group screens into modules.', order: 0, is_system: true },
 	{ key: 'access-control.screens', name: 'Manage Screens', module: 'access-control', path: '/admin/screens', description: 'Screens and their permissions.', order: 1, is_system: true },
@@ -56,17 +54,17 @@ const SCREENS = [
 // Curated permission catalog with friendly labels — only the ops a screen really
 // has. gym.gyms and access-control.users deliberately have NO delete (they
 // deactivate via the Active switch). is_system mirrors the screen.
-type PermSpec = { screen: string; action: PermissionAction; label: string }
+type PermSpec = { screen: string; action: string; label: string }
 const PERMISSIONS: PermSpec[] = [
 	{ screen: 'gym.dashboard', action: 'view', label: 'View' },
 	{ screen: 'gym.gyms', action: 'view', label: 'View' },
 	{ screen: 'gym.gyms', action: 'create', label: 'Add' },
 	{ screen: 'gym.gyms', action: 'edit', label: 'Edit' },
-	{ screen: 'gym.check-in', action: 'view', label: 'View' },
-	{ screen: 'gym.check-in', action: 'create', label: 'Check in' },
-	{ screen: 'gym.history', action: 'view', label: 'View' },
-	{ screen: 'gym.validations', action: 'view', label: 'View' },
-	{ screen: 'gym.validations', action: 'create', label: 'Validate' },
+	// Extra create op on the Gyms screen — kills the old phantom gym.check-in.
+	{ screen: 'gym.gyms', action: 'create_checkin', label: 'Check in' },
+	{ screen: 'gym.check-ins', action: 'view', label: 'View' },
+	// Extra edit op on the Check-ins screen — kills the old phantom gym.validations.
+	{ screen: 'gym.check-ins', action: 'edit_validate', label: 'Validate' },
 	{ screen: 'access-control.modules', action: 'view', label: 'View' },
 	{ screen: 'access-control.modules', action: 'create', label: 'Add' },
 	{ screen: 'access-control.modules', action: 'edit', label: 'Edit' },
@@ -92,20 +90,17 @@ const PROFILES = [
 
 // Per profile: membership (screen) + the granted ops on it; `landing` is the
 // profile's default screen. Membership = the listed screens.
-type GrantSpec = { screen: string; ops: PermissionAction[]; landing?: boolean }
+type GrantSpec = { screen: string; ops: string[]; landing?: boolean }
 const PROFILE_GRANTS: Record<string, GrantSpec[]> = {
 	'gym-member': [
 		{ screen: 'gym.dashboard', ops: ['view'], landing: true },
-		{ screen: 'gym.check-in', ops: ['view', 'create'] },
-		{ screen: 'gym.gyms', ops: ['view'] },
-		{ screen: 'gym.history', ops: ['view'] },
+		{ screen: 'gym.gyms', ops: ['view', 'create_checkin'] },
+		{ screen: 'gym.check-ins', ops: ['view'] },
 	],
 	'gym-manager': [
 		{ screen: 'gym.dashboard', ops: ['view'], landing: true },
-		{ screen: 'gym.check-in', ops: ['view', 'create'] },
-		{ screen: 'gym.gyms', ops: ['view', 'create', 'edit'] },
-		{ screen: 'gym.history', ops: ['view'] },
-		{ screen: 'gym.validations', ops: ['view', 'create'] },
+		{ screen: 'gym.gyms', ops: ['view', 'create', 'edit', 'create_checkin'] },
+		{ screen: 'gym.check-ins', ops: ['view', 'edit_validate'] },
 		{ screen: 'access-control.users', ops: ['view', 'create'] },
 	],
 	support: [

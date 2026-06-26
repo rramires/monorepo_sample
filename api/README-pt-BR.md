@@ -106,8 +106,10 @@ pnpm dev              # inicia o servidor em modo dev
 > `add_system_flag_module_screen` e `add_gym_is_active`, e então o redesign RBAC:
 > `rbac_permissions` (o catálogo `Permission` + join `profile_permissions`,
 > `Profile.default_screen_id`, as colunas de ciclo de vida `is_active`/`is_enabled`;
-> `profile_screens` repurposed para pura membership) e `profile_delete_restrict`
-> (FKs sem cascade nos deletes protegidos). O
+> `profile_screens` repurposed para pura membership), `profile_delete_restrict`
+> (FKs sem cascade nos deletes protegidos) e `rbac_fine_grained_action_key`
+> (`Permission.action` enum → chave string livre + o colapso das telas-fantasma de
+> gym). O
 > `pnpm seeddb` também popula o catálogo de módulos/telas, três perfis de sistema
 > e três usuários demo (veja _Controle de acesso_ abaixo).
 
@@ -179,14 +181,14 @@ imediatamente** no boot se alguma variável for inválida (validação Zod em
 | `POST`   | `/auth/me/email`                 | Bearer         | –                                  | Solicitar troca do próprio e-mail (confirma no novo)                                             |
 | `POST`   | `/auth/me/email/confirm`         | Bearer         | –                                  | Confirmar troca do próprio e-mail via OTP                                                        |
 | `GET`    | `/me/permissions`                | Bearer         | –                                  | Grants efetivos + menu por membership: `role`, `screens`, `menu` (c/ `is_enabled`), padrão       |
-| `GET`    | `/gyms/search`                   | Bearer         | –                                  | Buscar academias por nome (só ativas; gestores: `includeInactive`)                               |
-| `GET`    | `/gyms/nearby`                   | Bearer         | –                                  | Academias próximas a uma coordenada (só ativas; gestores: `includeInactive`)                     |
+| `GET`    | `/gyms/search`                   | Bearer         | `gym.gyms` · view                  | Buscar academias por nome (só ativas; gestores: `includeInactive`)                               |
+| `GET`    | `/gyms/nearby`                   | Bearer         | `gym.gyms` · view                  | Academias próximas a uma coordenada (só ativas; gestores: `includeInactive`)                     |
 | `POST`   | `/gyms`                          | Bearer         | `gym.gyms` · create                | Cadastrar academia                                                                               |
 | `PATCH`  | `/gyms/:gymId`                   | Bearer         | `gym.gyms` · edit                  | Editar academia (título/descrição/telefone, `is_active`)                                         |
-| `GET`    | `/check-ins/history`             | Bearer         | –                                  | Histórico de check-ins paginado                                                                  |
-| `GET`    | `/check-ins/metrics`             | Bearer         | –                                  | Total de check-ins                                                                               |
-| `POST`   | `/gyms/:gymId/check-ins`         | Bearer         | –                                  | Fazer check-in (`400` longe demais · `403` academia inativa · `409` já fez hoje)                 |
-| `PATCH`  | `/check-ins/:checkInId/validate` | Bearer         | `gym.validations` · create         | Validar check-in (`409` fora da janela de 20 min)                                                |
+| `GET`    | `/check-ins/history`             | Bearer         | `gym.check-ins` · view             | Histórico de check-ins paginado                                                                  |
+| `GET`    | `/check-ins/metrics`             | Bearer         | `gym.dashboard` · view             | Total de check-ins                                                                               |
+| `POST`   | `/gyms/:gymId/check-ins`         | Bearer         | `gym.gyms` · create_checkin        | Fazer check-in (`400` longe demais · `403` academia inativa · `409` já fez hoje)                 |
+| `PATCH`  | `/check-ins/:checkInId/validate` | Bearer         | `gym.check-ins` · edit_validate    | Validar check-in (`409` fora da janela de 20 min)                                                |
 | `POST`   | `/users/send-verification`       | Bearer         | –                                  | Enviar e-mail de verificação (link + OTP)                                                        |
 | `GET`    | `/users/verify-email`            | –              | –                                  | Verificar e-mail via link token (`?token=`)                                                      |
 | `POST`   | `/users/verify-email/otp`        | Bearer         | –                                  | Verificar e-mail via código OTP                                                                  |
@@ -248,19 +250,21 @@ token):
 }
 ```
 
-`GET /me/permissions` → `200` (alimenta a sidebar e o gate `can()` da UI; um
-`ADMIN` recebe todas as telas com todas as ações `true`):
+`GET /me/permissions` → `200` (alimenta a sidebar e o gate `can()` da UI; cada
+tela carrega as CHAVES de ação concedidas — famílias CRUD puras mais chaves
+compostas `family_name`; um `ADMIN` recebe todas as telas com as famílias base):
 
 ```json
 {
 	"role": "USER",
 	"screens": [
 		{
-			"screen_key": "gym.check-in",
-			"view": true,
-			"create": true,
-			"edit": false,
-			"delete": false
+			"screen_key": "gym.gyms",
+			"actions": ["view", "create_checkin"]
+		},
+		{
+			"screen_key": "gym.check-ins",
+			"actions": ["view"]
 		}
 	],
 	"menu": [

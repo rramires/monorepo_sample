@@ -328,12 +328,17 @@ Beyond the coarse `role`, the app has a **hybrid RBAC** model: a fixed role
 (`ADMIN` bypasses everything, `USER` follows grants) plus dynamic **Profiles**.
 A profile is **membership** (which screens show in the sidebar) + **granted
 permissions** (per screen) + a **landing screen**. Permissions are a **curated
-catalog per screen with friendly, editable labels** — e.g. Check-in offers
-"View" + "Check in"; `gym.gyms` and `access-control.users` deliberately have no
-`delete` (they deactivate via an Active switch). The action enum
-(`view`/`create`/`edit`/`delete`) stays the fixed **code contract** that
-`can(screenKey, action)` checks; the label is **presentation only**. `view` is
-now an **explicit grant** (not default-true). **Modules** group **Screens**; a
+catalog per screen with friendly, editable labels** — e.g. `gym.gyms` offers
+"View" + "Add" + "Check in"; `gym.gyms` and `access-control.users` deliberately
+have no `delete` (they deactivate via an Active switch). An action is a **free
+string KEY** — a bare CRUD family (`create`) or a composed `family_name`
+(`create_checkin`, `edit_validate`); the family (before the first `_`) must be
+one of `view`/`create`/`edit`/`delete`. `can(screenKey, action)` checks the key;
+the label is **presentation only**. An extra op lives on its real screen instead
+of spawning a phantom one — so the **Check in** button on the Gyms page is gated
+by `gym.gyms.create_checkin`, and **Validate** on Check-ins by
+`gym.check-ins.edit_validate`. `view` is now an **explicit grant**
+(not default-true). **Modules** group **Screens**; a
 profile carries `is_default` (auto-attached to a user on register), and profiles,
 modules and screens carry `is_system` (protected — the key can't change and it
 can't be deleted). Screens additionally carry `is_active` (lifecycle) and
@@ -404,11 +409,14 @@ three profiles) as system. A user may hold several profiles; their grants
       current module is kept so editing never drops a valid selection).
     - **Per-screen permission editor** (`screens/permissions-editor/`) — a
       todo-style editor opened by a clipboard-pen button per Screens row. It lists
-      the screen's curated permissions (each an op **Badge** + its friendly
-      **label**); you **add** a row (op `Select` + label `Input` — the Select
-      hides already-used actions, since a screen offers each op at most once),
-      **rename** a label inline (pencil → confirm), and **delete** a non-system
-      row (confirm). The op enum is the code contract; the label is free text.
+      the screen's curated permissions (each an op **Badge** — a bare family
+      reads "View"/"Create"…, a composed key shows its raw `family_name` — + its
+      friendly **label**); you **add** a row (Operation `Select` of the four
+      families + **`Other…`**, which reveals a Family `Select` + a Name `Input`
+      with a live composed-key preview; bare families already on the screen are
+      hidden), **rename** a label inline (pencil → confirm), and **delete** a
+      non-system row (confirm). The action key is the code contract; the label is
+      free text.
       Backend `409`s surface as toasts; the catalog is invalidated under the
       `['permissions']` prefix so the profile-detail picker refreshes too.
     - **Profiles** (`/admin/profiles`) — CRUD profiles (with `is_default`/`is_system`
@@ -647,7 +655,8 @@ leak past `src/api`. Build against the mock first; the real API is wired last.
 - RBAC read fresh from `/me/permissions` (`can()` + `RequireScreen`); `Forbidden`
   rendered in place, not trusted from a token. Hybrid model: fixed role + dynamic
   profiles = membership + a curated per-screen permission catalog (friendly
-  labels over the `view/create/edit/delete` code contract) + a landing screen;
+  labels over free action keys — bare CRUD families or composed `family_name`) +
+  a landing screen;
   the sidebar (membership) and landing screen are data-driven from the same
   payload, with a per-screen kill switch surfaced by `isScreenEnabled`.
 - Typed `src/api` layer is the single place wire shapes (snake_case) map to app

@@ -48,7 +48,7 @@ export const router = createBrowserRouter([
 							},
 							{
 								element: (
-									<RequireScreen screen='gym.check-in' />
+									<RequireScreen screen='gym.check-ins' />
 								),
 								children: [
 									{

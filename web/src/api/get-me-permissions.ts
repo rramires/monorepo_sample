@@ -3,13 +3,11 @@ import { mePermissionsSchema, type Role } from '@root/contracts'
 import { api } from '@/lib/api'
 
 // The app-side permission model (camelCase). Wire shapes (snake_case) never leak
-// past src/api.
+// past src/api. `actions` is the set of granted action KEYS for the screen —
+// `can(key, action) = actions.includes(action)`.
 export interface ScreenPermission {
 	screenKey: string
-	view: boolean
-	create: boolean
-	edit: boolean
-	delete: boolean
+	actions: string[]
 }
 
 // A membership screen — the catalog bits the sidebar groups into the menu (so it
@@ -44,10 +42,7 @@ export async function getMePermissions(): Promise<MyPermissions> {
 		role: parsed.role,
 		screens: parsed.screens.map((s) => ({
 			screenKey: s.screen_key,
-			view: s.view,
-			create: s.create,
-			edit: s.edit,
-			delete: s.delete,
+			actions: s.actions,
 		})),
 		menu: parsed.menu.map((m) => ({
 			screenKey: m.screen_key,

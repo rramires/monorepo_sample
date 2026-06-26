@@ -20,6 +20,9 @@ export function GymCard({ gym }: { gym: Gym }) {
 	const { handleCheckIn, isCheckingIn } = useCheckIn()
 	const { can } = usePermissions()
 	const canEdit = can('gym.gyms', 'edit')
+	// Check-in is an extra op of the Gyms screen (composed key), not its own
+	// screen — so the button lives here but its grant is gym.gyms.create_checkin.
+	const canCheckIn = can('gym.gyms', 'create_checkin')
 
 	return (
 		<Card className='flex flex-col'>
@@ -49,19 +52,23 @@ export function GymCard({ gym }: { gym: Gym }) {
 				)}
 			</CardContent>
 			<CardFooter className='flex-col gap-2'>
-				<Button
-					variant='outline'
-					className='w-full'
-					disabled={isCheckingIn || !gym.is_active}
-					onClick={() => handleCheckIn(gym.id)}
-				>
-					{isCheckingIn ? (
-						<LoaderCircle className='size-4 animate-spin' />
-					) : (
-						<CircleCheck className='size-4' />
-					)}
-					Check in
-				</Button>
+				{/* Check-in needs the gym.gyms `create_checkin` grant; members
+				    without it never see the button (the action also 403s). */}
+				{canCheckIn && (
+					<Button
+						variant='outline'
+						className='w-full'
+						disabled={isCheckingIn || !gym.is_active}
+						onClick={() => handleCheckIn(gym.id)}
+					>
+						{isCheckingIn ? (
+							<LoaderCircle className='size-4 animate-spin' />
+						) : (
+							<CircleCheck className='size-4' />
+						)}
+						Check in
+					</Button>
+				)}
 
 				{/* Editing a gym needs the gym.gyms `edit` grant (the route-level
 				    guard still protects it; hiding the button is just UX). */}
