@@ -1,4 +1,5 @@
 import { LoaderCircle, Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { PageHeader } from '@/components/page-header'
@@ -15,21 +16,19 @@ import { useGymsPM } from './use-gyms-pm'
 
 export function Gyms() {
 	const pm = useGymsPM()
+	const { t } = useTranslation('gyms')
 
 	return (
 		<>
-			<PageTitle title='Gyms' />
+			<PageTitle title={t('pageTitle')} />
 
 			<div className='flex flex-1 flex-col gap-3 px-8 pt-5 pb-8'>
-				<PageHeader
-					title='Gyms'
-					description='Find a gym near you, or search by name.'
-				>
+				<PageHeader title={t('title')} description={t('description')}>
 					{pm.canCreate && (
 						<Button asChild size='sm'>
 							<Link to='/gyms/new'>
 								<Plus />
-								New gym
+								{t('newGym')}
 							</Link>
 						</Button>
 					)}
@@ -37,7 +36,7 @@ export function Gyms() {
 
 				<div className='grid items-center gap-4 sm:grid-cols-2'>
 					<Input
-						placeholder='Search gyms by name…'
+						placeholder={t('searchPlaceholder')}
 						value={pm.query}
 						onChange={(event) =>
 							pm.handleQueryChange(event.target.value)
@@ -53,7 +52,7 @@ export function Gyms() {
 										pm.setNearbyMode(value === true)
 									}
 								/>
-								Nearby only
+								{t('nearbyOnly')}
 							</Label>
 							<Label className='text-muted-foreground flex items-center gap-2 text-sm font-normal'>
 								<Checkbox
@@ -62,7 +61,7 @@ export function Gyms() {
 										pm.setShowDeactivated(value === true)
 									}
 								/>
-								Show deactivated
+								{t('showDeactivated')}
 							</Label>
 						</div>
 					)}
@@ -70,31 +69,31 @@ export function Gyms() {
 
 				{pm.status === 'geo-denied' && (
 					<p className='text-muted-foreground text-sm'>
-						Couldn&apos;t get your location — search by name above.
+						{t('geoDenied')}
 					</p>
 				)}
 
 				{pm.status === 'locating' && (
 					<div className='text-muted-foreground flex items-center gap-2 text-sm'>
 						<LoaderCircle className='size-4 animate-spin' />
-						Finding gyms near you…
+						{t('locating')}
 					</div>
 				)}
 
 				{pm.status === 'loading' && (
 					<div className='text-muted-foreground flex items-center gap-2 text-sm'>
 						<LoaderCircle className='size-4 animate-spin' />
-						Loading gyms…
+						{t('loading')}
 					</div>
 				)}
 
 				{pm.status === 'empty' && (
 					<p className='text-muted-foreground text-sm'>
 						{pm.searching
-							? 'No gyms match your search.'
+							? t('empty.search')
 							: pm.canManage && !pm.nearbyMode
-								? 'No gyms yet.'
-								: 'No gyms found near you.'}
+								? t('empty.none')
+								: t('empty.nearby')}
 					</p>
 				)}
 

@@ -3,6 +3,12 @@
 		"admin": "Admin",
 		"member": "Membro"
 	},
+	"status": {
+		"active": "Ativo",
+		"inactive": "Inativo",
+		"system": "Sistema",
+		"off": "Desligado"
+	},
 	"errors": {
 		"minChars": "Mínimo de {{count}} caracteres.",
 		"maxChars": "Máximo de {{count}} caracteres.",

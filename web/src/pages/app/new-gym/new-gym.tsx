@@ -1,4 +1,5 @@
 import { Crosshair } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { PageTitle } from '@/components/title/page-title'
 import { Button } from '@/components/ui/button'
@@ -16,17 +17,18 @@ import { useNewGymPM } from './use-new-gym-pm'
 
 export function NewGym() {
 	const pm = useNewGymPM()
+	const { t } = useTranslation('gyms')
 
 	return (
 		<>
-			<PageTitle title='New gym' />
+			<PageTitle title={t('new.pageTitle')} />
 
 			<div className='flex flex-1 justify-center p-4 sm:p-8'>
 				<Card className='w-full max-w-lg'>
 					<CardHeader>
-						<CardTitle>New gym</CardTitle>
+						<CardTitle>{t('new.title')}</CardTitle>
 						<CardDescription>
-							Register a gym members can check in to.
+							{t('new.description')}
 						</CardDescription>
 					</CardHeader>
 
@@ -34,7 +36,9 @@ export function NewGym() {
 						<form onSubmit={pm.handleSubmit} noValidate>
 							<div className='flex flex-col gap-6'>
 								<div className='grid gap-2'>
-									<Label htmlFor='title'>Title</Label>
+									<Label htmlFor='title'>
+										{t('new.titleLabel')}
+									</Label>
 									<Input
 										id='title'
 										autoFocus
@@ -49,7 +53,7 @@ export function NewGym() {
 
 								<div className='grid gap-2'>
 									<Label htmlFor='description'>
-										Description
+										{t('new.descriptionLabel')}
 									</Label>
 									<Input
 										id='description'
@@ -58,7 +62,9 @@ export function NewGym() {
 								</div>
 
 								<div className='grid gap-2'>
-									<Label htmlFor='phone'>Phone</Label>
+									<Label htmlFor='phone'>
+										{t('new.phoneLabel')}
+									</Label>
 									<Input
 										id='phone'
 										{...pm.register('phone')}
@@ -73,7 +79,7 @@ export function NewGym() {
 								<div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
 									<div className='grid gap-2'>
 										<Label htmlFor='latitude'>
-											Latitude
+											{t('new.latitudeLabel')}
 										</Label>
 										<Input
 											id='latitude'
@@ -87,7 +93,7 @@ export function NewGym() {
 									</div>
 									<div className='grid gap-2'>
 										<Label htmlFor='longitude'>
-											Longitude
+											{t('new.longitudeLabel')}
 										</Label>
 										<Input
 											id='longitude'
@@ -108,7 +114,7 @@ export function NewGym() {
 									disabled={pm.locating}
 								>
 									<Crosshair />
-									Use my current location
+									{t('new.useMyLocation')}
 								</Button>
 
 								<Button
@@ -116,7 +122,7 @@ export function NewGym() {
 									disabled={pm.isSubmitting}
 									className='w-full'
 								>
-									Create gym
+									{t('new.create')}
 								</Button>
 							</div>
 						</form>

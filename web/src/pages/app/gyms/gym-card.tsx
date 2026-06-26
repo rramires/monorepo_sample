@@ -1,4 +1,5 @@
 import { CircleCheck, LoaderCircle, MapPin, Phone } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import type { Gym } from '@/api/search-gyms'
 import { Badge } from '@/components/ui/badge'
@@ -17,6 +18,7 @@ import { useGymCardPM } from './use-gym-card-pm'
 
 export function GymCard({ gym }: { gym: Gym }) {
 	const pm = useGymCardPM(gym)
+	const { t } = useTranslation(['gyms', 'common'])
 
 	return (
 		<Card className='flex flex-col'>
@@ -24,7 +26,9 @@ export function GymCard({ gym }: { gym: Gym }) {
 				<CardTitle className='flex items-center gap-2'>
 					<span>{gym.title}</span>
 					{!gym.is_active && (
-						<Badge variant='destructive'>Inactive</Badge>
+						<Badge variant='destructive'>
+							{t('common:status.inactive')}
+						</Badge>
 					)}
 				</CardTitle>
 				{gym.description && (
@@ -60,7 +64,7 @@ export function GymCard({ gym }: { gym: Gym }) {
 						) : (
 							<CircleCheck className='size-4' />
 						)}
-						Check in
+						{t('gyms:card.checkIn')}
 					</Button>
 				)}
 

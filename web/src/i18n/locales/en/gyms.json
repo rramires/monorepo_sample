@@ -1,0 +1,60 @@
+{
+	"pageTitle": "Gyms",
+	"title": "Gyms",
+	"description": "Find a gym near you, or search by name.",
+	"newGym": "New gym",
+	"searchPlaceholder": "Search gyms by name…",
+	"nearbyOnly": "Nearby only",
+	"showDeactivated": "Show deactivated",
+	"geoDenied": "Couldn't get your location — search by name above.",
+	"locating": "Finding gyms near you…",
+	"loading": "Loading gyms…",
+	"empty": {
+		"search": "No gyms match your search.",
+		"none": "No gyms yet.",
+		"nearby": "No gyms found near you."
+	},
+	"card": {
+		"checkIn": "Check in"
+	},
+	"edit": {
+		"title": "Edit gym",
+		"description": "Update this gym's details. Location can't be changed.",
+		"titleLabel": "Title",
+		"descriptionLabel": "Description",
+		"phoneLabel": "Phone",
+		"activeLabel": "Active",
+		"activeHint": "Inactive gyms are hidden from members and refuse check-ins.",
+		"save": "Save changes",
+		"confirmTitle": "Deactivate gym",
+		"confirmDescription": "Deactivate \"{{title}}\"? It will be hidden from members and refuse new check-ins (existing history is kept). You can reactivate it any time.",
+		"confirmLabel": "Deactivate"
+	},
+	"new": {
+		"pageTitle": "New gym",
+		"title": "New gym",
+		"description": "Register a gym members can check in to.",
+		"titleLabel": "Title",
+		"descriptionLabel": "Description",
+		"phoneLabel": "Phone",
+		"latitudeLabel": "Latitude",
+		"longitudeLabel": "Longitude",
+		"useMyLocation": "Use my current location",
+		"create": "Create gym"
+	},
+	"toast": {
+		"updated": "Gym \"{{title}}\" updated.",
+		"updateError": "Could not update the gym.",
+		"created": "Gym \"{{title}}\" created.",
+		"createError": "Could not create the gym.",
+		"locationError": "Could not get your location."
+	},
+	"errors": {
+		"titleRequired": "Title is required.",
+		"phone": "Enter a valid phone number.",
+		"latitudeRequired": "Latitude is required.",
+		"latitudeInvalid": "Enter a valid latitude.",
+		"longitudeRequired": "Longitude is required.",
+		"longitudeInvalid": "Enter a valid longitude."
+	}
+}

@@ -1,5 +1,6 @@
 import { Pencil } from 'lucide-react'
 import { Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 import type { Gym } from '@/api/search-gyms'
 import { ConfirmDialog } from '@/components/confirm-dialog'
@@ -21,6 +22,7 @@ import { useEditGymPM } from './use-edit-gym-pm'
 
 export function EditGymDialog({ gym }: { gym: Gym }) {
 	const pm = useEditGymPM(gym)
+	const { t } = useTranslation(['gyms', 'common'])
 
 	return (
 		<>
@@ -28,23 +30,24 @@ export function EditGymDialog({ gym }: { gym: Gym }) {
 				<DialogTrigger asChild>
 					<Button variant='outline' className='w-full'>
 						<Pencil className='size-4' />
-						Edit
+						{t('common:actions.edit')}
 					</Button>
 				</DialogTrigger>
 
 				<DialogContent className='sm:max-w-md'>
 					<DialogHeader>
-						<DialogTitle>Edit gym</DialogTitle>
+						<DialogTitle>{t('gyms:edit.title')}</DialogTitle>
 						<DialogDescription>
-							Update this gym's details. Location can't be
-							changed.
+							{t('gyms:edit.description')}
 						</DialogDescription>
 					</DialogHeader>
 
 					<form onSubmit={pm.handleSubmit} noValidate>
 						<div className='flex flex-col gap-6'>
 							<div className='grid gap-2'>
-								<Label htmlFor='edit-title'>Title</Label>
+								<Label htmlFor='edit-title'>
+									{t('gyms:edit.titleLabel')}
+								</Label>
 								<Input
 									id='edit-title'
 									{...pm.register('title')}
@@ -58,7 +61,7 @@ export function EditGymDialog({ gym }: { gym: Gym }) {
 
 							<div className='grid gap-2'>
 								<Label htmlFor='edit-description'>
-									Description
+									{t('gyms:edit.descriptionLabel')}
 								</Label>
 								<Input
 									id='edit-description'
@@ -67,7 +70,9 @@ export function EditGymDialog({ gym }: { gym: Gym }) {
 							</div>
 
 							<div className='grid gap-2'>
-								<Label htmlFor='edit-phone'>Phone</Label>
+								<Label htmlFor='edit-phone'>
+									{t('gyms:edit.phoneLabel')}
+								</Label>
 								<Input
 									id='edit-phone'
 									{...pm.register('phone')}
@@ -81,10 +86,11 @@ export function EditGymDialog({ gym }: { gym: Gym }) {
 
 							<div className='flex items-center justify-between'>
 								<div>
-									<Label htmlFor='edit-active'>Active</Label>
+									<Label htmlFor='edit-active'>
+										{t('gyms:edit.activeLabel')}
+									</Label>
 									<p className='text-muted-foreground text-sm'>
-										Inactive gyms are hidden from members
-										and refuse check-ins.
+										{t('gyms:edit.activeHint')}
 									</p>
 								</div>
 								<Controller
@@ -106,7 +112,7 @@ export function EditGymDialog({ gym }: { gym: Gym }) {
 									disabled={pm.isSubmitting}
 									className='w-full'
 								>
-									Save changes
+									{t('gyms:edit.save')}
 								</Button>
 							</DialogFooter>
 						</div>
@@ -116,9 +122,11 @@ export function EditGymDialog({ gym }: { gym: Gym }) {
 
 			<ConfirmDialog
 				{...pm.confirmDeactivate}
-				title='Deactivate gym'
-				description={`Deactivate "${gym.title}"? It will be hidden from members and refuse new check-ins (existing history is kept). You can reactivate it any time.`}
-				confirmLabel='Deactivate'
+				title={t('gyms:edit.confirmTitle')}
+				description={t('gyms:edit.confirmDescription', {
+					title: gym.title,
+				})}
+				confirmLabel={t('gyms:edit.confirmLabel')}
 			/>
 		</>
 	)
