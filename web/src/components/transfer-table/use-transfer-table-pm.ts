@@ -5,7 +5,7 @@ import type { TransferSide, TransferTableProps } from './types'
 // Logic for the TransferTable: derives the two lists from the controlled
 // assignedIds, owns selection + per-side search, and exposes the move
 // operations the buttons and drag-and-drop both call.
-export function useTransferTable<T>({
+export function useTransferTablePM<T>({
 	items,
 	getRowId,
 	assignedIds,
@@ -18,6 +18,9 @@ export function useTransferTable<T>({
 	const [selected, setSelected] = useState<Set<string>>(new Set())
 	const [availableQuery, setAvailableQuery] = useState('')
 	const [assignedQuery, setAssignedQuery] = useState('')
+	// The row being dragged (drives the drag overlay). dnd-kit event → string id
+	// translation stays in the view; this hook only tracks the active id.
+	const [activeId, setActiveId] = useState<string | null>(null)
 
 	const assignedSet = useMemo(() => new Set(assignedIds), [assignedIds])
 
@@ -115,17 +118,28 @@ export function useTransferTable<T>({
 		}
 	}
 
-	// How many rows a drag of `activeId` would carry (the selection group, or
-	// just the dragged row). Drives the drag overlay's count.
-	function dragCount(activeId: string) {
-		if (!selected.has(activeId)) {
+	function startDrag(id: string) {
+		setActiveId(id)
+	}
+
+	function clearDrag() {
+		setActiveId(null)
+	}
+
+	// How many rows a drag of `id` would carry (its selection group, or just the
+	// dragged row). Kept parametric because moveByDrag computes the same group.
+	function countForId(id: string) {
+		if (!selected.has(id)) {
 			return 1
 		}
-		const side: TransferSide = assignedSet.has(activeId)
+		const side: TransferSide = assignedSet.has(id)
 			? 'assigned'
 			: 'available'
-		return new Set([activeId, ...selectedOn(side)]).size
+		return new Set([id, ...selectedOn(side)]).size
 	}
+
+	// Drives the drag overlay's count.
+	const dragCount = activeId ? countForId(activeId) : 0
 
 	// ── Selection ──────────────────────────────────────────────────────────
 	function toggleRow(id: string) {
@@ -186,6 +200,9 @@ export function useTransferTable<T>({
 		moveAllRight,
 		moveAllLeft,
 		moveByDrag,
+		activeId,
+		startDrag,
+		clearDrag,
 		dragCount,
 		getRowId,
 	}

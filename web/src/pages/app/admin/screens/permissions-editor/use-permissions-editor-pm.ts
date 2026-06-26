@@ -45,15 +45,17 @@ function message(err: unknown, fallback: string): string {
 
 // Drives the todo-style permission editor for one screen: list rows, add a row
 // (curated op + friendly label), unlock-to-edit a label, delete — each mutating
-// the catalog through the permissions API. `enabled` keeps the query idle until
-// the dialog opens.
-export function usePermissionsEditorPM(screenId: string, enabled: boolean) {
+// the catalog through the permissions API. Owns the dialog `open` state; the
+// query stays idle until the dialog opens.
+export function usePermissionsEditorPM(screenId: string) {
 	const queryClient = useQueryClient()
+
+	const [open, setOpen] = useState(false)
 
 	const { data: permissions = [], isLoading } = useQuery({
 		queryKey: ['permissions', screenId],
 		queryFn: () => getPermissions(screenId),
-		enabled,
+		enabled: open,
 	})
 
 	// Add-row draft. `op` is the Operation Select: a bare CRUD family, or `other`
@@ -160,6 +162,8 @@ export function usePermissionsEditorPM(screenId: string, enabled: boolean) {
 	const canAdd = keyValid && labelValid
 
 	return {
+		open,
+		setOpen,
 		permissions,
 		isLoading,
 		// add row

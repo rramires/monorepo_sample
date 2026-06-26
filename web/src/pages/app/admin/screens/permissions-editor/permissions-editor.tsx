@@ -1,6 +1,6 @@
 import { PERMISSION_FAMILIES, type PermissionFamily } from '@root/contracts'
 import { Check, Pencil, Plus, Trash2, X } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { type ReactNode } from 'react'
 
 import type { ScreenModel } from '@/api/screens'
 import { ConfirmDialog } from '@/components/confirm-dialog'
@@ -39,11 +39,10 @@ export function PermissionsEditor({
 	screen: ScreenModel
 	trigger: ReactNode
 }) {
-	const [open, setOpen] = useState(false)
-	const pm = usePermissionsEditorPM(screen.id, open)
+	const pm = usePermissionsEditorPM(screen.id)
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
+		<Dialog open={pm.open} onOpenChange={pm.setOpen}>
 			<DialogTrigger asChild>{trigger}</DialogTrigger>
 			<DialogContent className='sm:max-w-lg'>
 				<DialogHeader>

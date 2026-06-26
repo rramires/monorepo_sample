@@ -22,6 +22,9 @@ function nameWithFlag(screen: ScreenRow) {
 		<>
 			{screen.name}
 			{screen.isSystem && <Badge variant='outline'>System</Badge>}
+			{!screen.isActive && <Badge variant='outline'>Inactive</Badge>}
+			{/* Killed by the emergency switch (Screen.is_enabled = off). */}
+			{!screen.isEnabled && <Badge variant='destructive'>Off</Badge>}
 		</>
 	)
 }

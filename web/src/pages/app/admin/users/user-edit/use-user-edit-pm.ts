@@ -10,6 +10,7 @@ import { z } from 'zod'
 import { getUser } from '@/api/get-user'
 import { updateUser, type UpdateUserBody } from '@/api/update-user'
 import { useAuth } from '@/components/auth/auth-hooks'
+import { useSetBreadcrumb } from '@/components/breadcrumb/breadcrumb-hooks'
 import { useConfirmDeactivate } from '@/hooks/use-confirm-deactivate'
 
 const usernamePattern = /^[a-zA-Z0-9_]+$/
@@ -45,6 +46,9 @@ export function useUserEditPM() {
 		enabled: Boolean(userId),
 		retry: false,
 	})
+
+	// Publish the username as the breadcrumb's dynamic leaf.
+	useSetBreadcrumb(user?.username)
 
 	const {
 		register,

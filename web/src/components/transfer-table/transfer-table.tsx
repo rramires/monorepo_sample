@@ -2,7 +2,6 @@ import {
 	DndContext,
 	type DragEndEvent,
 	DragOverlay,
-	type DragStartEvent,
 	PointerSensor,
 	useSensor,
 	useSensors,
@@ -17,24 +16,26 @@ import {
 	ChevronsUp,
 	ChevronUp,
 } from 'lucide-react'
-import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { useLayoutBand } from '@/hooks/use-layout-band'
 
 import { TransferPanel } from './transfer-panel'
 import type { TransferSide, TransferTableProps } from './types'
-import { useTransferTable } from './use-transfer-table'
+import { useTransferTablePM } from './use-transfer-table-pm'
 
 // A two-table transfer list: pick rows on the left, move them to the right with
 // the buttons or by dragging (multi-select aware). Columns are caller-defined
 // per side, so the assigned side can carry extra cells (e.g. action toggles).
 // Controlled via assignedIds / onAssignedChange.
+//
+// The transfer logic lives in useTransferTablePM (dnd-agnostic). This view owns
+// only the dnd-kit binding (sensors + event→PM translation) and the band-driven
+// responsive layout (button icons flip to up/down when the panels stack).
 export function TransferTable<T>(props: TransferTableProps<T>) {
 	const { availableColumns, assignedColumns, labels, searchable, getRowId } =
 		props
-	const pm = useTransferTable(props)
-	const [activeId, setActiveId] = useState<string | null>(null)
+	const pm = useTransferTablePM(props)
 
 	// Below lg the two panels stack (available on top, granted below), so the
 	// move buttons point up/down instead of left/right (assigned = down).
@@ -50,24 +51,20 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 		useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
 	)
 
-	function handleDragStart(event: DragStartEvent) {
-		setActiveId(String(event.active.id))
-	}
-
 	function handleDragEnd(event: DragEndEvent) {
-		setActiveId(null)
-		if (!event.over) {
-			return
+		const id = String(event.active.id)
+		pm.clearDrag()
+		if (event.over) {
+			pm.moveByDrag(id, event.over.id as TransferSide)
 		}
-		pm.moveByDrag(String(event.active.id), event.over.id as TransferSide)
 	}
 
 	return (
 		<DndContext
 			sensors={sensors}
-			onDragStart={handleDragStart}
+			onDragStart={(event) => pm.startDrag(String(event.active.id))}
 			onDragEnd={handleDragEnd}
-			onDragCancel={() => setActiveId(null)}
+			onDragCancel={pm.clearDrag}
 		>
 			<div className='flex flex-col items-stretch gap-3 lg:flex-row'>
 				<TransferPanel
@@ -149,10 +146,9 @@ export function TransferTable<T>(props: TransferTableProps<T>) {
 			</div>
 
 			<DragOverlay>
-				{activeId ? (
+				{pm.activeId ? (
 					<div className='bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm shadow-lg'>
-						Move {pm.dragCount(activeId)}
-						{pm.dragCount(activeId) > 1 ? ' rows' : ' row'}
+						Move {pm.dragCount} {pm.dragCount > 1 ? 'rows' : 'row'}
 					</div>
 				) : null}
 			</DragOverlay>
