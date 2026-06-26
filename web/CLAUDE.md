@@ -107,11 +107,37 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## UI text vs. prose language
 
-- **User-visible text in the code is English** (labels, buttons, toasts, page
-  titles, placeholders).
+- **User-visible text comes from i18n, never hardcoded.** The app is fully
+  internationalized (en-US + pt-BR) — every label, button, toast, page title,
+  placeholder and aria-label resolves through `t()` / `<Trans>`. No English (or
+  Portuguese) literal in JSX. See **Internationalization** below + `PROJECT.md`.
 - **Tutorial/explanatory prose is pt-BR** (the `TUTORIAL_*` guides, and your
-  conversation with the user). Don't mix the two: an English button in a
-  Portuguese sentence is correct, a Portuguese label in the UI is not.
+  conversation with the user).
+
+## Internationalization (i18n)
+
+Two languages: **en-US** (`en`) + **pt-BR**. Architecture lives in `PROJECT.md`
+§ Internationalization — this is the working rule. When you add or touch
+user-facing text:
+
+- **Add the key to the right namespace** under `src/i18n/locales/{en,pt-BR}/`
+  (`common`, `nav`, `catalog`, `auth`, `account`, `check-ins`, `gyms`, `admin`),
+  in **both** languages. `en` value = the exact English copy (keeps the suites
+  green); author the pt-BR yourself (Brazilian, not European). Keys are
+  **typed** — a missing/wrong key fails `pnpm build`.
+- **Read it with** `useTranslation('<ns>')` (or `['<ns>', 'common']` to reach
+  `common:` keys). **Interpolate** values (`t('k', { name })`), don't
+  concatenate; use `<Trans>` for embedded markup.
+- **Form validation:** build the Zod schema from a `factory(t)` memoized on
+  `i18n.language`; reuse `common:errors.*` for generic field rules; never leave
+  an inline `.min(n, 'msg')` (it beats the locale map — the precedence trap).
+- **Dates** go through `lib/datetime.ts` (date-fns + `useLocale().dateLocale`),
+  never `Intl.DateTimeFormat(undefined, …)` and never a hardcoded format.
+- **Enum/status** → `common:roles` / `common:status` maps. **DB catalog**
+  (module/screen/action names in chrome) → `t('catalog:…', { defaultValue })`.
+  **Never translate user data** (gym names, usernames, admin-typed names).
+- **Out of scope (Plan 2):** backend `data.message` toasts + the env password
+  message stay English by design. Don't localize them here.
 
 ## Tests
 

@@ -9,6 +9,14 @@
 		"system": "System",
 		"off": "Off"
 	},
+	"errorPage": {
+		"notFoundPageTitle": "Not Found",
+		"notFoundTitle": "404 - Page not found",
+		"returnHome": "Return to homepage",
+		"pageTitle": "Error",
+		"oops": "Oops!",
+		"occurred": "Sorry, an error occurred:"
+	},
 	"errors": {
 		"minChars": "Minimum of {{count}} characters.",
 		"maxChars": "Maximum of {{count}} characters.",

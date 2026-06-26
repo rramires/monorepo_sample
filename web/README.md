@@ -311,6 +311,15 @@ For a **real-backend** smoke, run `pnpm dev` against `solid_api_sample` and walk
 the same flow (register first; verify email via the link/OTP printed to the API
 server log).
 
+## Internationalization
+
+The UI ships in **English (en-US)** and **Portuguese (pt-BR)** — switch with the
+flag selector in the header (your choice is remembered; first visit follows the
+browser). Language drives all copy, date/number formatting (`date-fns`), and
+form-validation messages; dates render in your browser's timezone. Architecture
+and conventions are documented in [`PROJECT.md`](PROJECT.md) §
+Internationalization.
+
 ## License
 
 Released under the [MIT License](LICENSE).

@@ -85,6 +85,18 @@ i18n.use(LanguageDetector)
 			// Static JSON resources load synchronously — no Suspense needed.
 			useSuspense: false,
 		},
+		// Dev-only regression guard: surface any key that resolves to nothing
+		// (a typo or an untranslated string) loudly in the console. Off in test
+		// (the suite forces `en`, where every key exists) and in production.
+		saveMissing: import.meta.env.MODE === 'development',
+		missingKeyHandler:
+			import.meta.env.MODE === 'development'
+				? (lngs, ns, key) => {
+						console.warn(
+							`[i18n] missing key "${ns}:${key}" for ${lngs.join(', ')}`,
+						)
+					}
+				: undefined,
 	})
 
 /** Keep `<html lang>` and the Zod locale in lockstep with the active language. */

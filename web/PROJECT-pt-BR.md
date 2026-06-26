@@ -681,3 +681,72 @@ de fio nunca vazam além de `src/api`. Construa contra o mock primeiro; a API re
   mode do Vite.
 - Suítes unit (happy-dom) + e2e (Playwright vs. MSW) — mais a disciplina
   documentada de smoke manual para bugs de cold-load em campos controlados.
+
+## Internacionalização (i18n)
+
+Internacionalização completa da UI, **só no frontend**, dois idiomas: **en-US**
+(`en`) e **pt-BR**. Um seletor de bandeiras no cabeçalho comanda tudo.
+
+**Stack.** `react-i18next` + `i18next` + `i18next-browser-languagedetector`;
+recursos JSON estáticos (sem http-backend); chaves tipadas via module
+augmentation do TS (`src/i18n/resources.d.ts`) — uma chave faltando/errada vira
+**erro de build**. `date-fns` (+ `@date-fns/tz`) para datas; `Intl.NumberFormat`
+é a escolha documentada para números/dinheiro.
+
+**Três conceitos independentes.** Mantenha-os separados:
+1. **Idioma** (qual texto) — do seletor, persistido no `localStorage`
+   (`vite-ui-locale`), detectado do `navigator` na primeira visita.
+2. **Locale de formato** (ordem da data, nomes dos meses, 12/24h) — derivado do
+   idioma (locales `enUS` / `ptBR` do date-fns via `useLocale().dateLocale`).
+3. **Fuso horário** (offset/DST) — do **navegador**
+   (`Intl…resolvedOptions().timeZone`); datas renderizam na hora local. Não há
+   fuso por usuário salvo na v1; o `TZDate` do `@date-fns/tz` está instalado +
+   documentado para esse override futuro. Um usuário pt-BR em Lisboa = `pt-BR` +
+   `Europe/Lisbon`.
+
+**Layout.** `src/i18n/` tem a init, a augmentation de chaves tipadas, os mapas
+de locale do Zod escritos à mão (`zod-locale.ts`) e `locales/{en,pt-BR}/*.json`.
+Namespaces: `common` (compartilhado: actions, states, roles, status, errors,
+pager, transfer, multiSelect, errorPage), `nav`, `catalog`, `auth`, `account`,
+`check-ins`, `gyms`, `admin`. `components/locale/` espelha `components/theme/`
+(provider + hook `useLocale` + `LanguageSelector`). `lib/datetime.ts` tem os
+helpers de data. Trocar o idioma sincroniza `<html lang>`, persiste a escolha e
+troca o locale do Zod.
+
+**Convenções.**
+- **Um código em todo lugar** para um conceito — nunca divergir a tag de idioma
+  entre i18next / `<html lang>` / date-fns / Intl.
+- **Interpole, nunca concatene** (a ordem das palavras muda por idioma); use
+  `<Trans>` para markup embutido (ex.: a dica de troca de e-mail da conta).
+- **Mensagens de validação** são construídas por uma `factory(t)` memoizada em
+  `i18n.language`, então seguem o seletor. Regras de campo genéricas ficam em
+  `common:errors`; o **mapa de locale** do Zod (`z.config({ localeError })`) é o
+  catch-all. **Armadilha de precedência:** uma mensagem inline do schema
+  (`.min(3, 'msg')`) vence o mapa de locale — então os schemas de feature passam
+  mensagens via `t()`, não strings inline.
+- **Rótulos de enum/status** são mapas código→texto (`common:roles`,
+  `common:status`), nunca strings soltas.
+- **Catálogo vindo do banco** (nomes de módulo na sidebar, nomes de
+  tela/ação/perfil na chrome) é traduzido **por chave estável** com o valor
+  armazenado como fallback em `defaultValue`: `t('catalog:modules.<key>.name', {
+  defaultValue: name })`. Entradas semeadas têm tradução; linhas criadas pelo
+  admin caem no valor armazenado (nunca traduzidas por máquina). Nas **tabelas
+  de gestão do admin** o nome armazenado aparece literal (é o dado em edição).
+- **Números/dinheiro = dado, não idioma.** Este app não tem campo de dinheiro;
+  quando houver, formate com `Intl.NumberFormat(localeTag, { style: 'currency',
+  currency })` — não com strings de tradução. (Veja o cabeçalho de
+  `lib/datetime.ts`.)
+
+**Testes.** Os valores `en` do JSON são literalmente a cópia original em inglês,
+então as suítes unit + e2e afirmam as mesmas strings; `test/setup.ts` força
+`lng: en` para determinismo. Em dev, um `missingKeyHandler` avisa sobre qualquer
+chave não resolvida.
+
+**Costuras conhecidas (em inglês, de propósito — i18n do backend é o Plano 2).**
+Mensagens de toast vindas do servidor (`error.response.data.message`, ex.:
+"Invalid credentials.") e a mensagem de padrão de senha vinda do env
+(`VITE_PASSWORD_MESSAGE`) ficam em inglês: são de responsabilidade do
+deploy/backend. O Plano 2 move as respostas do backend para `code`s estáveis em
+`@root/contracts` que o frontend mapeia para texto. Uma regra de eslint contra
+strings literais (`eslint-plugin-i18next`) é um guardião de regressão futuro
+recomendado.
