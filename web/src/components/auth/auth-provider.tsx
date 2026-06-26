@@ -1,8 +1,8 @@
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { getProfile } from '@/api/get-profile'
-import { refresh } from '@/api/refresh'
 import { signOut as signOutRequest } from '@/api/sign-out'
+import { refreshAccessToken } from '@/lib/api'
 import { clearToken, setToken } from '@/lib/auth-store'
 
 import { AuthContext, type AuthStatus, type User } from './auth-context'
@@ -12,11 +12,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(null)
 
 	// Silent boot: restore the session from the refresh cookie, if any.
+	// Uses the single-flight refreshAccessToken (it stores the token itself), so
+	// React 18/19 StrictMode firing this effect twice in dev shares ONE refresh
+	// call — without it the second call hits an already-rotated single-use cookie,
+	// 401s, and logs the user out on F5.
 	useEffect(() => {
 		async function boot() {
 			try {
-				const token = await refresh()
-				setToken(token)
+				await refreshAccessToken()
 
 				const profile = await getProfile()
 				setUser(profile)

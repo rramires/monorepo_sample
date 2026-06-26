@@ -33,7 +33,7 @@ api.interceptors.request.use((config) => {
 // rotates single-use, so a second refresh would invalidate the first).
 let refreshing: Promise<string> | null = null
 
-function refreshAccessToken() {
+export function refreshAccessToken() {
 	if (!refreshing) {
 		refreshing = api
 			.patch<{ token: string }>('/auth/refresh')
