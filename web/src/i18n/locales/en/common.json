@@ -1,0 +1,40 @@
+{
+	"actions": {
+		"save": "Save",
+		"cancel": "Cancel",
+		"delete": "Delete",
+		"edit": "Edit",
+		"create": "Create",
+		"add": "Add",
+		"remove": "Remove",
+		"search": "Search",
+		"confirm": "Confirm",
+		"close": "Close",
+		"back": "Back",
+		"next": "Next",
+		"previous": "Previous",
+		"submit": "Submit"
+	},
+	"states": {
+		"loading": "Loading…",
+		"empty": "Nothing here yet.",
+		"error": "Something went wrong.",
+		"noResults": "No results found."
+	},
+	"pagination": {
+		"previous": "Previous",
+		"next": "Next",
+		"summary": "Page {{page}} of {{total}}"
+	},
+	"theme": {
+		"label": "Switch theme",
+		"light": "Light",
+		"dark": "Dark",
+		"system": "System"
+	},
+	"language": {
+		"label": "Change language",
+		"en": "en-US",
+		"pt-BR": "pt-BR"
+	}
+}
