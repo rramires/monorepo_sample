@@ -1,7 +1,6 @@
 import { ArrowLeft, LoaderCircle } from 'lucide-react'
 import { Link } from 'react-router'
 
-import { useSetBreadcrumb } from '@/components/breadcrumb/breadcrumb-hooks'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { PageHeader } from '@/components/page-header'
 import { PageTitle } from '@/components/title/page-title'
@@ -26,9 +25,6 @@ import { type ScreenRow, useProfileDetailPM } from './use-profile-detail-pm'
 
 export function ProfileDetail() {
 	const pm = useProfileDetailPM()
-
-	// Publish the profile name as the breadcrumb's dynamic leaf.
-	useSetBreadcrumb(pm.profile?.name)
 
 	if (pm.isLoading) {
 		return (

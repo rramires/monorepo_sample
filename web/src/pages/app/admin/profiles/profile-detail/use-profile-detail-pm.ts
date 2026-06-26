@@ -15,6 +15,7 @@ import {
 	updateProfile,
 } from '@/api/profiles'
 import { getScreens, type ScreenModel } from '@/api/screens'
+import { useSetBreadcrumb } from '@/components/breadcrumb/breadcrumb-hooks'
 import { useConfirmDeactivate } from '@/hooks/use-confirm-deactivate'
 import { usePermissions } from '@/hooks/use-permissions'
 
@@ -155,6 +156,10 @@ export function useProfileDetailPM() {
 	// Seed local edit state from the loaded profile (runs when the profile
 	// arrives or the id changes).
 	const profile = profileQuery.data
+
+	// Publish the profile name as the breadcrumb's dynamic leaf.
+	useSetBreadcrumb(profile?.name)
+
 	/* eslint-disable react-hooks/set-state-in-effect */
 	useEffect(() => {
 		if (!profile) {
