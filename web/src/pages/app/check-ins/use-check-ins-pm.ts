@@ -5,14 +5,11 @@ import { toast } from 'sonner'
 
 import { getCheckInsHistory } from '@/api/get-check-ins-history'
 import { validateCheckIn } from '@/api/validate-check-in'
+import { useLocale } from '@/components/locale/locale-hooks'
 import { usePermissions } from '@/hooks/use-permissions'
+import { formatDateTime } from '@/lib/datetime'
 
 const PAGE_SIZE = 20
-
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
-	dateStyle: 'medium',
-	timeStyle: 'short',
-})
 
 export type CheckInsStatus = 'loading' | 'empty' | 'list'
 
@@ -26,6 +23,7 @@ export interface CheckInItem {
 
 export function useCheckInsPM() {
 	const { can } = usePermissions()
+	const { dateLocale } = useLocale()
 	const queryClient = useQueryClient()
 	const [page, setPage] = useState(1)
 
@@ -50,7 +48,7 @@ export function useCheckInsPM() {
 
 	const items: CheckInItem[] = checkIns.map((checkIn) => ({
 		id: checkIn.id,
-		date: dateFormatter.format(new Date(checkIn.created_at)),
+		date: formatDateTime(checkIn.created_at, dateLocale),
 		validated: checkIn.validated_at !== null,
 	}))
 

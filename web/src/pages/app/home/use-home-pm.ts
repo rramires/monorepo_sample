@@ -3,10 +3,12 @@ import { useQuery } from '@tanstack/react-query'
 import { getCheckInsHistory } from '@/api/get-check-ins-history'
 import { getCheckInsMetrics } from '@/api/get-check-ins-metrics'
 import { useAuth } from '@/components/auth/auth-hooks'
+import { useLocale } from '@/components/locale/locale-hooks'
 import { groupByDay } from '@/lib/check-in-activity'
 
 export function useHomePM() {
 	const { user } = useAuth()
+	const { dateLocale } = useLocale()
 
 	const metrics = useQuery({
 		queryKey: ['check-ins', 'metrics'],
@@ -24,7 +26,7 @@ export function useHomePM() {
 		user,
 		total: metrics.data,
 		isLoadingTotal: metrics.isLoading,
-		activity: groupByDay(history.data ?? []),
+		activity: groupByDay(history.data ?? [], 7, new Date(), dateLocale),
 		isLoadingActivity: history.isLoading,
 	}
 }

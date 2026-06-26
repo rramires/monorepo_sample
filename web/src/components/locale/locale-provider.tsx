@@ -1,3 +1,4 @@
+import { enUS, ptBR } from 'date-fns/locale'
 import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { I18nextProvider } from 'react-i18next'
@@ -5,6 +6,11 @@ import { I18nextProvider } from 'react-i18next'
 import i18n, { type AppLocale, normalizeLocale } from '@/i18n'
 
 import { LocaleProviderContext } from './locale-context'
+
+const DATE_LOCALES = {
+	en: enUS,
+	'pt-BR': ptBR,
+} as const
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
 	const [locale, setLocale] = useState<AppLocale>(() =>
@@ -24,6 +30,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 		setLocale: (next: AppLocale) => {
 			i18n.changeLanguage(next)
 		},
+		dateLocale: DATE_LOCALES[locale],
 	}
 
 	return (
