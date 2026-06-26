@@ -63,6 +63,10 @@ export function usePermissions() {
 		isScreenEnabled,
 		isAdmin,
 		isLoading: query.isLoading,
+		// True during a background refetch too (e.g. after a grant/kill change
+		// invalidates ['me-permissions']) — guards gate on it to avoid a stale
+		// `can()`/`isScreenEnabled()` flash before the fresh grants land.
+		isFetching: query.isFetching,
 		permissions: query.data,
 	}
 }

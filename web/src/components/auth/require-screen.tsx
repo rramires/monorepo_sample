@@ -1,9 +1,10 @@
 import { LoaderCircle } from 'lucide-react'
 import { Outlet } from 'react-router'
 
-import { type ScreenAction, usePermissions } from '@/hooks/use-permissions'
+import { type ScreenAction } from '@/hooks/use-permissions'
 
 import { Forbidden } from './forbidden'
+import { useRequireScreenPM } from './use-require-screen-pm'
 
 // Sits *inside* ProtectedRoute (the user is already authed). Renders the child
 // route only when the user `can()` perform the given action on the screen;
@@ -17,36 +18,31 @@ export function RequireScreen({
 	screen: string
 	action?: ScreenAction
 }) {
-	const { can, isScreenEnabled, isLoading } = usePermissions()
+	const pm = useRequireScreenPM(screen, action)
 
-	if (isLoading) {
-		return (
-			<div className='flex flex-1 items-center justify-center p-8'>
-				<LoaderCircle className='text-muted-foreground size-6 animate-spin' />
-			</div>
-		)
-	}
+	return (
+		<>
+			{pm.status === 'loading' && (
+				<div className='flex flex-1 items-center justify-center p-8'>
+					<LoaderCircle className='text-muted-foreground size-6 animate-spin' />
+				</div>
+			)}
 
-	// No grant for this screen/action — the member may have it assigned (it shows
-	// in the sidebar) but the permission hasn't been turned on yet.
-	if (!can(screen, action)) {
-		return (
-			<Forbidden
-				title='403 — No access'
-				message="You don't have access to this screen yet."
-			/>
-		)
-	}
+			{pm.status === 'no-access' && (
+				<Forbidden
+					title='403 — No access'
+					message="You don't have access to this screen yet."
+				/>
+			)}
 
-	// Granted, but the screen is killed (emergency switch) for non-admins.
-	if (!isScreenEnabled(screen)) {
-		return (
-			<Forbidden
-				title='Temporarily unavailable'
-				message='This screen is temporarily unavailable.'
-			/>
-		)
-	}
+			{pm.status === 'disabled' && (
+				<Forbidden
+					title='Temporarily unavailable'
+					message='This screen is temporarily unavailable.'
+				/>
+			)}
 
-	return <Outlet />
+			{pm.status === 'allowed' && <Outlet />}
+		</>
+	)
 }
