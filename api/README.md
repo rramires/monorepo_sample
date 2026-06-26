@@ -179,13 +179,13 @@ boot if any variable is invalid (Zod validation in `src/env`).
 | `POST`   | `/auth/me/email`                 | Bearer         | –                                  | Request own email change (confirmation to new email)                                          |
 | `POST`   | `/auth/me/email/confirm`         | Bearer         | –                                  | Confirm own email change via OTP                                                              |
 | `GET`    | `/me/permissions`                | Bearer         | –                                  | Effective grants + membership menu: `role`, `screens`, `menu` (w/ `is_enabled`), default      |
-| `GET`    | `/gyms/search`                   | Bearer         | –                                  | Search gyms by title (active only; managers may pass `includeInactive`)                       |
-| `GET`    | `/gyms/nearby`                   | Bearer         | –                                  | Gyms near a coordinate (active only; managers may pass `includeInactive`)                     |
+| `GET`    | `/gyms/search`                   | Bearer         | `gym.gyms` · view                  | Search gyms by title (active only; managers may pass `includeInactive`)                       |
+| `GET`    | `/gyms/nearby`                   | Bearer         | `gym.gyms` · view                  | Gyms near a coordinate (active only; managers may pass `includeInactive`)                     |
 | `POST`   | `/gyms`                          | Bearer         | `gym.gyms` · create                | Create a gym                                                                                  |
 | `PATCH`  | `/gyms/:gymId`                   | Bearer         | `gym.gyms` · edit                  | Edit a gym (title/description/phone, `is_active`)                                             |
-| `GET`    | `/check-ins/history`             | Bearer         | –                                  | Paginated check-in history                                                                    |
-| `GET`    | `/check-ins/metrics`             | Bearer         | –                                  | Total check-ins count                                                                         |
-| `POST`   | `/gyms/:gymId/check-ins`         | Bearer         | –                                  | Create a check-in (`400` too far · `403` inactive gym · `409` already checked in today)       |
+| `GET`    | `/check-ins/history`             | Bearer         | `gym.check-ins` · view             | Paginated check-in history                                                                    |
+| `GET`    | `/check-ins/metrics`             | Bearer         | `gym.dashboard` · view             | Total check-ins count                                                                         |
+| `POST`   | `/gyms/:gymId/check-ins`         | Bearer         | `gym.gyms` · create_checkin        | Create a check-in (`400` too far · `403` inactive gym · `409` already checked in today)       |
 | `PATCH`  | `/check-ins/:checkInId/validate` | Bearer         | `gym.check-ins` · edit_validate    | Validate a check-in (`409` past the 20-min window)                                            |
 | `POST`   | `/users/send-verification`       | Bearer         | –                                  | Send verification email (link + OTP)                                                          |
 | `GET`    | `/users/verify-email`            | –              | –                                  | Verify email via link token (`?token=`)                                                       |

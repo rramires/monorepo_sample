@@ -360,13 +360,13 @@ locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do monorepo e
 | POST   | `/auth/me/email`                 |     ✅     | —                                  | self: solicitar troca de e-mail (confirma novo)                    |
 | POST   | `/auth/me/email/confirm`         |     ✅     | —                                  | self: confirmar troca de e-mail via OTP                            |
 | GET    | `/me/permissions`                |     ✅     | —                                  | grants efetivos + menu por membership (c/ `is_enabled`) + padrão   |
-| GET    | `/gyms/search`                   |     ✅     | —                                  | busca por título (só ativas; gestores: `includeInactive`)          |
-| GET    | `/gyms/nearby`                   |     ✅     | —                                  | busca por proximidade (só ativas; gestores: `includeInactive`)     |
+| GET    | `/gyms/search`                   |     ✅     | `gym.gyms` · view                  | busca por título (só ativas; gestores: `includeInactive`)          |
+| GET    | `/gyms/nearby`                   |     ✅     | `gym.gyms` · view                  | busca por proximidade (só ativas; gestores: `includeInactive`)     |
 | POST   | `/gyms`                          |     ✅     | `gym.gyms` · create                | cadastrar academia                                                 |
 | PATCH  | `/gyms/:gymId`                   |     ✅     | `gym.gyms` · edit                  | editar academia (título/descrição/telefone, `is_active`)           |
-| GET    | `/check-ins/history`             |     ✅     | —                                  | histórico próprio                                                  |
-| GET    | `/check-ins/metrics`             |     ✅     | —                                  | total próprio                                                      |
-| POST   | `/gyms/:gymId/check-ins`         |     ✅     | —                                  | check-in (e-mail verificado se flag ligada; `403` se inativa)      |
+| GET    | `/check-ins/history`             |     ✅     | `gym.check-ins` · view             | histórico próprio                                                  |
+| GET    | `/check-ins/metrics`             |     ✅     | `gym.dashboard` · view             | total próprio                                                      |
+| POST   | `/gyms/:gymId/check-ins`         |     ✅     | `gym.gyms` · create_checkin        | check-in (e-mail verificado se flag ligada; `403` se inativa)      |
 | PATCH  | `/check-ins/:checkInId/validate` |     ✅     | `gym.check-ins` · edit_validate    | validar check-in                                                   |
 | POST   | `/users/send-verification`       |     ✅     | —                                  | enviar e-mail de verificação (link + OTP)                          |
 | GET    | `/users/verify-email`            |     ❌     | —                                  | verificar e-mail via link token (`?token=`)                        |

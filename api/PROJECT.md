@@ -359,13 +359,13 @@ temporarily unavailable."` for non-admins). An `ADMIN` bypasses every check. The
 | POST   | `/auth/me/email`                 |     ✅     | —                                  | self: request email change (confirm to new addr)                 |
 | POST   | `/auth/me/email/confirm`         |     ✅     | —                                  | self: confirm email change via OTP                               |
 | GET    | `/me/permissions`                |     ✅     | —                                  | effective grants + membership menu (w/ `is_enabled`) + default   |
-| GET    | `/gyms/search`                   |     ✅     | —                                  | search by title (active only; managers: `includeInactive`)       |
-| GET    | `/gyms/nearby`                   |     ✅     | —                                  | search by proximity (active only; managers: `includeInactive`)   |
+| GET    | `/gyms/search`                   |     ✅     | `gym.gyms` · view                  | search by title (active only; managers: `includeInactive`)       |
+| GET    | `/gyms/nearby`                   |     ✅     | `gym.gyms` · view                  | search by proximity (active only; managers: `includeInactive`)   |
 | POST   | `/gyms`                          |     ✅     | `gym.gyms` · create                | create a gym                                                     |
 | PATCH  | `/gyms/:gymId`                   |     ✅     | `gym.gyms` · edit                  | edit a gym (title/description/phone, `is_active`)                |
-| GET    | `/check-ins/history`             |     ✅     | —                                  | own history                                                      |
-| GET    | `/check-ins/metrics`             |     ✅     | —                                  | own total                                                        |
-| POST   | `/gyms/:gymId/check-ins`         |     ✅     | —                                  | check in (verified email if flag on; `403` if gym inactive)      |
+| GET    | `/check-ins/history`             |     ✅     | `gym.check-ins` · view             | own history                                                      |
+| GET    | `/check-ins/metrics`             |     ✅     | `gym.dashboard` · view             | own total                                                        |
+| POST   | `/gyms/:gymId/check-ins`         |     ✅     | `gym.gyms` · create_checkin        | check in (verified email if flag on; `403` if gym inactive)      |
 | PATCH  | `/check-ins/:checkInId/validate` |     ✅     | `gym.check-ins` · edit_validate    | validate check-in                                                |
 | POST   | `/users/send-verification`       |     ✅     | —                                  | send verification email (link + OTP)                             |
 | GET    | `/users/verify-email`            |     ❌     | —                                  | verify email via link token (`?token=`)                          |
