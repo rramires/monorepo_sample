@@ -1,4 +1,5 @@
 import { GlobeCheck, UserPlus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link, Outlet } from 'react-router'
 
 import { LanguageSelector } from '@/components/locale/language-selector'
@@ -6,6 +7,8 @@ import { ModeToggle } from '@/components/theme/mode-toggle'
 import { Button } from '@/components/ui/button'
 
 export function AuthLayout() {
+	const { t } = useTranslation('auth')
+
 	return (
 		<div className='bg-background text-foreground flex h-screen flex-col'>
 			<header className='flex h-20 items-center justify-between border-b px-8'>
@@ -17,7 +20,7 @@ export function AuthLayout() {
 					<Button asChild variant='outline' size='sm'>
 						<Link to='/register'>
 							<UserPlus />
-							Create account
+							{t('layout.createAccount')}
 						</Link>
 					</Button>
 					<LanguageSelector />
