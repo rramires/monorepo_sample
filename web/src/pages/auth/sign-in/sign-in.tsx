@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { PageTitle } from '@/components/title/page-title'
@@ -16,17 +17,18 @@ import { useSignInPM } from './use-sign-in-pm'
 
 export function SignIn() {
 	const pm = useSignInPM()
+	const { t } = useTranslation('auth')
 
 	return (
 		<>
-			<PageTitle title='Sign In' />
+			<PageTitle title={t('signIn.pageTitle')} />
 
 			<div className='flex flex-1 items-center justify-center p-4 sm:p-8'>
 				<Card className='w-full max-w-sm'>
 					<CardHeader>
-						<CardTitle>Sign in</CardTitle>
+						<CardTitle>{t('signIn.title')}</CardTitle>
 						<CardDescription>
-							Enter your credentials to access your account.
+							{t('signIn.description')}
 						</CardDescription>
 					</CardHeader>
 
@@ -35,13 +37,15 @@ export function SignIn() {
 							<div className='flex flex-col gap-6'>
 								<div className='grid gap-2'>
 									<Label htmlFor='identifier'>
-										Email or username
+										{t('signIn.identifierLabel')}
 									</Label>
 									<Input
 										id='identifier'
 										type='text'
 										autoFocus
-										placeholder='you@example.com or username'
+										placeholder={t(
+											'signIn.identifierPlaceholder',
+										)}
 										{...pm.register('identifier')}
 									/>
 									{pm.errors.identifier && (
@@ -52,7 +56,9 @@ export function SignIn() {
 								</div>
 
 								<div className='grid gap-2'>
-									<Label htmlFor='password'>Password</Label>
+									<Label htmlFor='password'>
+										{t('signIn.passwordLabel')}
+									</Label>
 									<Input
 										id='password'
 										type='password'
@@ -70,7 +76,7 @@ export function SignIn() {
 									disabled={pm.isSubmitting}
 									className='w-full'
 								>
-									Sign in
+									{t('signIn.submit')}
 								</Button>
 
 								{/* After the primary action in tab order: a
@@ -80,7 +86,7 @@ export function SignIn() {
 									to='/forgot-password'
 									className='text-muted-foreground text-center text-sm underline-offset-4 hover:underline'
 								>
-									Forgot your password?
+									{t('signIn.forgot')}
 								</Link>
 							</div>
 						</form>

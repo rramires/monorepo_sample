@@ -1,4 +1,5 @@
 import { CheckCircle2, LoaderCircle, XCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { PageTitle } from '@/components/title/page-title'
@@ -15,19 +16,22 @@ import { useConfirmEmailChangePM } from './use-confirm-email-change-pm'
 
 export function ConfirmEmailChange() {
 	const pm = useConfirmEmailChangePM()
+	const { t } = useTranslation('auth')
 
 	return (
 		<>
-			<PageTitle title='Confirm email change' />
+			<PageTitle title={t('confirmEmailChange.pageTitle')} />
 
 			<div className='flex flex-1 items-center justify-center p-4 sm:p-8'>
 				<Card className='w-full max-w-sm text-center'>
 					{pm.status === 'verifying' && (
 						<CardHeader>
 							<LoaderCircle className='text-muted-foreground mx-auto size-10 animate-spin' />
-							<CardTitle>Confirming your email…</CardTitle>
+							<CardTitle>
+								{t('confirmEmailChange.verifying.title')}
+							</CardTitle>
 							<CardDescription>
-								Hold on while we confirm your link.
+								{t('confirmEmailChange.verifying.description')}
 							</CardDescription>
 						</CardHeader>
 					)}
@@ -36,9 +40,13 @@ export function ConfirmEmailChange() {
 						<>
 							<CardHeader>
 								<CheckCircle2 className='mx-auto size-10 text-emerald-500' />
-								<CardTitle>Email confirmed</CardTitle>
+								<CardTitle>
+									{t('confirmEmailChange.success.title')}
+								</CardTitle>
 								<CardDescription>
-									Your new email address is now active.
+									{t(
+										'confirmEmailChange.success.description',
+									)}
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
@@ -51,8 +59,10 @@ export function ConfirmEmailChange() {
 										}
 									>
 										{pm.isAuthed
-											? 'Back to account'
-											: 'Sign in'}
+											? t(
+													'confirmEmailChange.backToAccount',
+												)
+											: t('confirmEmailChange.signIn')}
 									</Link>
 								</Button>
 							</CardContent>
@@ -63,9 +73,11 @@ export function ConfirmEmailChange() {
 						<>
 							<CardHeader>
 								<XCircle className='text-destructive mx-auto size-10' />
-								<CardTitle>Confirmation failed</CardTitle>
+								<CardTitle>
+									{t('confirmEmailChange.error.title')}
+								</CardTitle>
 								<CardDescription>
-									This link is invalid or has expired.
+									{t('confirmEmailChange.error.description')}
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
@@ -78,8 +90,10 @@ export function ConfirmEmailChange() {
 										}
 									>
 										{pm.isAuthed
-											? 'Back to account'
-											: 'Sign in'}
+											? t(
+													'confirmEmailChange.backToAccount',
+												)
+											: t('confirmEmailChange.signIn')}
 									</Link>
 								</Button>
 							</CardContent>

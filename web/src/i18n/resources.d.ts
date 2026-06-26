@@ -1,5 +1,6 @@
 import 'i18next'
 
+import type enAuth from './locales/en/auth.json'
 import type enCommon from './locales/en/common.json'
 
 /**
@@ -13,6 +14,7 @@ declare module 'i18next' {
 		defaultNS: 'common'
 		resources: {
 			common: typeof enCommon
+			auth: typeof enAuth
 		}
 	}
 }

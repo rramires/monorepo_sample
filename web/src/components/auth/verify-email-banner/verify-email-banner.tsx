@@ -1,4 +1,5 @@
 import { MailWarning } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -19,6 +20,7 @@ import { useVerifyEmailBannerPM } from './use-verify-email-banner-pm'
 
 export function VerifyEmailBanner() {
 	const pm = useVerifyEmailBannerPM()
+	const { t } = useTranslation('auth')
 
 	if (!pm.visible) {
 		return null
@@ -29,26 +31,30 @@ export function VerifyEmailBanner() {
 			<div className='bg-card text-card-foreground flex w-full flex-col items-center gap-2 border-b px-8 py-4'>
 				<div className='flex items-center gap-2'>
 					<MailWarning className='size-5' />
-					<p className='font-medium'>Verify your email</p>
+					<p className='font-medium'>
+						{t('verifyEmailBanner.title')}
+					</p>
 				</div>
 				<p className='text-muted-foreground text-sm'>
-					Confirm your email address to unlock check-ins.
+					{t('verifyEmailBanner.description')}
 				</p>
 				<Button
 					size='sm'
 					onClick={pm.handleSendCode}
 					disabled={pm.isSending}
 				>
-					Send code
+					{t('verifyEmailBanner.sendCode')}
 				</Button>
 			</div>
 
 			<Dialog open={pm.open} onOpenChange={pm.setOpen}>
 				<DialogContent className='sm:max-w-sm'>
 					<DialogHeader>
-						<DialogTitle>Enter verification code</DialogTitle>
+						<DialogTitle>
+							{t('verifyEmailBanner.dialogTitle')}
+						</DialogTitle>
 						<DialogDescription>
-							Type the 6-digit code we sent to your email.
+							{t('verifyEmailBanner.dialogDescription')}
 						</DialogDescription>
 					</DialogHeader>
 
@@ -75,7 +81,7 @@ export function VerifyEmailBanner() {
 							disabled={pm.code.length !== 6 || pm.isVerifying}
 							className='w-full'
 						>
-							Verify
+							{t('verifyEmailBanner.verify')}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

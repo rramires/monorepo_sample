@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { PageTitle } from '@/components/title/page-title'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,17 +16,18 @@ import { useRegisterPM } from './use-register-pm'
 
 export function Register() {
 	const pm = useRegisterPM()
+	const { t } = useTranslation('auth')
 
 	return (
 		<>
-			<PageTitle title='Register' />
+			<PageTitle title={t('register.pageTitle')} />
 
 			<div className='flex flex-1 items-center justify-center p-4 sm:p-8'>
 				<Card className='w-full max-w-sm'>
 					<CardHeader>
-						<CardTitle>Create account</CardTitle>
+						<CardTitle>{t('register.title')}</CardTitle>
 						<CardDescription>
-							Fill in the fields to create your account.
+							{t('register.description')}
 						</CardDescription>
 					</CardHeader>
 
@@ -32,12 +35,16 @@ export function Register() {
 						<form onSubmit={pm.handleSubmit}>
 							<div className='flex flex-col gap-6'>
 								<div className='grid gap-2'>
-									<Label htmlFor='username'>Username</Label>
+									<Label htmlFor='username'>
+										{t('register.usernameLabel')}
+									</Label>
 									<Input
 										id='username'
 										type='text'
 										autoFocus
-										placeholder='your_username'
+										placeholder={t(
+											'register.usernamePlaceholder',
+										)}
 										{...pm.register('username')}
 									/>
 									{pm.errors.username && (
@@ -48,11 +55,15 @@ export function Register() {
 								</div>
 
 								<div className='grid gap-2'>
-									<Label htmlFor='email'>Email</Label>
+									<Label htmlFor='email'>
+										{t('register.emailLabel')}
+									</Label>
 									<Input
 										id='email'
 										type='email'
-										placeholder='m@example.com'
+										placeholder={t(
+											'register.emailPlaceholder',
+										)}
 										{...pm.register('email')}
 									/>
 									{pm.errors.email && (
@@ -63,7 +74,9 @@ export function Register() {
 								</div>
 
 								<div className='grid gap-2'>
-									<Label htmlFor='password'>Password</Label>
+									<Label htmlFor='password'>
+										{t('register.passwordLabel')}
+									</Label>
 									<Input
 										id='password'
 										type='password'
@@ -78,7 +91,7 @@ export function Register() {
 
 								<div className='grid gap-2'>
 									<Label htmlFor='confirmPassword'>
-										Confirm password
+										{t('register.confirmPasswordLabel')}
 									</Label>
 									<Input
 										id='confirmPassword'
@@ -97,7 +110,7 @@ export function Register() {
 									disabled={pm.isSubmitting}
 									className='w-full'
 								>
-									Sign up
+									{t('register.submit')}
 								</Button>
 							</div>
 						</form>
