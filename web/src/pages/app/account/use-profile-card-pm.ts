@@ -1,7 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
+import type { TFunction } from 'i18next'
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -11,24 +14,30 @@ import { useAuth } from '@/components/auth/auth-hooks'
 // Mirrors the backend: 3-30 chars, letters/numbers/underscore only.
 const usernamePattern = /^[a-zA-Z0-9_]+$/
 
-const profileForm = z.object({
-	username: z
-		.string()
-		.min(3, 'Minimum of 3 characters.')
-		.max(30, 'Maximum of 30 characters.')
-		.regex(usernamePattern, 'Letters, numbers and underscore only.'),
-})
-type ProfileForm = z.infer<typeof profileForm>
+const makeProfileForm = (t: TFunction<['account', 'common']>) =>
+	z.object({
+		username: z
+			.string()
+			.min(3, t('common:errors.minChars', { count: 3 }))
+			.max(30, t('common:errors.maxChars', { count: 30 }))
+			.regex(usernamePattern, t('common:errors.usernamePattern')),
+	})
+type ProfileForm = z.infer<ReturnType<typeof makeProfileForm>>
 
 export function useProfileCardPM() {
 	const auth = useAuth()
+	const { t, i18n } = useTranslation(['account', 'common'])
 
 	const {
 		register,
 		handleSubmit,
 		formState: { errors, isSubmitting, isDirty },
 	} = useForm<ProfileForm>({
-		resolver: zodResolver(profileForm),
+		resolver: useMemo(
+			() => zodResolver(makeProfileForm(t)),
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+			[i18n.language],
+		),
 		defaultValues: { username: auth.user?.username ?? '' },
 	})
 
@@ -42,11 +51,11 @@ export function useProfileCardPM() {
 			// Refetch the profile so the sidebar (and the rest of the app) pick
 			// up the new username.
 			await auth.reloadUser()
-			toast.success('Profile updated.')
+			toast.success(t('profile.toast.success'))
 		} catch (err) {
 			const message =
 				(isAxiosError(err) && err.response?.data?.message) ||
-				'Could not update your profile.'
+				t('profile.toast.error')
 			toast.error(message)
 		}
 	}

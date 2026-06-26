@@ -1,4 +1,5 @@
 import { Controller } from 'react-hook-form'
+import { Trans, useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -20,20 +21,19 @@ import { useEmailCardPM } from './use-email-card-pm'
 
 export function EmailCard() {
 	const pm = useEmailCardPM()
+	const { t } = useTranslation(['account', 'common'])
 
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Email</CardTitle>
-				<CardDescription>
-					Change the email address for your account.
-				</CardDescription>
+				<CardTitle>{t('email.title')}</CardTitle>
+				<CardDescription>{t('email.description')}</CardDescription>
 			</CardHeader>
 
 			<CardContent>
 				{pm.state === 'idle' && (
 					<Button variant='outline' onClick={pm.startEditing}>
-						Change email
+						{t('email.changeEmail')}
 					</Button>
 				)}
 
@@ -41,11 +41,13 @@ export function EmailCard() {
 					<form onSubmit={pm.handleRequest} noValidate>
 						<div className='flex flex-col gap-6'>
 							<div className='grid gap-2'>
-								<Label htmlFor='new-email'>New email</Label>
+								<Label htmlFor='new-email'>
+									{t('email.newEmailLabel')}
+								</Label>
 								<Input
 									id='new-email'
 									type='email'
-									placeholder='m@example.com'
+									placeholder={t('email.newEmailPlaceholder')}
 									{...pm.register('email')}
 								/>
 								{pm.errors.email && (
@@ -61,14 +63,14 @@ export function EmailCard() {
 									disabled={pm.isSubmitting}
 									className='flex-1'
 								>
-									Send confirmation
+									{t('email.sendConfirmation')}
 								</Button>
 								<Button
 									type='button'
 									variant='ghost'
 									onClick={pm.cancel}
 								>
-									Cancel
+									{t('common:actions.cancel')}
 								</Button>
 							</div>
 						</div>
@@ -79,13 +81,20 @@ export function EmailCard() {
 					<form onSubmit={pm.handleConfirm} noValidate>
 						<div className='flex flex-col gap-6'>
 							<div className='grid gap-2'>
-								<Label htmlFor='code'>Confirmation code</Label>
+								<Label htmlFor='code'>
+									{t('email.codeLabel')}
+								</Label>
 								<p className='text-muted-foreground text-sm'>
-									Enter the 6-digit code sent to{' '}
-									<span className='font-medium'>
-										{pm.pendingEmail}
-									</span>
-									, or click the link in that email.
+									<Trans
+										t={t}
+										i18nKey='email.confirmHint'
+										values={{ email: pm.pendingEmail }}
+										components={{
+											bold: (
+												<span className='font-medium' />
+											),
+										}}
+									/>
 								</p>
 								<Controller
 									control={pm.control}
@@ -120,14 +129,14 @@ export function EmailCard() {
 									disabled={pm.isConfirming}
 									className='flex-1'
 								>
-									Confirm
+									{t('common:actions.confirm')}
 								</Button>
 								<Button
 									type='button'
 									variant='ghost'
 									onClick={pm.cancel}
 								>
-									Cancel
+									{t('common:actions.cancel')}
 								</Button>
 							</div>
 						</div>

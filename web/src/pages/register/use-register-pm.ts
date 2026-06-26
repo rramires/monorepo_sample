@@ -19,30 +19,30 @@ const passwordMin = env.VITE_PASSWORD_MIN_LENGTH
 // UX messages. The regex *pattern* comes from VITE_PASSWORD_*; its message stays
 // env-driven (deployment-configured policy text, the same seam as backend
 // messages — see PLAN Plan 2). Length messages are localized.
-const makePassword = (t: TFunction<'auth'>) =>
+const makePassword = (t: TFunction<['auth', 'common']>) =>
 	makePasswordSchema({
 		min: passwordMin,
 		pattern: new RegExp(env.VITE_PASSWORD_PATTERN),
 		message: env.VITE_PASSWORD_MESSAGE,
-		minMessage: t('errors.minChars', { count: passwordMin }),
-		maxMessage: t('errors.maxChars', { count: 72 }),
+		minMessage: t('common:errors.minChars', { count: passwordMin }),
+		maxMessage: t('common:errors.maxChars', { count: 72 }),
 	})
 
-const makeRegisterForm = (t: TFunction<'auth'>) =>
+const makeRegisterForm = (t: TFunction<['auth', 'common']>) =>
 	z
 		.object({
 			username: z
 				.string()
-				.min(3, t('errors.minChars', { count: 3 }))
-				.max(30, t('errors.maxChars', { count: 30 }))
-				.regex(/^[a-zA-Z0-9_]+$/, t('errors.usernamePattern'))
+				.min(3, t('common:errors.minChars', { count: 3 }))
+				.max(30, t('common:errors.maxChars', { count: 30 }))
+				.regex(/^[a-zA-Z0-9_]+$/, t('common:errors.usernamePattern'))
 				.transform((s) => s.toLowerCase()),
-			email: z.email(t('errors.email')),
+			email: z.email(t('common:errors.email')),
 			password: makePassword(t),
 			confirmPassword: z.string(),
 		})
 		.refine((data) => data.password === data.confirmPassword, {
-			message: t('errors.passwordsMismatch'),
+			message: t('common:errors.passwordsMismatch'),
 			path: ['confirmPassword'],
 		})
 
@@ -50,7 +50,7 @@ type RegisterForm = z.infer<ReturnType<typeof makeRegisterForm>>
 
 export function useRegisterPM() {
 	const navigate = useNavigate()
-	const { t, i18n } = useTranslation('auth')
+	const { t, i18n } = useTranslation(['auth', 'common'])
 
 	const {
 		register,

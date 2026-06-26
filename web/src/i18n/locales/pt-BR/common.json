@@ -1,4 +1,12 @@
 {
+	"errors": {
+		"minChars": "Mínimo de {{count}} caracteres.",
+		"maxChars": "Máximo de {{count}} caracteres.",
+		"email": "Informe um e-mail válido.",
+		"passwordsMismatch": "As senhas não coincidem.",
+		"usernamePattern": "Apenas letras, números e sublinhado.",
+		"codeLength": "Informe o código de 6 dígitos."
+	},
 	"actions": {
 		"save": "Salvar",
 		"cancel": "Cancelar",

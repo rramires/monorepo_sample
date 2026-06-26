@@ -2,8 +2,10 @@ import i18n from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
+import enAccount from './locales/en/account.json'
 import enAuth from './locales/en/auth.json'
 import enCommon from './locales/en/common.json'
+import ptBRAccount from './locales/pt-BR/account.json'
 import ptBRAuth from './locales/pt-BR/auth.json'
 import ptBRCommon from './locales/pt-BR/common.json'
 import { setZodLocale } from './zod-locale'
@@ -21,8 +23,8 @@ export function normalizeLocale(lng?: string | null): AppLocale {
 }
 
 export const resources = {
-	en: { common: enCommon, auth: enAuth },
-	'pt-BR': { common: ptBRCommon, auth: ptBRAuth },
+	en: { common: enCommon, auth: enAuth, account: enAccount },
+	'pt-BR': { common: ptBRCommon, auth: ptBRAuth, account: ptBRAccount },
 } as const
 
 i18n.use(LanguageDetector)
@@ -32,7 +34,7 @@ i18n.use(LanguageDetector)
 		fallbackLng: FALLBACK_LOCALE,
 		supportedLngs: SUPPORTED_LOCALES,
 		defaultNS: DEFAULT_NS,
-		ns: [DEFAULT_NS, 'auth'],
+		ns: [DEFAULT_NS, 'auth', 'account'],
 		interpolation: {
 			// React already escapes; double-escaping mangles names with markup.
 			escapeValue: false,

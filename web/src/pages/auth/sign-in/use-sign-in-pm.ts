@@ -12,13 +12,13 @@ import { z } from 'zod'
 import { signIn } from '@/api/sign-in'
 import { useAuth } from '@/components/auth/auth-hooks'
 
-const makeSignInForm = (t: TFunction<'auth'>) =>
+const makeSignInForm = (t: TFunction<['auth', 'common']>) =>
 	z.object({
 		identifier: z.string().min(1, t('signIn.errors.identifier')),
 		password: z
 			.string()
 			.min(1, t('signIn.errors.passwordRequired'))
-			.max(72, t('errors.maxChars', { count: 72 })),
+			.max(72, t('common:errors.maxChars', { count: 72 })),
 	})
 
 type SignInForm = z.infer<ReturnType<typeof makeSignInForm>>
@@ -26,7 +26,7 @@ type SignInForm = z.infer<ReturnType<typeof makeSignInForm>>
 export function useSignInPM() {
 	const navigate = useNavigate()
 	const auth = useAuth()
-	const { t, i18n } = useTranslation('auth')
+	const { t, i18n } = useTranslation(['auth', 'common'])
 
 	const {
 		register,

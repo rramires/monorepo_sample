@@ -17,27 +17,27 @@ const passwordMin = env.VITE_PASSWORD_MIN_LENGTH
 
 // Shared password shape (@root/contracts) + env policy + localized messages.
 // The pattern message stays env-driven; length messages are localized.
-const makeResetForm = (t: TFunction<'auth'>) =>
+const makeResetForm = (t: TFunction<['auth', 'common']>) =>
 	z
 		.object({
 			password: makePasswordSchema({
 				min: passwordMin,
 				pattern: new RegExp(env.VITE_PASSWORD_PATTERN),
 				message: env.VITE_PASSWORD_MESSAGE,
-				minMessage: t('errors.minChars', { count: passwordMin }),
-				maxMessage: t('errors.maxChars', { count: 72 }),
+				minMessage: t('common:errors.minChars', { count: passwordMin }),
+				maxMessage: t('common:errors.maxChars', { count: 72 }),
 			}),
 			confirmPassword: z.string(),
 		})
 		.refine((data) => data.password === data.confirmPassword, {
-			message: t('errors.passwordsMismatch'),
+			message: t('common:errors.passwordsMismatch'),
 			path: ['confirmPassword'],
 		})
 type ResetForm = z.infer<ReturnType<typeof makeResetForm>>
 
 export function useResetPasswordPM() {
 	const navigate = useNavigate()
-	const { t, i18n } = useTranslation('auth')
+	const { t, i18n } = useTranslation(['auth', 'common'])
 	const [searchParams] = useSearchParams()
 	const token = searchParams.get('token')
 
