@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { updateProfile } from '@/api/update-profile'
@@ -12,6 +13,7 @@ const AUTOMATIC = 'automatic'
 // clears the override, falling back to their profile's default screen.
 export function useLandingCardPM() {
 	const queryClient = useQueryClient()
+	const { t } = useTranslation('account')
 	const { permissions } = usePermissions()
 	const { sections } = useAppSidebarPM()
 	const options = sections.flatMap((s) => s.items)
@@ -22,7 +24,7 @@ export function useLandingCardPM() {
 				default_screen_key: value === AUTOMATIC ? null : value,
 			}),
 		onSuccess: async () => {
-			toast.success('Landing screen updated.')
+			toast.success(t('landing.toast.success'))
 			await queryClient.invalidateQueries({
 				queryKey: ['me-permissions'],
 			})
@@ -30,7 +32,7 @@ export function useLandingCardPM() {
 		onError: (err) => {
 			toast.error(
 				(isAxiosError(err) && err.response?.data?.message) ||
-					'Could not update the landing screen.',
+					t('landing.toast.error'),
 			)
 		},
 	})

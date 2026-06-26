@@ -1,8 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
-import { useState } from 'react'
+import type { TFunction } from 'i18next'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -10,13 +12,15 @@ import { confirmEmailChangeByOtp } from '@/api/confirm-email-change'
 import { requestEmailChange } from '@/api/request-email-change'
 import { useAuth } from '@/components/auth/auth-hooks'
 
-const requestForm = z.object({ email: z.email('Enter a valid email.') })
-type RequestForm = z.infer<typeof requestForm>
+const makeRequestForm = (t: TFunction<['account', 'common']>) =>
+	z.object({ email: z.email(t('common:errors.email')) })
+type RequestForm = z.infer<ReturnType<typeof makeRequestForm>>
 
-const confirmForm = z.object({
-	code: z.string().length(6, 'Enter the 6-digit code.'),
-})
-type ConfirmForm = z.infer<typeof confirmForm>
+const makeConfirmForm = (t: TFunction<['account', 'common']>) =>
+	z.object({
+		code: z.string().length(6, t('common:errors.codeLength')),
+	})
+type ConfirmForm = z.infer<ReturnType<typeof makeConfirmForm>>
 
 // idle → editing (type the new email) → confirming (enter the code / click the
 // link). Two doors: the OTP here, or the link from the email (landing page).
@@ -24,6 +28,7 @@ export type EmailCardState = 'idle' | 'editing' | 'confirming'
 
 export function useEmailCardPM() {
 	const auth = useAuth()
+	const { t, i18n } = useTranslation(['account', 'common'])
 	const [state, setState] = useState<EmailCardState>('idle')
 	const [pendingEmail, setPendingEmail] = useState('')
 
@@ -32,14 +37,26 @@ export function useEmailCardPM() {
 		handleSubmit: submitRequest,
 		reset: resetRequest,
 		formState: { errors, isSubmitting },
-	} = useForm<RequestForm>({ resolver: zodResolver(requestForm) })
+	} = useForm<RequestForm>({
+		resolver: useMemo(
+			() => zodResolver(makeRequestForm(t)),
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+			[i18n.language],
+		),
+	})
 
 	const {
 		control,
 		handleSubmit: submitConfirm,
 		reset: resetConfirm,
 		formState: { errors: confirmErrors, isSubmitting: isConfirming },
-	} = useForm<ConfirmForm>({ resolver: zodResolver(confirmForm) })
+	} = useForm<ConfirmForm>({
+		resolver: useMemo(
+			() => zodResolver(makeConfirmForm(t)),
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+			[i18n.language],
+		),
+	})
 
 	const { mutateAsync: requestChange } = useMutation({
 		mutationFn: requestEmailChange,
@@ -65,17 +82,15 @@ export function useEmailCardPM() {
 			setPendingEmail(data.email)
 			resetConfirm({ code: '' })
 			setState('confirming')
-			toast.success(
-				'We sent a confirmation code to your new email. Check the backend console (dev).',
-			)
+			toast.success(t('email.toast.codeSent'))
 		} catch (err) {
 			if (isAxiosError(err) && err.response?.status === 429) {
-				toast.error('Please wait before requesting another change.')
+				toast.error(t('email.toast.rateLimited'))
 				return
 			}
 			const message =
 				(isAxiosError(err) && err.response?.data?.message) ||
-				'Could not start the email change.'
+				t('email.toast.requestError')
 			toast.error(message)
 		}
 	}
@@ -83,14 +98,14 @@ export function useEmailCardPM() {
 	async function onConfirm(data: ConfirmForm) {
 		try {
 			await confirmChange({ code: data.code })
-			toast.success('Email updated.')
+			toast.success(t('email.toast.updated'))
 			// Confirming proves the new address → refetch so is_verified is fresh.
 			await auth.reloadUser()
 			cancel()
 		} catch (err) {
 			const message =
 				(isAxiosError(err) && err.response?.data?.message) ||
-				'Invalid or expired code.'
+				t('email.toast.invalidCode')
 			toast.error(message)
 		}
 	}

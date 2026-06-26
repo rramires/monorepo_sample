@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import {
 	Card,
 	CardContent,
@@ -18,24 +20,23 @@ import { useLandingCardPM } from './use-landing-card-pm'
 
 export function LandingCard() {
 	const pm = useLandingCardPM()
+	const { t } = useTranslation('account')
 
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Landing screen</CardTitle>
-				<CardDescription>
-					Where you land right after signing in.
-				</CardDescription>
+				<CardTitle>{t('landing.title')}</CardTitle>
+				<CardDescription>{t('landing.description')}</CardDescription>
 			</CardHeader>
 			<CardContent className='grid gap-2'>
-				<Label>Default screen</Label>
+				<Label>{t('landing.label')}</Label>
 				<Select value={pm.value} onValueChange={pm.onSelect}>
 					<SelectTrigger>
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value={pm.automaticValue}>
-							Automatic (profile default)
+							{t('landing.automatic')}
 						</SelectItem>
 						{pm.options.map((item) => (
 							<SelectItem key={item.key} value={item.key}>

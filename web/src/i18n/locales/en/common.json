@@ -1,4 +1,12 @@
 {
+	"errors": {
+		"minChars": "Minimum of {{count}} characters.",
+		"maxChars": "Maximum of {{count}} characters.",
+		"email": "Enter a valid email.",
+		"passwordsMismatch": "Passwords do not match.",
+		"usernamePattern": "Letters, numbers and underscore only.",
+		"codeLength": "Enter the 6-digit code."
+	},
 	"actions": {
 		"save": "Save",
 		"cancel": "Cancel",

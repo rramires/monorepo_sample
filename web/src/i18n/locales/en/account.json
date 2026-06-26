@@ -1,0 +1,39 @@
+{
+	"pageTitle": "Account",
+	"profile": {
+		"title": "Profile",
+		"description": "Update your account username.",
+		"usernameLabel": "Username",
+		"toast": {
+			"success": "Profile updated.",
+			"error": "Could not update your profile."
+		}
+	},
+	"email": {
+		"title": "Email",
+		"description": "Change the email address for your account.",
+		"changeEmail": "Change email",
+		"newEmailLabel": "New email",
+		"newEmailPlaceholder": "m@example.com",
+		"sendConfirmation": "Send confirmation",
+		"codeLabel": "Confirmation code",
+		"confirmHint": "Enter the 6-digit code sent to <bold>{{email}}</bold>, or click the link in that email.",
+		"toast": {
+			"codeSent": "We sent a confirmation code to your new email. Check the backend console (dev).",
+			"rateLimited": "Please wait before requesting another change.",
+			"requestError": "Could not start the email change.",
+			"updated": "Email updated.",
+			"invalidCode": "Invalid or expired code."
+		}
+	},
+	"landing": {
+		"title": "Landing screen",
+		"description": "Where you land right after signing in.",
+		"label": "Default screen",
+		"automatic": "Automatic (profile default)",
+		"toast": {
+			"success": "Landing screen updated.",
+			"error": "Could not update the landing screen."
+		}
+	}
+}

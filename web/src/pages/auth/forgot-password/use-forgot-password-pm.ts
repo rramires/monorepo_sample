@@ -19,37 +19,37 @@ const passwordMin = env.VITE_PASSWORD_MIN_LENGTH
 // Shared password shape (@root/contracts) + env policy + localized messages.
 // The pattern message stays env-driven (deployment policy text); length messages
 // are localized.
-const makePassword = (t: TFunction<'auth'>) =>
+const makePassword = (t: TFunction<['auth', 'common']>) =>
 	makePasswordSchema({
 		min: passwordMin,
 		pattern: new RegExp(env.VITE_PASSWORD_PATTERN),
 		message: env.VITE_PASSWORD_MESSAGE,
-		minMessage: t('errors.minChars', { count: passwordMin }),
-		maxMessage: t('errors.maxChars', { count: 72 }),
+		minMessage: t('common:errors.minChars', { count: passwordMin }),
+		maxMessage: t('common:errors.maxChars', { count: 72 }),
 	})
 
-const makeRequestForm = (t: TFunction<'auth'>) =>
+const makeRequestForm = (t: TFunction<['auth', 'common']>) =>
 	z.object({
-		email: z.email(t('errors.email')),
+		email: z.email(t('common:errors.email')),
 	})
 type RequestForm = z.infer<ReturnType<typeof makeRequestForm>>
 
-const makeResetForm = (t: TFunction<'auth'>) =>
+const makeResetForm = (t: TFunction<['auth', 'common']>) =>
 	z
 		.object({
-			code: z.string().length(6, t('errors.codeLength')),
+			code: z.string().length(6, t('common:errors.codeLength')),
 			password: makePassword(t),
 			confirmPassword: z.string(),
 		})
 		.refine((data) => data.password === data.confirmPassword, {
-			message: t('errors.passwordsMismatch'),
+			message: t('common:errors.passwordsMismatch'),
 			path: ['confirmPassword'],
 		})
 type ResetForm = z.infer<ReturnType<typeof makeResetForm>>
 
 export function useForgotPasswordPM() {
 	const navigate = useNavigate()
-	const { t, i18n } = useTranslation('auth')
+	const { t, i18n } = useTranslation(['auth', 'common'])
 	const [step, setStep] = useState<'request' | 'reset'>('request')
 	const [email, setEmail] = useState('')
 

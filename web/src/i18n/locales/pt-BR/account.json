@@ -1,0 +1,39 @@
+{
+	"pageTitle": "Conta",
+	"profile": {
+		"title": "Perfil",
+		"description": "Atualize o nome de usuário da sua conta.",
+		"usernameLabel": "Nome de usuário",
+		"toast": {
+			"success": "Perfil atualizado.",
+			"error": "Não foi possível atualizar seu perfil."
+		}
+	},
+	"email": {
+		"title": "E-mail",
+		"description": "Altere o endereço de e-mail da sua conta.",
+		"changeEmail": "Alterar e-mail",
+		"newEmailLabel": "Novo e-mail",
+		"newEmailPlaceholder": "m@exemplo.com",
+		"sendConfirmation": "Enviar confirmação",
+		"codeLabel": "Código de confirmação",
+		"confirmHint": "Informe o código de 6 dígitos enviado para <bold>{{email}}</bold> ou clique no link daquele e-mail.",
+		"toast": {
+			"codeSent": "Enviamos um código de confirmação para seu novo e-mail. Veja o console do backend (dev).",
+			"rateLimited": "Aguarde antes de solicitar outra alteração.",
+			"requestError": "Não foi possível iniciar a alteração de e-mail.",
+			"updated": "E-mail atualizado.",
+			"invalidCode": "Código inválido ou expirado."
+		}
+	},
+	"landing": {
+		"title": "Tela inicial",
+		"description": "Onde você chega logo após entrar.",
+		"label": "Tela padrão",
+		"automatic": "Automático (padrão do perfil)",
+		"toast": {
+			"success": "Tela inicial atualizada.",
+			"error": "Não foi possível atualizar a tela inicial."
+		}
+	}
+}
