@@ -106,6 +106,37 @@ export function AppSidebar() {
 						Sign out
 					</Button>
 				</div>
+
+				{/* Icon-rail footer: same actions (account, then sign out),
+				    icon-only with the standard sidebar tooltip. Shown only when
+				    the sidebar is collapsed to the rail. */}
+				<SidebarMenu className='hidden group-data-[collapsible=icon]:flex'>
+					<SidebarMenuItem>
+						<SidebarMenuButton
+							asChild
+							isActive={pm.isActive('/account')}
+							tooltip='Account'
+						>
+							<Link
+								to='/account'
+								aria-label='Account'
+								onClick={pm.closeMobile}
+							>
+								<UserRoundPen />
+								<span>Account</span>
+							</Link>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+					<SidebarMenuItem>
+						<SidebarMenuButton
+							tooltip='Sign out'
+							onClick={pm.handleSignOut}
+						>
+							<LogOut />
+							<span>Sign out</span>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+				</SidebarMenu>
 			</SidebarFooter>
 
 			<SidebarRail />
