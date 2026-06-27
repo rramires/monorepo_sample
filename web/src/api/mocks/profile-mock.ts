@@ -10,7 +10,10 @@ export const profileMock = http.get('/auth/me', ({ request }) => {
 	const user = userId ? findUser(userId) : undefined
 
 	if (!user) {
-		return HttpResponse.json({ code: 'unauthorized', message: 'Unauthorized.' }, { status: 401 })
+		return HttpResponse.json(
+			{ code: 'unauthorized', message: 'Unauthorized.' },
+			{ status: 401 },
+		)
 	}
 
 	// Response is parsed through the shared contract DTO so any drift from the

@@ -124,7 +124,10 @@ export const deleteScreenMock = http.delete<{ id: string }>(
 		// System screens are protected from deletion.
 		if (screens[index].is_system) {
 			return HttpResponse.json(
-				{ code: 'system_screen', message: 'A system screen cannot be deleted.' },
+				{
+					code: 'system_screen',
+					message: 'A system screen cannot be deleted.',
+				},
 				{ status: 409 },
 			)
 		}

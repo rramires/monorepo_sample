@@ -33,7 +33,10 @@ export const updateProfileMock = http.patch<never, UpdateProfileBody>(
 				)
 			) {
 				return HttpResponse.json(
-					{ code: 'email_already_exists', message: 'E-mail already exists.' },
+					{
+						code: 'email_already_exists',
+						message: 'E-mail already exists.',
+					},
 					{ status: 409 },
 				)
 			}
