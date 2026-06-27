@@ -18,8 +18,8 @@ Architecture: [PROJECT.md](./PROJECT.md). Working agreement for humans + AI:
 
 **Adding a feature?** A step-by-step, front-first guide for adding a new
 full-stack feature without missing a step (tests, mocks, i18n, menu/permissions,
-contract, docs): [`how-to/`](./how-to/README-pt-BR.md) _(pt-BR; EN translation
-pending)_.
+contract, docs): [`how-to/`](./how-to/README.md) _(EN; pt-BR pair at
+[`README-pt-BR`](./how-to/README-pt-BR.md))_.
 
 ## Quickstart
 
