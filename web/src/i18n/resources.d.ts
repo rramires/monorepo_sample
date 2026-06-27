@@ -6,6 +6,7 @@ import type enAuth from './locales/en/auth.json'
 import type enCatalog from './locales/en/catalog.json'
 import type enCheckIns from './locales/en/check-ins.json'
 import type enCommon from './locales/en/common.json'
+import type enErrors from './locales/en/errors.json'
 import type enGyms from './locales/en/gyms.json'
 import type enNav from './locales/en/nav.json'
 
@@ -27,6 +28,7 @@ declare module 'i18next' {
 			catalog: typeof enCatalog
 			gyms: typeof enGyms
 			admin: typeof enAdmin
+			errors: typeof enErrors
 		}
 	}
 }

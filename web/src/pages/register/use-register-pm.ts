@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { makePasswordSchema } from '@root/contracts'
 import { useMutation } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import type { TFunction } from 'i18next'
 import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
@@ -12,18 +11,18 @@ import { z } from 'zod'
 
 import { registerAccount } from '@/api/register'
 import { env } from '@/env'
+import { messageFromError } from '@/lib/errors'
 
 const passwordMin = env.VITE_PASSWORD_MIN_LENGTH
 
 // Shared password shape (@root/contracts) with this app's env policy + localized
-// UX messages. The regex *pattern* comes from VITE_PASSWORD_*; its message stays
-// env-driven (deployment-configured policy text, the same seam as backend
-// messages — see PLAN Plan 2). Length messages are localized.
+// UX messages. The regex *pattern* comes from VITE_PASSWORD_*; its failure
+// message is localized (common:errors.passwordPattern). Length messages too.
 const makePassword = (t: TFunction<['auth', 'common']>) =>
 	makePasswordSchema({
 		min: passwordMin,
 		pattern: new RegExp(env.VITE_PASSWORD_PATTERN),
-		message: env.VITE_PASSWORD_MESSAGE,
+		message: t('common:errors.passwordPattern'),
 		minMessage: t('common:errors.minChars', { count: passwordMin }),
 		maxMessage: t('common:errors.maxChars', { count: 72 }),
 	})
@@ -74,10 +73,7 @@ export function useRegisterPM() {
 			toast.success(t('register.toast.success'))
 			navigate('/sign-in')
 		} catch (err) {
-			const message =
-				(isAxiosError(err) && err.response?.data?.message) ||
-				t('register.toast.error')
-			toast.error(message)
+			toast.error(messageFromError(err, t('register.toast.error')))
 		}
 	}
 

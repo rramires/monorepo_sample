@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { deleteProfile, getProfiles } from '@/api/profiles'
 import { usePermissions } from '@/hooks/use-permissions'
+import { messageFromError } from '@/lib/errors'
 
 export function useProfilesPM() {
 	const queryClient = useQueryClient()
@@ -23,10 +23,7 @@ export function useProfilesPM() {
 			queryClient.invalidateQueries({ queryKey: ['profiles'] })
 		},
 		onError: (err) => {
-			toast.error(
-				(isAxiosError(err) && err.response?.data?.message) ||
-					t('profiles.toast.deleteError'),
-			)
+			toast.error(messageFromError(err, t('profiles.toast.deleteError')))
 		},
 	})
 

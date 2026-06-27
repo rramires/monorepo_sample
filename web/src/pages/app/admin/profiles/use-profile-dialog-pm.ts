@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import type { TFunction } from 'i18next'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -9,6 +8,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { createProfile } from '@/api/profiles'
+import { messageFromError } from '@/lib/errors'
 
 const makeProfileForm = (t: TFunction<'admin'>) =>
 	z.object({
@@ -67,10 +67,7 @@ export function useProfileDialogPM() {
 			setOpen(false)
 		},
 		onError: (err) => {
-			toast.error(
-				(isAxiosError(err) && err.response?.data?.message) ||
-					t('profiles.toast.createError'),
-			)
+			toast.error(messageFromError(err, t('profiles.toast.createError')))
 		},
 	})
 

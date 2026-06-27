@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { createCheckIn } from '@/api/create-check-in'
+import { messageFromError } from '@/lib/errors'
 import { getCurrentPosition } from '@/lib/geolocation'
 
 // Reusable check-in action: reads the browser's location, posts the check-in,
@@ -41,10 +41,7 @@ export function useCheckIn() {
 			toast.success(t('toast.checkedIn'))
 			await queryClient.invalidateQueries({ queryKey: ['check-ins'] })
 		} catch (err) {
-			const message =
-				(isAxiosError(err) && err.response?.data?.message) ||
-				t('toast.checkInError')
-			toast.error(message)
+			toast.error(messageFromError(err, t('toast.checkInError')))
 		}
 	}
 

@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import type { TFunction } from 'i18next'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -10,6 +9,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { createGym } from '@/api/create-gym'
+import { messageFromError } from '@/lib/errors'
 import { getCurrentPosition } from '@/lib/geolocation'
 
 // Mirrors the backend: title required; description/phone optional; phone must
@@ -99,10 +99,7 @@ export function useNewGymPM() {
 			toast.success(t('toast.created', { title: gym.title }))
 			navigate('/gyms')
 		} catch (err) {
-			const message =
-				(isAxiosError(err) && err.response?.data?.message) ||
-				t('toast.createError')
-			toast.error(message)
+			toast.error(messageFromError(err, t('toast.createError')))
 		}
 	}
 

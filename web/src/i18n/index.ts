@@ -8,6 +8,7 @@ import enAuth from './locales/en/auth.json'
 import enCatalog from './locales/en/catalog.json'
 import enCheckIns from './locales/en/check-ins.json'
 import enCommon from './locales/en/common.json'
+import enErrors from './locales/en/errors.json'
 import enGyms from './locales/en/gyms.json'
 import enNav from './locales/en/nav.json'
 import ptBRAccount from './locales/pt-BR/account.json'
@@ -16,6 +17,7 @@ import ptBRAuth from './locales/pt-BR/auth.json'
 import ptBRCatalog from './locales/pt-BR/catalog.json'
 import ptBRCheckIns from './locales/pt-BR/check-ins.json'
 import ptBRCommon from './locales/pt-BR/common.json'
+import ptBRErrors from './locales/pt-BR/errors.json'
 import ptBRGyms from './locales/pt-BR/gyms.json'
 import ptBRNav from './locales/pt-BR/nav.json'
 import { setZodLocale } from './zod-locale'
@@ -42,6 +44,7 @@ export const resources = {
 		catalog: enCatalog,
 		gyms: enGyms,
 		admin: enAdmin,
+		errors: enErrors,
 	},
 	'pt-BR': {
 		common: ptBRCommon,
@@ -52,6 +55,7 @@ export const resources = {
 		catalog: ptBRCatalog,
 		gyms: ptBRGyms,
 		admin: ptBRAdmin,
+		errors: ptBRErrors,
 	},
 } as const
 
@@ -71,6 +75,7 @@ i18n.use(LanguageDetector)
 			'catalog',
 			'gyms',
 			'admin',
+			'errors',
 		],
 		interpolation: {
 			// React already escapes; double-escaping mangles names with markup.

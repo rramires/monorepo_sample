@@ -6,7 +6,6 @@ const envSchema = z.object({
 	VITE_ENABLE_API_DELAY: z.string().transform((value) => value === 'true'),
 	VITE_PASSWORD_MIN_LENGTH: z.coerce.number(),
 	VITE_PASSWORD_PATTERN: z.string(),
-	VITE_PASSWORD_MESSAGE: z.string(),
 })
 
 export const env = envSchema.parse(import.meta.env)

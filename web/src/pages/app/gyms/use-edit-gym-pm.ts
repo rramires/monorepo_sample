@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import type { TFunction } from 'i18next'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -11,6 +10,7 @@ import { z } from 'zod'
 import type { Gym } from '@/api/search-gyms'
 import { updateGym, type UpdateGymBody } from '@/api/update-gym'
 import { useConfirmDeactivate } from '@/hooks/use-confirm-deactivate'
+import { messageFromError } from '@/lib/errors'
 
 // Mirrors the backend's editable fields — no latitude/longitude (fixed at
 // creation). Same phone pattern as the create form. `is_active` is the
@@ -74,10 +74,7 @@ export function useEditGymPM(gym: Gym) {
 			setOpen(false)
 		},
 		onError: (err) => {
-			const message =
-				(isAxiosError(err) && err.response?.data?.message) ||
-				t('toast.updateError')
-			toast.error(message)
+			toast.error(messageFromError(err, t('toast.updateError')))
 		},
 	})
 

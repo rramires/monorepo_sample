@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { sendVerification } from '@/api/send-verification'
 import { verifyEmailByOtp } from '@/api/verify-email'
 import { useAuth } from '@/components/auth/auth-hooks'
+import { messageFromError } from '@/lib/errors'
 
 export function useVerifyEmailBannerPM() {
 	const auth = useAuth()
@@ -50,10 +51,9 @@ export function useVerifyEmailBannerPM() {
 			setOpen(false)
 			setCode('')
 		} catch (err) {
-			const message =
-				(isAxiosError(err) && err.response?.data?.message) ||
-				t('verifyEmailBanner.toast.invalidCode')
-			toast.error(message)
+			toast.error(
+				messageFromError(err, t('verifyEmailBanner.toast.invalidCode')),
+			)
 		}
 	}
 

@@ -7,7 +7,6 @@ import {
 	type PermissionFamily,
 } from '@root/contracts'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -18,6 +17,7 @@ import {
 	getPermissions,
 	updatePermission,
 } from '@/api/permissions'
+import { messageFromError } from '@/lib/errors'
 
 // The four CRUD families that the op Select offers (distinct from the user's
 // friendly grant label, which is free text). A screen's action can also be a
@@ -34,10 +34,6 @@ export function opBadge(
 ): string {
 	const family = actionFamily(action)
 	return action === family ? label(family as PermissionFamily) : action
-}
-
-function message(err: unknown, fallback: string): string {
-	return (isAxiosError(err) && err.response?.data?.message) || fallback
 }
 
 // Drives the todo-style permission editor for one screen: list rows, add a row
@@ -109,7 +105,9 @@ export function usePermissionsEditorPM(screenId: string) {
 			await invalidate()
 		},
 		onError: (err) =>
-			toast.error(message(err, t('screens.permissions.toast.addError'))),
+			toast.error(
+				messageFromError(err, t('screens.permissions.toast.addError')),
+			),
 	})
 
 	const rename = useMutation({
@@ -122,7 +120,9 @@ export function usePermissionsEditorPM(screenId: string) {
 			await invalidate()
 		},
 		onError: (err) =>
-			toast.error(message(err, t('screens.permissions.toast.saveError'))),
+			toast.error(
+				messageFromError(err, t('screens.permissions.toast.saveError')),
+			),
 	})
 
 	const remove = useMutation({
@@ -133,7 +133,10 @@ export function usePermissionsEditorPM(screenId: string) {
 		},
 		onError: (err) =>
 			toast.error(
-				message(err, t('screens.permissions.toast.deleteError')),
+				messageFromError(
+					err,
+					t('screens.permissions.toast.deleteError'),
+				),
 			),
 	})
 
