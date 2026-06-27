@@ -33,8 +33,8 @@ docker inspect --format '{{.State.Health.Status}}' monorepo_sample-solid_api_mys
 
 ## Fase 1 — Schema Prisma + migração + barrel
 
-**Edite** `api/prisma/schema.prisma` — adicione o model (mesmo shape do contrato;
-`category` como `String` validado pelo Zod do contracts):
+**Edite** `api/prisma/schema.prisma` — **ao fim do arquivo** (depois do último
+`model`), adicione o model (`category` como `String`, validado pelo Zod do contracts):
 
 ```prisma
 model Notice {
@@ -78,7 +78,13 @@ export * from './client.js'
 ```sh
 pnpm -C api lint && pnpm -C api compile && pnpm -C api test
 ```
-**Commit:** `feat(notices): add Notice model + add_notices migration`
+**Commit:**
+
+```sh
+git add api/prisma/schema.prisma api/prisma/migrations/ api/src/prisma-client/
+git commit -m "feat(notices): add Notice model + add_notices migration" \
+  -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 ---
 
@@ -124,7 +130,15 @@ api/src/repositories/in-memory/ **crie** `in-memory-notices-repository.ts`.
 ```sh
 pnpm -C api lint && pnpm -C api compile && pnpm -C api test
 ```
-**Commit:** `feat(notices): notices repository (interface + in-memory + prisma)`
+**Commit:**
+
+```sh
+git add api/src/repositories/i-notices-repository.ts \
+  api/src/repositories/in-memory/in-memory-notices-repository.ts \
+  api/src/repositories/prisma/prisma-notices-repository.ts
+git commit -m "feat(notices): notices repository (interface + in-memory + prisma)" \
+  -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 ---
 
@@ -178,7 +192,15 @@ os dois 404). Modelo:
 ```sh
 pnpm -C api lint && pnpm -C api compile && pnpm -C api test
 ```
-**Commit:** `feat(notices): NoticesUseCase + factory + unit spec`
+**Commit:**
+
+```sh
+git add api/src/use-cases/notices-use-case.ts \
+  api/src/use-cases/factories/make-notices-use-case.ts \
+  api/src/use-cases/notices-use-case.spec.ts
+git commit -m "feat(notices): NoticesUseCase + factory + unit spec" \
+  -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 ---
 
@@ -233,8 +255,14 @@ export async function noticesRoutes(app: FastifyInstance) {
 }
 ```
 
-**Registre** em `api/src/app.ts`: `import { noticesRoutes } from './http/controllers/notices/routes'`
-e `app.register(noticesRoutes)` junto dos outros `app.register(...)`.
+**Registre** as rotas em `api/src/app.ts`:
+
+```ts
+// adicione o import (simple-import-sort reordena):
+import { noticesRoutes } from './http/controllers/notices/routes'
+// e registre junto aos outros app.register(...):
+app.register(noticesRoutes)
+```
 
 > ⚠️ **Pegadinha — param `:noticeId`.** Bate com o mock do front. Copiar `:id`/`params.id`
 > de Modules gera um `undefined` silencioso.
@@ -244,7 +272,17 @@ e `app.register(noticesRoutes)` junto dos outros `app.register(...)`.
 ```sh
 pnpm -C api lint && pnpm -C api compile && pnpm -C api test
 ```
-**Commit:** `feat(notices): notices controllers + routes + app register`
+**Commit:**
+
+```sh
+git add api/src/http/controllers/notices/list-controller.ts \
+  api/src/http/controllers/notices/create-controller.ts \
+  api/src/http/controllers/notices/update-controller.ts \
+  api/src/http/controllers/notices/delete-controller.ts \
+  api/src/http/controllers/notices/routes.ts api/src/app.ts
+git commit -m "feat(notices): notices controllers + routes + app register" \
+  -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 ---
 
@@ -272,7 +310,13 @@ expect(res.statusCode).toEqual(201)
 pnpm -C api lint && pnpm -C api compile && pnpm -C api test && pnpm -C api test:e2e
 ```
 
-**Commit:** `test(notices): e2e routes spec (admin CRUD + 404 + 400)`
+**Commit:**
+
+```sh
+git add api/src/http/controllers/notices/routes.spec.ts
+git commit -m "test(notices): e2e routes spec (admin CRUD + 404 + 400)" \
+  -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 ---
 
@@ -303,7 +347,13 @@ pnpm -C api seeddb
 ```sh
 pnpm -C api lint && pnpm -C api compile && pnpm -C api test
 ```
-**Commit:** `feat(notices): seed notices module + screen + permissions + grants`
+**Commit:**
+
+```sh
+git add api/prisma/seed.ts
+git commit -m "feat(notices): seed notices module + screen + permissions + grants" \
+  -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 ---
 

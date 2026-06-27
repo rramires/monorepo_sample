@@ -110,6 +110,16 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 | `web` | `pnpm -C web lint && pnpm -C web build && pnpm -C web test:run` — e `pnpm -C web test:e2e` quando tocar rota/fluxo |
 | `api` | `pnpm -C api lint && pnpm -C api compile && pnpm -C api test` — e `pnpm -C api test:e2e` (MySQL up: `pnpm -C api compose:up`) quando tocar rota/seed |
 
+> ⚠️ **Antes de validar, rode o autofix de lint** — o `simple-import-sort` ordena
+> imports **só no `--fix`**; o `lint` puro **falha** ("Run autofix to sort these
+> imports!") se um import novo ficar fora de ordem:
+>
+> ```sh
+> pnpm -C web lint:fix     # ou pnpm -C api lint:fix
+> ```
+>
+> (Se o seu editor já roda ESLint autofix ao salvar, isso acontece sozinho.)
+
 > Dica de formatação: rode o Prettier **só nos arquivos que você tocou**
 > (`pnpm -C web exec prettier --write <caminhos>`), nunca na árvore inteira — senão
 > você varre arquivos pré-existentes não-formatados para dentro do seu commit.
