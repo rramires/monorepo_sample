@@ -14,6 +14,33 @@ responsabilidade da casa, para não construir nada fora do padrão.
 
 ---
 
+## Ponto de partida (reproduzir o tutorial)
+
+A feature-exemplo **Notices** já está neste repositório — ela é o **resultado pronto**
+deste guia (o exemplo vivo). Logo, no `master` o módulo **já existe**; pra
+**construir você mesmo** seguindo o passo-a-passo, comece de um estado **antes** do
+Notices, na branch de baseline:
+
+```sh
+git checkout how-to-base    # código pré-Notices + este guia (versão validada)
+git checkout -b minha-feature-notices
+```
+
+Daí siga [`01-frontend-pt-BR.md`](./01-frontend-pt-BR.md) → [`02-backend-pt-BR.md`](./02-backend-pt-BR.md).
+Ao terminar, compare seu resultado com a **solução pronta** do `master`:
+
+```sh
+git diff how-to-base master -- web api packages
+```
+
+> **Para o mantenedor.** `how-to-base` é o estado **validado** = código pré-feature +
+> o guia atual. Se você mudar o guia, re-execute o tutorial pra validar e **mova o
+> ponteiro** pra um commit pré-feature com o `how-to/` atualizado por cima (depois
+> `git push -f origin how-to-base`). O `master` continua com o exemplo pronto +
+> guia. (Em caso de dúvida no git, é só pedir.)
+
+---
+
 ## Para quem é
 
 - **Humano novo no projeto** — siga os comandos copiáveis na ordem; cada passo diz
