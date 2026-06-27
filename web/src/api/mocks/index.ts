@@ -22,6 +22,12 @@ import {
 } from './modules-mock'
 import { nearbyGymsMock } from './nearby-gyms-mock'
 import {
+	createNoticeMock,
+	deleteNoticeMock,
+	listNoticesMock,
+	updateNoticeMock,
+} from './notices-mock'
+import {
 	createPermissionMock,
 	deletePermissionMock,
 	listPermissionsMock,
@@ -59,13 +65,6 @@ import {
 	verifyEmailByLinkMock,
 	verifyEmailByOtpMock,
 } from './verify-email-mock'
-
-import {
-	createNoticeMock,
-	deleteNoticeMock,
-	listNoticesMock,
-	updateNoticeMock,
-} from './notices-mock'
 
 export const worker = setupWorker(
 	signInMock,
