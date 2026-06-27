@@ -111,3 +111,8 @@ export type PasswordReset = Prisma.PasswordResetModel
  * 
  */
 export type RevokedToken = Prisma.RevokedTokenModel
+/**
+ * Model Notice
+ * 
+ */
+export type Notice = Prisma.NoticeModel

@@ -19,17 +19,17 @@ enum Role {
 }
 
 model User {
-  id            String   @id @default(uuid()) @db.VarChar(36)
-  username      String   @unique @db.VarChar(30)
-  email         String   @unique @db.VarChar(254)
-  password_hash String   @db.VarChar(60)
-  role          Role     @default(USER)
-  is_verified   Boolean  @default(false)
+  id                  String    @id @default(uuid()) @db.VarChar(36)
+  username            String    @unique @db.VarChar(30)
+  email               String    @unique @db.VarChar(254)
+  password_hash       String    @db.VarChar(60)
+  role                Role      @default(USER)
+  is_verified         Boolean   @default(false)
   // Deactivated accounts can't log in and are cut off on their next request.
-  is_active     Boolean  @default(true)
+  is_active           Boolean   @default(true)
   // The user's preferred landing screen key (overrides their profile default).
-  default_screen_key String? @db.VarChar(100)
-  created_at    DateTime @default(now())
+  default_screen_key  String?   @db.VarChar(100)
+  created_at          DateTime  @default(now())
   // Set on every password change. Tokens issued before this instant are
   // rejected (global logout) via the password-changed registry.
   password_changed_at DateTime?
@@ -153,7 +153,7 @@ model Permission {
   is_system Boolean @default(false)
 
   // Cascade: a deletable screen takes its (ungranted) permissions with it.
-  screen  Screen              @relation(fields: [screen_id], references: [id], onDelete: Cascade)
+  screen   Screen              @relation(fields: [screen_id], references: [id], onDelete: Cascade)
   // No cascade: a granted permission can't be deleted (use-case 409s first).
   profiles ProfilePermission[]
 
@@ -273,4 +273,13 @@ model RevokedToken {
   created_at DateTime @default(now())
 
   @@map("revoked_tokens")
+}
+
+model Notice {
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  title      String   @db.VarChar(200)
+  category   String   @db.VarChar(20)
+  created_at DateTime @default(now())
+
+  @@map("notices")
 }

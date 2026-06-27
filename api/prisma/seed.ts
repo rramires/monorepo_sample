@@ -35,20 +35,104 @@ async function seedAdminRole() {
 // Gym is order 0 so it leads the sidebar; the access-control catalog follows.
 // is_active (modules/screens/profiles) + is_enabled (screens) default true.
 const MODULES = [
-	{ key: 'gym', name: 'Gym', description: 'Dashboard, gyms and check-ins.', order: 0, is_system: false },
-	{ key: 'access-control', name: 'Access Control', description: 'Modules, screens, profiles, users.', order: 1, is_system: true },
+	{
+		key: 'gym',
+		name: 'Gym',
+		description: 'Dashboard, gyms and check-ins.',
+		order: 0,
+		is_system: false,
+	},
+	{
+		key: 'access-control',
+		name: 'Access Control',
+		description: 'Modules, screens, profiles, users.',
+		order: 1,
+		is_system: true,
+	},
+	{
+		key: 'notices',
+		name: 'Notices',
+		description: 'Notice board for members.',
+		order: 3,
+		is_system: false,
+	},
 ]
 
 const SCREENS = [
 	// gym (demo content — deletable)
-	{ key: 'gym.dashboard', name: 'Dashboard', module: 'gym', path: '/', description: 'Activity at a glance.', order: 0, is_system: false },
-	{ key: 'gym.gyms', name: 'Gyms', module: 'gym', path: '/gyms', description: 'Browse and manage gyms.', order: 1, is_system: false },
-	{ key: 'gym.check-ins', name: 'Check-ins', module: 'gym', path: '/check-ins', description: 'Check in to a gym and validate members.', order: 2, is_system: false },
+	{
+		key: 'gym.dashboard',
+		name: 'Dashboard',
+		module: 'gym',
+		path: '/',
+		description: 'Activity at a glance.',
+		order: 0,
+		is_system: false,
+	},
+	{
+		key: 'gym.gyms',
+		name: 'Gyms',
+		module: 'gym',
+		path: '/gyms',
+		description: 'Browse and manage gyms.',
+		order: 1,
+		is_system: false,
+	},
+	{
+		key: 'gym.check-ins',
+		name: 'Check-ins',
+		module: 'gym',
+		path: '/check-ins',
+		description: 'Check in to a gym and validate members.',
+		order: 2,
+		is_system: false,
+	},
 	// access-control (system — protected)
-	{ key: 'access-control.modules', name: 'Manage Modules', module: 'access-control', path: '/admin/modules', description: 'Group screens into modules.', order: 0, is_system: true },
-	{ key: 'access-control.screens', name: 'Manage Screens', module: 'access-control', path: '/admin/screens', description: 'Screens and their permissions.', order: 1, is_system: true },
-	{ key: 'access-control.profiles', name: 'Manage Profiles', module: 'access-control', path: '/admin/profiles', description: 'Bundle permissions into profiles.', order: 2, is_system: true },
-	{ key: 'access-control.users', name: 'Manage Users', module: 'access-control', path: '/admin/users', description: 'Users and their profiles.', order: 3, is_system: true },
+	{
+		key: 'access-control.modules',
+		name: 'Manage Modules',
+		module: 'access-control',
+		path: '/admin/modules',
+		description: 'Group screens into modules.',
+		order: 0,
+		is_system: true,
+	},
+	{
+		key: 'access-control.screens',
+		name: 'Manage Screens',
+		module: 'access-control',
+		path: '/admin/screens',
+		description: 'Screens and their permissions.',
+		order: 1,
+		is_system: true,
+	},
+	{
+		key: 'access-control.profiles',
+		name: 'Manage Profiles',
+		module: 'access-control',
+		path: '/admin/profiles',
+		description: 'Bundle permissions into profiles.',
+		order: 2,
+		is_system: true,
+	},
+	{
+		key: 'access-control.users',
+		name: 'Manage Users',
+		module: 'access-control',
+		path: '/admin/users',
+		description: 'Users and their profiles.',
+		order: 3,
+		is_system: true,
+	},
+	{
+		key: 'notices.notices',
+		name: 'Notices',
+		module: 'notices',
+		path: '/notices',
+		description: 'Notice board for members.',
+		order: 1,
+		is_system: false,
+	},
 ]
 
 // Curated permission catalog with friendly labels — only the ops a screen really
@@ -80,12 +164,31 @@ const PERMISSIONS: PermSpec[] = [
 	{ screen: 'access-control.users', action: 'view', label: 'View' },
 	{ screen: 'access-control.users', action: 'create', label: 'Add' },
 	{ screen: 'access-control.users', action: 'edit', label: 'Edit' },
+	{ screen: 'notices.notices', action: 'view', label: 'View' },
+	{ screen: 'notices.notices', action: 'create', label: 'Add' },
+	{ screen: 'notices.notices', action: 'edit', label: 'Edit' },
+	{ screen: 'notices.notices', action: 'delete', label: 'Remove' },
 ]
 
 const PROFILES = [
-	{ key: 'gym-member', name: 'Gym Member', description: 'Default profile granted on registration.', is_default: true },
-	{ key: 'gym-manager', name: 'Gym Manager', description: 'Runs a gym: manages gyms and validates check-ins.', is_default: false },
-	{ key: 'support', name: 'Support', description: 'Back-office: administers profiles and user access.', is_default: false },
+	{
+		key: 'gym-member',
+		name: 'Gym Member',
+		description: 'Default profile granted on registration.',
+		is_default: true,
+	},
+	{
+		key: 'gym-manager',
+		name: 'Gym Manager',
+		description: 'Runs a gym: manages gyms and validates check-ins.',
+		is_default: false,
+	},
+	{
+		key: 'support',
+		name: 'Support',
+		description: 'Back-office: administers profiles and user access.',
+		is_default: false,
+	},
 ]
 
 // Per profile: membership (screen) + the granted ops on it; `landing` is the
@@ -96,25 +199,46 @@ const PROFILE_GRANTS: Record<string, GrantSpec[]> = {
 		{ screen: 'gym.dashboard', ops: ['view'], landing: true },
 		{ screen: 'gym.gyms', ops: ['view', 'create_checkin'] },
 		{ screen: 'gym.check-ins', ops: ['view'] },
+		{ screen: 'notices.notices', ops: ['view'] },
 	],
 	'gym-manager': [
 		{ screen: 'gym.dashboard', ops: ['view'], landing: true },
-		{ screen: 'gym.gyms', ops: ['view', 'create', 'edit', 'create_checkin'] },
+		{
+			screen: 'gym.gyms',
+			ops: ['view', 'create', 'edit', 'create_checkin'],
+		},
 		{ screen: 'gym.check-ins', ops: ['view', 'edit_validate'] },
 		{ screen: 'access-control.users', ops: ['view', 'create'] },
+		{ screen: 'notices.notices', ops: ['view'] },
 	],
 	support: [
-		{ screen: 'access-control.profiles', ops: ['view', 'create', 'edit', 'delete'], landing: true },
+		{
+			screen: 'access-control.profiles',
+			ops: ['view', 'create', 'edit', 'delete'],
+			landing: true,
+		},
 		{ screen: 'access-control.users', ops: ['view', 'edit'] },
 		{ screen: 'access-control.screens', ops: ['view'] },
+		{
+			screen: 'notices.notices',
+			ops: ['view', 'create', 'edit', 'delete'],
+		},
 	],
 }
 
 // Demo users (USER role) — password is the same as the admin's for convenience
 // in this sample. Each maps to one seeded profile so the menu/guards differ.
 const DEMO_USERS = [
-	{ username: 'johndoe', email: 'johndoe@example.com', profile: 'gym-member' },
-	{ username: 'manager', email: 'manager@example.com', profile: 'gym-manager' },
+	{
+		username: 'johndoe',
+		email: 'johndoe@example.com',
+		profile: 'gym-member',
+	},
+	{
+		username: 'manager',
+		email: 'manager@example.com',
+		profile: 'gym-manager',
+	},
 	{ username: 'support', email: 'support@example.com', profile: 'support' },
 ]
 
@@ -124,7 +248,12 @@ async function seedAccessControl() {
 	for (const m of MODULES) {
 		const row = await prisma.module.upsert({
 			where: { key: m.key },
-			update: { name: m.name, description: m.description, order: m.order, is_system: m.is_system },
+			update: {
+				name: m.name,
+				description: m.description,
+				order: m.order,
+				is_system: m.is_system,
+			},
 			create: m,
 		})
 		moduleId.set(m.key, row.id)
@@ -157,7 +286,12 @@ async function seedAccessControl() {
 		const row = await prisma.permission.upsert({
 			where: { screen_id_action: { screen_id: sid, action: p.action } },
 			update: { label: p.label, is_system },
-			create: { screen_id: sid, action: p.action, label: p.label, is_system },
+			create: {
+				screen_id: sid,
+				action: p.action,
+				label: p.label,
+				is_system,
+			},
 		})
 		permId.set(`${p.screen}:${p.action}`, row.id)
 	}
@@ -167,7 +301,11 @@ async function seedAccessControl() {
 	for (const p of PROFILES) {
 		const row = await prisma.profile.upsert({
 			where: { key: p.key },
-			update: { name: p.name, description: p.description, is_default: p.is_default },
+			update: {
+				name: p.name,
+				description: p.description,
+				is_default: p.is_default,
+			},
 			create: { ...p, is_system: true },
 		})
 		profileId.set(p.key, row.id)
@@ -180,14 +318,21 @@ async function seedAccessControl() {
 		for (const g of grants) {
 			const sid = screenId.get(g.screen)!
 			await prisma.profileScreen.upsert({
-				where: { profile_id_screen_id: { profile_id: pid, screen_id: sid } },
+				where: {
+					profile_id_screen_id: { profile_id: pid, screen_id: sid },
+				},
 				update: {},
 				create: { profile_id: pid, screen_id: sid },
 			})
 			for (const op of g.ops) {
 				const pmid = permId.get(`${g.screen}:${op}`)!
 				await prisma.profilePermission.upsert({
-					where: { profile_id_permission_id: { profile_id: pid, permission_id: pmid } },
+					where: {
+						profile_id_permission_id: {
+							profile_id: pid,
+							permission_id: pmid,
+						},
+					},
 					update: {},
 					create: { profile_id: pid, permission_id: pmid },
 				})
@@ -197,7 +342,11 @@ async function seedAccessControl() {
 		const landing = grants.find((g) => g.landing)
 		await prisma.profile.update({
 			where: { id: pid },
-			data: { default_screen_id: landing ? screenId.get(landing.screen)! : null },
+			data: {
+				default_screen_id: landing
+					? screenId.get(landing.screen)!
+					: null,
+			},
 		})
 	}
 
