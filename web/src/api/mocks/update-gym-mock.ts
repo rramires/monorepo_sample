@@ -11,7 +11,10 @@ export const updateGymMock = http.patch<{ gymId: string }, UpdateGymBody>(
 			request.headers.get('Authorization') !==
 			'Bearer mock-admin-jwt-token'
 		) {
-			return HttpResponse.json({ code: 'forbidden', message: 'Forbidden.' }, { status: 403 })
+			return HttpResponse.json(
+				{ code: 'forbidden', message: 'Forbidden.' },
+				{ status: 403 },
+			)
 		}
 
 		const body = await request.json()
@@ -22,7 +25,10 @@ export const updateGymMock = http.patch<{ gymId: string }, UpdateGymBody>(
 			body.is_active === undefined
 		) {
 			return HttpResponse.json(
-				{ code: 'validation_error', message: 'Provide at least one field to update.' },
+				{
+					code: 'validation_error',
+					message: 'Provide at least one field to update.',
+				},
 				{ status: 400 },
 			)
 		}

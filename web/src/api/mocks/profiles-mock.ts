@@ -140,7 +140,10 @@ export const updateProfileEntityMock = http.patch<{ id: string }>(
 			parsed.data.key !== profile.key
 		) {
 			return HttpResponse.json(
-				{ code: 'system_profile', message: 'A system profile key cannot be changed.' },
+				{
+					code: 'system_profile',
+					message: 'A system profile key cannot be changed.',
+				},
 				{ status: 409 },
 			)
 		}
@@ -149,7 +152,10 @@ export const updateProfileEntityMock = http.patch<{ id: string }>(
 		// current default off is rejected (promote another to move it).
 		if (parsed.data.is_default === false && profile.is_default) {
 			return HttpResponse.json(
-				{ code: 'default_profile_required', message: 'At least one profile must remain the default.' },
+				{
+					code: 'default_profile_required',
+					message: 'At least one profile must remain the default.',
+				},
 				{ status: 409 },
 			)
 		}
@@ -186,7 +192,10 @@ export const deleteProfileMock = http.delete<{ id: string }>(
 		// System profiles are protected from deletion.
 		if (profile.is_system) {
 			return HttpResponse.json(
-				{ code: 'system_profile', message: 'A system profile cannot be deleted.' },
+				{
+					code: 'system_profile',
+					message: 'A system profile cannot be deleted.',
+				},
 				{ status: 409 },
 			)
 		}

@@ -23,7 +23,10 @@ export const updateUserMock = http.patch<{ userId: string }, UpdateUserBody>(
 			body.is_active === undefined
 		) {
 			return HttpResponse.json(
-				{ code: 'validation_error', message: 'Provide at least one field to update.' },
+				{
+					code: 'validation_error',
+					message: 'Provide at least one field to update.',
+				},
 				{ status: 400 },
 			)
 		}
@@ -55,7 +58,10 @@ export const updateUserMock = http.patch<{ userId: string }, UpdateUserBody>(
 			body.role !== user.role
 		) {
 			return HttpResponse.json(
-				{ code: 'cannot_change_own_role', message: 'You cannot change your own role.' },
+				{
+					code: 'cannot_change_own_role',
+					message: 'You cannot change your own role.',
+				},
 				{ status: 400 },
 			)
 		}
@@ -72,7 +78,10 @@ export const updateUserMock = http.patch<{ userId: string }, UpdateUserBody>(
 		)
 		if (conflict) {
 			return HttpResponse.json(
-				{ code: 'email_already_exists', message: 'E-mail already exists.' },
+				{
+					code: 'email_already_exists',
+					message: 'E-mail already exists.',
+				},
 				{ status: 409 },
 			)
 		}

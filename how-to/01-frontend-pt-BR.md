@@ -78,7 +78,13 @@ export * from './notices'
 pnpm -C packages/contracts typecheck
 ```
 
-**Commit:** `feat(contracts): add notices schemas (category enum, notice, create/update bodies)`
+**Commit:**
+
+```sh 
+git add packages/contracts/src/notices.ts packages/contracts/src/index.ts
+git commit -m "feat(contracts): add notices schemas (category enum, notice, create/update bodies)" \
+  -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 ---
 
@@ -203,8 +209,18 @@ export const deleteNoticeMock = http.delete<{ noticeId: string }>('/notices/:not
 (`/notices/:noticeId`):
 
 ```ts
-import { createNoticeMock, deleteNoticeMock, listNoticesMock, updateNoticeMock } from './notices-mock'
-// ...dentro de setupWorker(...):
+// Junto aos outros imports de *-mock, adicione:
+import {
+	createNoticeMock,
+	deleteNoticeMock,
+	listNoticesMock,
+	updateNoticeMock,
+} from './notices-mock'
+```
+
+```ts
+// No setupWorker(...), adicione os quatro (regra da casa: estáticas antes das
+// :param — aqui os métodos diferem, então não morde, mas mantenha o hábito):
 	listNoticesMock,
 	createNoticeMock,
 	updateNoticeMock,
@@ -221,9 +237,16 @@ import { createNoticeMock, deleteNoticeMock, listNoticesMock, updateNoticeMock }
 **Validação:**
 
 ```sh
-pnpm -C web lint && pnpm -C web build && pnpm -C web test:run
+pnpm -C web lint:fix && pnpm -C web format && pnpm -C web build && pnpm -C web test:run
 ```
-**Commit:** `feat(web): notices API client + MSW mock`
+
+**Commit:**
+
+```sh
+git add web/src/api/notices.ts web/src/api/mocks/notices-mock.ts web/src/api/mocks/index.ts
+git commit -m "feat(web): notices API client + MSW mock" \
+  -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 ---
 
@@ -257,38 +280,75 @@ Nas pastas web/src/i18n/locales/en/ e web/src/i18n/locales/pt-BR/ **Crie**
 }
 ```
 
-(A versão `pt-BR` traduz os valores: `"Notices"` → `"Avisos"`, etc. Escreva você o
-pt-BR, brasileiro.)
+E o `pt-BR/notices.json` (cole tal qual):
+
+```json
+{
+	"pageTitle": "Avisos",
+	"title": "Avisos",
+	"description": "Publique avisos no mural da academia.",
+	"new": "Novo aviso",
+	"empty": "Nenhum aviso encontrado.",
+	"columns": { "title": "Título", "category": "Categoria", "created": "Criado em", "actions": "Ações" },
+	"categories": { "info": "Informação", "warning": "Atenção", "urgent": "Urgente" },
+	"fields": { "titleRequired": "O título é obrigatório.", "categoryRequired": "A categoria é obrigatória." },
+	"delete": { "title": "Excluir aviso", "description": "Excluir \"{{title}}\"? Esta ação não pode ser desfeita.", "confirmLabel": "Excluir" },
+	"dialog": {
+		"editTitle": "Editar aviso", "newTitle": "Novo aviso",
+		"description": "Um aviso aparece no mural da academia.",
+		"titleLabel": "Título", "categoryLabel": "Categoria", "selectCategory": "Selecione uma categoria",
+		"save": "Salvar alterações", "create": "Criar aviso"
+	},
+	"toast": { "created": "Aviso criado.", "updated": "Aviso atualizado.", "deleted": "Aviso excluído.", "saveError": "Não foi possível salvar o aviso.", "deleteError": "Não foi possível excluir o aviso." }
+}
+```
 
 > ⚠️ **Pegadinha — o namespace é registrado em QUATRO lugares.** Esqueça um e o build
 > quebra (chaves tipadas) ou a chave falha silenciosa em runtime.
 
-**Edite** `web/src/i18n/index.ts`: (a) import `en`, (b) import `pt-BR`,
-(c) ambos em `resources`, (d) o nome no array `ns`:
+**Edite** `web/src/i18n/index.ts` — adicione os imports do `notices` (o
+`simple-import-sort` reordena sozinho; `enNav`/`ptBRNav` já existem):
 
 ```ts
 import enNotices from './locales/en/notices.json'
 import ptBRNotices from './locales/pt-BR/notices.json'
-// resources.en.notices = enNotices ; resources['pt-BR'].notices = ptBRNotices
-// ns: [ ..., 'notices' ]
 ```
 
-**Edite** `web/src/i18n/resources.d.ts`: (e) o import de tipo e (f) o membro em
-`resources`:
+E ainda em `web/src/i18n/index.ts` — registre o namespace em `resources` (en +
+pt-BR) e no array `ns:`. **A ordem não importa** em nenhum dos três:
 
 ```ts
+// em export const resources no objeto .en:
+notices: enNotices,
+// em export const resources no objeto ['pt-BR']:
+notices: ptBRNotices,
+// no array ns (ns: [):
+'notices',
+```
+
+**Edite** `web/src/i18n/resources.d.ts` — o import de tipo e o membro (ordem livre):
+
+```ts
+// adicione aos imports de tipo:
 import type enNotices from './locales/en/notices.json'
-// dentro de CustomTypeOptions.resources:
-		notices: typeof enNotices
+// adicione no CustomTypeOptions em resources:
+notices: typeof enNotices
 ```
 
 **Validação:**
 
 ```sh
-pnpm -C web lint && pnpm -C web build && pnpm -C web test:run
+pnpm -C web lint:fix && pnpm -C web format && pnpm -C web build && pnpm -C web test:run
 ```
 (o `build` é o que pega chave/typed faltando).
-**Commit:** `feat(web): notices i18n namespace`
+**Commit:**
+
+```sh
+git add web/src/i18n/locales/en/notices.json web/src/i18n/locales/pt-BR/notices.json \
+  web/src/i18n/index.ts web/src/i18n/resources.d.ts
+git commit -m "feat(web): notices i18n namespace" \
+  -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 ---
 
@@ -300,14 +360,48 @@ modo mock, isso vem de uma **seed em memória**. Uma tela só aparece quando est
 
 ### 4a. Seed do mock — `web/src/api/mocks/data/access-control-seed.ts`
 
-Adicione **três coisas** (mirror das entradas existentes):
+Adicione **três coisas** (ordem livre; mirror das entradas existentes). **Não pule
+esta fase** — sem ela o menu não mostra "Notices" (os gates passam mesmo assim).
 
-- um **módulo** no array de módulos:
-  `{ id:'mod-notices', key:'notices', name:'Notices', description:'Notice board for members.', order:3, is_system:false, is_active:true }`
-- uma **tela** no array de telas — **com `path`** (é o `path` que a torna um link):
-  `{ id:'scr-notices', module_id:'mod-notices', key:'notices.notices', name:'Notices', path:'/notices', description:'Notice board for members.', order:0, is_system:false, is_active:true, is_enabled:true }`
-- quatro **permissions** (`view/create/edit/delete`) para `notices.notices` no
-  `PERMISSION_SPECS`.
+Um **módulo** no array de módulos:
+
+```ts
+{
+	id: 'mod-notices',
+	key: 'notices',
+	name: 'Notices',
+	description: 'Notice board for members.',
+	order: 3,
+	is_system: false,
+	is_active: true,
+},
+```
+
+Uma **tela** no array de telas — **com `path`** (é o `path` que a torna um link):
+
+```ts
+{
+	id: 'scr-notices',
+	module_id: 'mod-notices',
+	key: 'notices.notices',
+	name: 'Notices',
+	path: '/notices',
+	description: 'Notice board for members.',
+	order: 0,
+	is_system: false,
+	is_active: true,
+	is_enabled: true,
+},
+```
+
+Quatro **permissions** no `PERMISSION_SPECS` (repare a chave `screen_key`):
+
+```ts
+{ screen_key: 'notices.notices', action: 'view', label: 'View' },
+{ screen_key: 'notices.notices', action: 'create', label: 'Add' },
+{ screen_key: 'notices.notices', action: 'edit', label: 'Edit' },
+{ screen_key: 'notices.notices', action: 'delete', label: 'Remove' },
+```
 
 > ⚠️ **Pegadinha — admin é ROLE, não perfil.** No mock, `computePermissions()` faz
 > curto-circuito para `role === 'ADMIN'`: ele vê **toda tela que tem `path`** e
@@ -323,20 +417,71 @@ Adicione **três coisas** (mirror das entradas existentes):
 
 ### 4b. Registro de nav — `web/src/components/app-sidebar/use-app-sidebar-pm.ts`
 
-- importe um ícone (`Megaphone` do `lucide-react`);
-- estenda a união `NavLabelKey` com `'notices'`;
-- adicione ao `NAV_ENTRIES`:
+Três adições (ordem livre em todas):
 
 ```ts
+// 1) adicione Megaphone ao import de 'lucide-react':
+Megaphone,
+```
+
+```ts
+// 2) adicione à união NavLabelKey:
+| 'notices'
+```
+
+```ts
+// 3) adicione ao NAV_ENTRIES:
 'notices.notices': { icon: Megaphone, labelKey: 'notices' },
 ```
 
 ### 4c. Labels i18n do menu
 
-- `web/src/i18n/locales/{en,pt-BR}/nav.json` → chave `"notices"` (rótulo curto do link);
-- `web/src/i18n/locales/{en,pt-BR}/catalog.json` → entradas do **módulo** `notices`
-  e da **tela** `notices.notices` (o cabeçalho da seção do menu vem de
-  `catalog:modules.notices.name`).
+São entradas a **adicionar** em arquivos existentes (ponha a vírgula conforme a
+posição entre os irmãos).
+
+**`nav.json`** — rótulo curto do link, adicione a chave `notices`:
+
+`web/src/i18n/locales/en/nav.json`:
+
+```json
+"notices": "Notices"
+```
+
+`web/src/i18n/locales/pt-BR/nav.json`:
+
+```json
+"notices": "Avisos"
+```
+
+**`catalog.json`** — nome do módulo/tela (o cabeçalho da seção do menu vem de
+`catalog:modules.notices.name`). Adicione **uma entrada no objeto `modules` e outra
+no objeto `screens`**:
+
+`web/src/i18n/locales/en/catalog.json`:
+
+```json
+// Em 
+"modules": {
+	// Adicione:
+	"notices": { "name": "Notices", "description": "Notice board for members." }
+// Em
+"screens": {
+	// Adicione:
+	"notices.notices": { "name": "Notices", "description": "Notice board for members." }
+```
+
+`web/src/i18n/locales/pt-BR/catalog.json`:
+
+```json
+// Em 
+"modules": {
+	// Adicione:
+	"notices": { "name": "Avisos", "description": "Mural de avisos da academia." }
+// Em
+"screens": {
+	// Adicione:
+	"notices.notices": { "name": "Avisos", "description": "Mural de avisos da academia." }
+```
 
 > ⚠️ **Pegadinha — ordem rota × página.** A rota guardada (que importa a página
 > `Notices`) entra **na Fase 5**, depois que a página existe. Se você adicionar a
@@ -346,9 +491,18 @@ Adicione **três coisas** (mirror das entradas existentes):
 **Validação:**
 
 ```sh
-pnpm -C web lint && pnpm -C web build && pnpm -C web test:run
+pnpm -C web lint:fix && pnpm -C web format && pnpm -C web build && pnpm -C web test:run
 ```
-**Commit:** `feat(web): notices menu + permission wiring (mock seed, nav, labels)`
+**Commit:**
+
+```sh
+git add web/src/api/mocks/data/access-control-seed.ts \
+  web/src/components/app-sidebar/use-app-sidebar-pm.ts \
+  web/src/i18n/locales/en/nav.json web/src/i18n/locales/pt-BR/nav.json \
+  web/src/i18n/locales/en/catalog.json web/src/i18n/locales/pt-BR/catalog.json
+git commit -m "feat(web): notices menu + permission wiring (mock seed, nav, labels)" \
+  -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 ---
 
@@ -495,8 +649,9 @@ export function useNoticeDialogPM(notice?: NoticeInput) {
 
 ### 5c. View do diálogo — `notice-dialog.tsx`
 
-View pura. O `category` é um `<Select>` ligado via `Controller` (campo controlado).
-Modelo: [`screen-dialog.tsx`](../web/src/pages/app/admin/screens/screen-dialog.tsx).
+View pura — o `category` é um `<Select>` via `Controller` (campo controlado),
+espelhando [`screen-dialog.tsx`](../web/src/pages/app/admin/screens/screen-dialog.tsx).
+Conteúdo de `notice-dialog.tsx`:
 
 ```tsx
 import { type ReactNode } from 'react'
@@ -570,8 +725,9 @@ export function NoticeDialog({ notice, trigger }: { notice?: NoticeInput; trigge
 
 View pura. Tabela via `ResponsiveList` (vira cards abaixo de `lg`), com colunas +
 ações por linha (editar via `NoticeDialog`, excluir via `ConfirmDialog`), liberadas
-por `pm.canEdit`/`pm.canDelete`. Modelo:
-[`modules.tsx`](../web/src/pages/app/admin/modules/modules.tsx).
+por `pm.canEdit`/`pm.canDelete`, espelhando
+[`modules.tsx`](../web/src/pages/app/admin/modules/modules.tsx). Conteúdo de
+`notices.tsx`:
 
 ```tsx
 import { Pencil, Plus, Trash2 } from 'lucide-react'
@@ -652,59 +808,225 @@ export function Notices() {
 
 ### 5e. Rota guardada — `web/src/routes.tsx`
 
-Agora que a página existe, registre a rota. Dentro do grupo autenticado
-(`AppLayout`), envolva-a no guard que espelha o `can()` do menu:
+Agora que a página existe, registre a rota guardada (espelha o `can()` do menu):
 
 ```tsx
-// no topo: import { Notices } from './pages/app/notices/notices'
+// adicione o import (simple-import-sort reordena):
+import { Notices } from './pages/app/notices/notices'
+```
+
+```tsx
+// Entre os filhos do <AppLayout> (ex.: logo após o bloco da rota <RequireScreen screen='gym.check-ins' />),
+// adicione:
 {
-	element: <RequireScreen screen='notices.notices' />,
-	children: [{ path: 'notices', element: <Notices /> }],
+	element: (
+		<RequireScreen screen='notices.notices' />
+	),
+	children: [
+		{ path: 'notices', element: <Notices /> },
+	],
 },
 ```
 
 **Validação:**
 
 ```sh
-pnpm -C web lint && pnpm -C web build && pnpm -C web test:run
+pnpm -C web lint:fix && pnpm -C web format && pnpm -C web build && pnpm -C web test:run
 ```
-**Commit:** `feat(web): notices page + dialog (PM pair) + guarded route`
+**Commit:**
+
+```sh
+git add web/src/pages/app/notices/notices.tsx web/src/pages/app/notices/use-notices-pm.ts \
+  web/src/pages/app/notices/notice-dialog.tsx web/src/pages/app/notices/use-notice-dialog-pm.ts \
+  web/src/routes.tsx
+git commit -m "feat(web): notices page + dialog (PM pair) + guarded route" \
+  -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 ---
 
 ## Fase 6 — Testes (unit/component + e2e)
 
-### 6a. Component spec (cold-load!) — `notice-dialog.spec.tsx` (mesma pasta da página)
+### 6a. Component spec (cold-load!)
 
-Stub do `@/api/notices`, abre o diálogo, **assere o valor semeado** do título e do
-Select na edição (a regressão de cold-load), e que a validação barra título vazio.
+Na pasta `web/src/pages/app/notices/` **Crie** `notice-dialog.spec.tsx` e adicione:
 
 ```tsx
-expect(await screen.findByLabelText('Title')).toHaveValue('Pool closed')
-// o Select controlado tem que cold-load a categoria armazenada:
-expect(screen.getByRole('combobox')).toHaveTextContent('Warning')
+import { screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { beforeEach, vi } from 'vitest'
+
+import { createNotice, updateNotice } from '@/api/notices'
+import { Button } from '@/components/ui/button'
+
+import { renderWithProviders } from '../../../../test/utils'
+import { NoticeDialog } from './notice-dialog'
+
+// Stub na API pra asserir as chamadas sem rede/MSW.
+vi.mock('@/api/notices', () => ({
+	createNotice: vi.fn(async () => ({})),
+	updateNotice: vi.fn(async () => ({})),
+}))
+
+beforeEach(() => {
+	vi.clearAllMocks()
+})
+
+function renderDialog(props: Parameters<typeof NoticeDialog>[0]['notice']) {
+	return renderWithProviders(
+		<NoticeDialog notice={props} trigger={<Button>Open</Button>} />,
+	)
+}
+
+describe('NoticeDialog', () => {
+	it('cold-loads the stored title and category when editing', async () => {
+		const user = userEvent.setup()
+		renderDialog({ id: 'notice-1', title: 'Pool closed', category: 'warning' })
+
+		await user.click(screen.getByRole('button', { name: 'Open' }))
+
+		// O input de título carrega o valor da notícia.
+		expect(await screen.findByLabelText('Title')).toHaveValue('Pool closed')
+		// O Select (via Controller) tem que carregar a categoria armazenada na
+		// abertura — a regressão-âncora de cold-load: vinha vazio e quebrava a validação.
+		expect(screen.getByRole('combobox')).toHaveTextContent('Warning')
+	})
+
+	it('defaults a new notice to the Info category', async () => {
+		const user = userEvent.setup()
+		renderWithProviders(<NoticeDialog trigger={<Button>Open</Button>} />)
+
+		await user.click(screen.getByRole('button', { name: 'Open' }))
+
+		expect(await screen.findByLabelText('Title')).toHaveValue('')
+		expect(screen.getByRole('combobox')).toHaveTextContent('Info')
+	})
+
+	it('requires a title before creating', async () => {
+		const user = userEvent.setup()
+		renderWithProviders(<NoticeDialog trigger={<Button>Open</Button>} />)
+
+		await user.click(screen.getByRole('button', { name: 'Open' }))
+		await user.click(screen.getByRole('button', { name: 'Create notice' }))
+
+		expect(await screen.findByText('Title is required.')).toBeInTheDocument()
+		expect(createNotice).not.toHaveBeenCalled()
+	})
+
+	it('saves an edit with the title and category', async () => {
+		const user = userEvent.setup()
+		renderDialog({ id: 'notice-1', title: 'Pool closed', category: 'info' })
+
+		await user.click(screen.getByRole('button', { name: 'Open' }))
+
+		const title = await screen.findByLabelText('Title')
+		await user.clear(title)
+		await user.type(title, 'Pool reopened')
+		await user.click(screen.getByRole('button', { name: 'Save changes' }))
+
+		await waitFor(() =>
+			expect(updateNotice).toHaveBeenCalledWith('notice-1', {
+				title: 'Pool reopened',
+				category: 'info',
+			}),
+		)
+	})
+})
 ```
 
-(Use `renderWithProviders` de [`web/test/utils.tsx`](../web/test/utils.tsx).
-Referência: [`new-gym.spec.tsx`](../web/src/pages/app/new-gym/new-gym.spec.tsx).)
+Faz stub do
+`@/api/notices`, abre o diálogo e **verifica o valor pré-preenchido** do título e do
+Select na edição (a regressão de cold-load), o default `Info` num aviso novo, e que a
+validação barra título vazio. Usa `renderWithProviders` de
+[`web/test/utils.tsx`](../web/test/utils.tsx).
 
-### 6b. E2E (Playwright) — na pasta `web/test/` **crie** `notices.spec.ts`
+### 6b. E2E (Playwright)
 
-Fluxo real no browser mock: admin entra, abre **Notices** pelo menu, **cria**
-(título + categoria via combobox), **edita** (assere cold-load do título), **exclui**;
-e um **membro não vê** o link. Senha de mock: `Password1!`; usuários `admin` e
-`johndoe` (membro).
+Na pasta `web/test/` **Crie** `notices.spec.ts`. e adicione:
 
 ```ts
-await page.getByRole('combobox').click()
-await page.getByRole('option', { name: 'Urgent' }).click()
-// Botões de linha são ícone-only (Pencil/Trash2) — SEM nome acessível. Selecione
-// posicionalmente dentro da linha: .first() = Editar, .nth(1) = Excluir.
-const row = page.getByRole('row').filter({ hasText: 'Lockers being replaced' })
-await row.getByRole('button').first().click() // Editar
-// ...edit (cold-load do título):
-await expect(page.getByLabel('Title')).toHaveValue('Lockers being replaced')
+import { expect, type Page, test } from '@playwright/test'
+
+import { waitForUIInspection } from './e2e-utils'
+
+async function signIn(page: Page, identifier: string) {
+	await page.goto('/sign-in')
+	await page.getByLabel('Email or username').fill(identifier)
+	await page.getByLabel('Password').fill('Password1!')
+	await page.getByRole('button', { name: 'Sign in' }).click()
+	await expect(page).toHaveURL('/')
+}
+
+test('admin creates, edits and deletes a notice', async ({ page }) => {
+	await signIn(page, 'admin')
+
+	// O link Notices está na sidebar (tela semeada + NAV_ENTRIES).
+	await page.getByRole('link', { name: 'Notices' }).click()
+	await expect(page).toHaveURL('/notices')
+
+	// ── Create ──────────────────────────────────────────────────────────────
+	await page.getByRole('button', { name: 'New notice' }).click()
+	await page.getByLabel('Title').fill('Lockers being replaced')
+	// Radix Select: abre o combobox e escolhe a opção.
+	await page.getByRole('combobox').click()
+	await page.getByRole('option', { name: 'Urgent' }).click()
+	await page.getByRole('button', { name: 'Create notice' }).click()
+
+	await expect(page.getByText('Notice created.')).toBeVisible()
+	await expect(
+		page.getByText('Lockers being replaced', { exact: true }),
+	).toBeVisible()
+
+	// ── Edit ──────────────────────────────────────────────────────────────────
+	// Botões de linha são ícone-only (sem nome acessível): selecione posicional —
+	// .first() = Editar (lápis), .nth(1) = Excluir (lixeira).
+	const row = page
+		.getByRole('row')
+		.filter({ hasText: 'Lockers being replaced' })
+	await row.getByRole('button').first().click()
+
+	// Cold-load: o input de título carrega o valor armazenado na abertura.
+	await expect(page.getByLabel('Title')).toHaveValue('Lockers being replaced')
+	await page.getByLabel('Title').fill('Lockers replaced — done')
+	await page.getByRole('button', { name: 'Save changes' }).click()
+
+	await expect(page.getByText('Notice updated.')).toBeVisible()
+	await expect(
+		page.getByText('Lockers replaced — done', { exact: true }),
+	).toBeVisible()
+
+	// ── Delete ──────────────────────────────────────────────────────────────
+	const updatedRow = page
+		.getByRole('row')
+		.filter({ hasText: 'Lockers replaced — done' })
+	await updatedRow.getByRole('button').nth(1).click()
+	await expect(
+		page.getByText(/Delete "Lockers replaced — done"\?/),
+	).toBeVisible()
+	await page.getByRole('button', { name: 'Delete' }).click()
+
+	await expect(page.getByText('Notice deleted.')).toBeVisible()
+	await expect(
+		page.getByText('Lockers replaced — done', { exact: true }),
+	).toHaveCount(0)
+
+	await waitForUIInspection(page)
+})
+
+test('a member does not see the Notices menu item', async ({ page }) => {
+	await signIn(page, 'johndoe')
+
+	// johndoe é membro — sem membership em notices, logo sem link na sidebar.
+	await expect(page.getByRole('link', { name: 'Notices' })).toHaveCount(0)
+
+	await waitForUIInspection(page)
+})
 ```
+
+Fluxo real no browser mock: admin
+entra, abre **Notices** pelo menu, **cria** (título + categoria via combobox),
+**edita** (confere o cold-load do título) e **exclui**; e um **membro não vê** o
+link. Senha de mock: `Password1!`; usuários `admin` e `johndoe` (membro).
 
 > ⚠️ **Pegadinha — botões de ícone em e2e.** `getByRole('button', { name: /edit/i })`
 > não acha um botão só-ícone (ele não tem texto). Use seletor posicional na linha
@@ -713,10 +1035,16 @@ await expect(page.getByLabel('Title')).toHaveValue('Lockers being replaced')
 **Validação (toca fluxo → roda e2e):**
 
 ```sh
-pnpm -C web lint && pnpm -C web build && pnpm -C web test:run && pnpm -C web test:e2e
+pnpm -C web lint:fix && pnpm -C web format && pnpm -C web build && pnpm -C web test:run && pnpm -C web test:e2e
 ```
 
-**Commit:** `test(web): notices component spec (cold-load) + e2e (admin CRUD + member gating)`
+**Commit:**
+
+```sh
+git add web/src/pages/app/notices/notice-dialog.spec.tsx web/test/notices.spec.ts
+git commit -m "test(web): notices component spec (cold-load) + e2e (admin CRUD + member gating)" \
+  -m "Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 ---
 
@@ -739,8 +1067,21 @@ Logue como **admin**, abra **Notices** e confira:
 
 Logue como **membro** (`johndoe`) e confirme que **não há** link "Notices".
 
-> A tela agora funciona inteira em mock. Hora de fechar o contrato no backend:
-> siga **[`02-backend-pt-BR.md`](./02-backend-pt-BR.md)**.
+---
+
+## Merge do front
+
+Front completo, validado e smoked. Mescle no `master` (merge local — **só você dá
+push**):
+
+```sh
+git checkout master
+git merge --no-ff feat/notices-frontend
+```
+
+> A tela funciona inteira em mock. Agora feche o contrato no backend, a partir do
+> `master` atualizado: siga **[`02-backend-pt-BR.md`](./02-backend-pt-BR.md)** (nova
+> branch). O push pode ser agora ou só depois do backend — é seu.
 
 ---
 

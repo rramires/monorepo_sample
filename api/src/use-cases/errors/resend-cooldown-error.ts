@@ -5,7 +5,8 @@ export class ResendCooldownError extends AppError {
 		super({
 			code: 'resend_cooldown',
 			httpStatus: 429,
-			message: 'Please wait before requesting another verification email.',
+			message:
+				'Please wait before requesting another verification email.',
 			meta: { retryAfter: retryAfterSeconds },
 		})
 	}

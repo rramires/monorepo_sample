@@ -14,7 +14,10 @@ export const resetPasswordMock = http.post<never, ResetPasswordBody>(
 		}
 
 		return HttpResponse.json(
-			{ code: 'invalid_reset_token', message: 'Invalid or expired reset token.' },
+			{
+				code: 'invalid_reset_token',
+				message: 'Invalid or expired reset token.',
+			},
 			{ status: 400 },
 		)
 	},

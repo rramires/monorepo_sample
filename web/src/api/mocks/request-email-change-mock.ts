@@ -35,7 +35,10 @@ export const requestEmailChangeMock = http.post<never, RequestEmailChangeBody>(
 		// An address already taken returns the conflict the backend would.
 		if (users.some((user) => user.email === email)) {
 			return HttpResponse.json(
-				{ code: 'email_already_exists', message: 'E-mail already exists.' },
+				{
+					code: 'email_already_exists',
+					message: 'E-mail already exists.',
+				},
 				{ status: 409 },
 			)
 		}
