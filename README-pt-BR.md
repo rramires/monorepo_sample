@@ -19,7 +19,8 @@ app).
 
 **Vai adicionar uma feature?** Guia passo-a-passo, front-first, pra adicionar uma
 feature full-stack nova sem esquecer etapa (testes, mocks, i18n,
-menu/permissões, contrato, docs): [`how-to/`](./how-to/README-pt-BR.md).
+menu/permissões, contrato, docs): [`how-to/`](./how-to/README-pt-BR.md) _(pt-BR;
+par EN em [`README`](./how-to/README.md))_.
 
 ## Início rápido
 
