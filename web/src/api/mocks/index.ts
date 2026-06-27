@@ -60,6 +60,13 @@ import {
 	verifyEmailByOtpMock,
 } from './verify-email-mock'
 
+import {
+	createNoticeMock,
+	deleteNoticeMock,
+	listNoticesMock,
+	updateNoticeMock,
+} from './notices-mock'
+
 export const worker = setupWorker(
 	signInMock,
 	registerMock,
@@ -111,6 +118,10 @@ export const worker = setupWorker(
 	getUserMock,
 	updateUserMock,
 	updateGymMock,
+	listNoticesMock,
+	createNoticeMock,
+	updateNoticeMock,
+	deleteNoticeMock,
 )
 
 export async function enableMSW() {
