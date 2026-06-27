@@ -5,68 +5,57 @@ Break-glass resume file. **State** here; **doctrine** in [`CLAUDE.md`](./CLAUDE.
 
 ## Resume prompt (paste into a fresh session)
 
-> **monorepo_sample — HOW-TO guide delivered, awaiting your review + push.** The
-> `how-to/` guide (front-first, pt-BR: `README-pt-BR` + `01-frontend-pt-BR` +
-> `02-backend-pt-BR`) teaches adding a new full-stack feature. It is **committed
-> to `master` (docs-only, UNPUSHED — `65a4458`)**. It was validated by building an
-> example "Notices" module end-to-end (all gates green) and re-executing the docs
-> from a clean checkout (smoke; 5 defects found + fixed). The example **code is
-> NOT on `master`** — it lives on the unmerged branch `example/notices-reference`.
-> Next: (1) review `how-to/` and run it yourself to build the real Notices +
-> commit your version; (2) translate to EN (`*-pt-BR.md` → `*.md` pair) when
-> happy; (3) `git push` (only you). Read `CLAUDE.md` (root + `api/` + `web/`)
-> first; one question at a time, pt-BR. Branch off `master`, gate green before
-> each commit, **never `git push`**.
+> **monorepo_sample — Notices module DONE + on `master`; how-to guide + `make-tutorial`
+> skill shipped.** Two small open items: (1) **push the `how-to-base` branch**
+> (`git push -u origin how-to-base`) — it's the tutorial baseline (pre-Notices code +
+> the guide); (2) **translate the how-to to EN** (`how-to/*-pt-BR.md` → `*.md` pair).
+> Read `CLAUDE.md` (root + `api/` + `web/`) + this file before anything; pick the next
+> task with me (one question at a time, pt-BR, no multiple-choice). Branch off
+> `master`; gate green before each commit (`lint:fix && format && build/compile &&
+> test`, + `test:e2e` for routes/flows); **never `git push`** (maintainer only).
 
 ## Current state
 
-- **Branch:** `master` — clean. Stamp: `65a4458` (2026-06-27), **UNPUSHED**
-  (`origin/master` at `378b9ca`; only the maintainer pushes).
-- **HOW-TO guide — delivered, awaiting review + push.** `how-to/` (pt-BR:
-  `README-pt-BR` + `01-frontend-pt-BR` + `02-backend-pt-BR`) = front-first guide to
-  adding a full-stack feature (contract → API client + MSW mock → menu/permission
-  wiring → i18n → page/PM/dialog → tests → smoke; then back: migration → repo →
-  use-case → controllers/routes → e2e → seed → swap mock→real). Linked from root
-  `README*`. Validated by building example **"Notices"** end-to-end (web 86 unit /
-  37 e2e, api 125 unit / 242 e2e — all green) then a clean-checkout smoke rebuild
-  (5 doc defects found + fixed). The Notices **code is NOT on `master`**; it lives
-  on the unmerged branch **`example/notices-reference`** (12 phase commits) as a
-  living reference. Open: maintainer reviews/runs the guide, then EN translation,
-  then push.
-- **i18n Plan 1 — frontend (en-US + pt-BR) — DONE + merged + pushed.** Namespaces
-  under `web/src/i18n/locales/{en,pt-BR}/`; typed keys; Zod via `factory(t)`;
-  dates via `lib/datetime.ts`; flag selector; dev missing-key guard.
-- **i18n Plan 2 — backend error-code i18n — DONE + merged + pushed.** Closed the
-  last English seam (server-sent messages):
-    - **contracts:** `errors.ts` — `ERROR_CODES`, `errorCodeSchema`,
-      `errorMetaSchema` (`retryAfter`/`count`/`action`), `errorResponseSchema`.
-    - **api:** base `AppError` (code + httpStatus + meta); every domain error
-      extends it; new `Unauthorized`/`Forbidden`/`EmailNotVerified`/
-      `ScreenUnavailable` thrown from middlewares; `setErrorHandler` is the single
-      `{ code, message, meta? }` serializer; redundant controller `try/catch`
-      removed (errors propagate).
-    - **web:** `errors` i18n namespace (en + pt-BR, keys = codes); `lib/errors.ts`
-      `messageFromError(err, fallback)`; ~22 call-sites consume it; password hint →
-      `common:errors.passwordPattern`; `VITE_PASSWORD_MESSAGE` retired
-      (`VITE_PASSWORD_PATTERN` stays). MSW mocks mirror `code` + `meta`.
-    - **note:** one code added beyond the original brainstorm registry —
-      `screen_unavailable` (403, the `require-screen` kill-switch case).
-- **Gates last green (with Notices, on `example/notices-reference`):** api 125 unit
-  · 242 e2e · web 86 unit · 37 e2e. (`master` baseline without Notices: api 119/238
-  · web 82/35.)
-- **Open:** maintainer reviews/runs `how-to/`, builds the real Notices + commits;
-  then EN translation of the guide; then push. The HOW-TO commit `65a4458` is
-  **unpushed** — push to be disaster-safe.
+- **Branch:** `master` — clean. Latest stamp `f081b9b` (2026-06-27). Master pushed
+  through the Notices feature + how-to. (`how-to-base` branch is local — **needs
+  push**.)
+- **Notices module — DONE, on `master`.** A full-stack example feature (gym notice
+  board) the maintainer built by executing the how-to:
+    - **front:** page/PM/dialog (`web/src/pages/app/notices/`), CRUD (title input +
+      category Radix Select), menu + permission, i18n (en+pt), MSW mocks, unit + e2e.
+    - **back:** `Notice` model + migration, repo (interface+in-memory+prisma),
+      use-case+factory, 4 controllers + routes, seed (module/screen/perms/grants),
+      unit + e2e.
+    - **contracts:** `notices.ts` shared schemas. Gates green: web 86 unit / 37 e2e,
+      api 125 unit / 242 e2e.
+- **`how-to/` guide (pt-BR) — DELIVERED + refined.** `README-pt-BR` (orchestrator +
+  git workflow + cross-cutting checklist) + `01-frontend-pt-BR` + `02-backend-pt-BR`.
+  Built by the tutorial method (build example → write → re-execute via zero-context
+  follower → fix → revert), then hardened during the maintainer's own execution: full
+  file contents per step, "Na pasta X Crie Y" + `mkdir` for new folders, fenced
+  commands, anchors only where order matters, reference links after code, validations
+  use `lint:fix && format`. Linked from root `README*`.
+- **`how-to-base` branch — tutorial baseline (NEEDS PUSH).** = pre-Notices code (fully
+  prettier-formatted) + the final guide. Followers: `git checkout how-to-base`, follow
+  the guide, `git diff how-to-base master` to compare. Maintenance: when the guide
+  changes, re-validate + move the pointer (overlay current guide on a clean
+  pre-feature state). README §"Ponto de partida" documents it.
+- **Repo format debt cleaned once** (`style: prettier --write`, commit `f6985bb`) so
+  `pnpm format` is churn-free (no-op on untouched files).
+- **`make-tutorial` skill created** — `~/.claude/skills/make-tutorial/SKILL.md` +
+  registered in global `~/.claude/CLAUDE.md`. Encodes this whole methodology.
+- **i18n Plan 1 (frontend) + Plan 2 (backend error-code) — DONE, merged, pushed**
+  (historical; both languages, `messageFromError`, `@root/contracts/errors.ts`).
+- **Open:** push `how-to-base`; EN translation of the how-to.
 
 ## Working rules (pointer + guardrails)
 
 Doctrine: [`CLAUDE.md`](./CLAUDE.md) (root) + [`web/CLAUDE.md`](./web/CLAUDE.md) +
 [`api/CLAUDE.md`](./api/CLAUDE.md). Safety belt: **never `git push`** (only the
-maintainer) · never commit without the gate green · branch off `master`, `--no-ff`
-merge · docs-only may go straight to `master` · confirm before anything
-irreversible. Phases may be merged autonomously per the standing agreement; STOP
-for the user's browser test on route-/form-touching changes. Reply pt-BR; UI text
-via i18n; `web/docs/TUTORIAL_*` frozen.
+maintainer) · never commit without the gate green (`lint:fix && format && build &&
+test`) · branch off `master`, `--no-ff` merge · docs-only may go straight to `master`
+· confirm before anything irreversible. Reply pt-BR; UI text via i18n;
+`web/docs/TUTORIAL_*` frozen.
 
 ## Deeper memory
 
