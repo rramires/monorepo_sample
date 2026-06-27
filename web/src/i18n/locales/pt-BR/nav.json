@@ -10,5 +10,6 @@
 	"profiles": "Perfis",
 	"user": "Usuário",
 	"profile": "Perfil",
-	"signOut": "Sair"
+	"signOut": "Sair",
+	"notices": "Avisos"
 }

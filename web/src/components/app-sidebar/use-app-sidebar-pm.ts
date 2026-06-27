@@ -4,6 +4,7 @@ import {
 	History,
 	LayoutDashboard,
 	type LucideIcon,
+	Megaphone,
 	MonitorSmartphone,
 	ShieldCheck,
 	Users,
@@ -29,6 +30,7 @@ type NavLabelKey =
 	| 'screens'
 	| 'profiles'
 	| 'users'
+	| 'notices'
 
 const NAV_ENTRIES: Record<string, { icon: LucideIcon; labelKey: NavLabelKey }> =
 	{
@@ -42,6 +44,7 @@ const NAV_ENTRIES: Record<string, { icon: LucideIcon; labelKey: NavLabelKey }> =
 		},
 		'access-control.profiles': { icon: ShieldCheck, labelKey: 'profiles' },
 		'access-control.users': { icon: Users, labelKey: 'users' },
+		'notices.notices': { icon: Megaphone, labelKey: 'notices' },
 	}
 
 export interface NavItem {
