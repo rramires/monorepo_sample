@@ -1,4 +1,5 @@
 export * from './primitives'
+export * from './errors'
 export * from './password'
 export * from './auth'
 export * from './users'
