@@ -1,6 +1,5 @@
 import { actionFamily } from '@root/contracts'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
@@ -19,6 +18,7 @@ import { getScreens, type ScreenModel } from '@/api/screens'
 import { useSetBreadcrumb } from '@/components/breadcrumb/breadcrumb-hooks'
 import { useConfirmDeactivate } from '@/hooks/use-confirm-deactivate'
 import { usePermissions } from '@/hooks/use-permissions'
+import { messageFromError } from '@/lib/errors'
 
 // A screen row enriched with its module's key/name, so the grants table can
 // show a module column and filter by module without a second lookup per row.
@@ -285,10 +285,7 @@ export function useProfileDetailPM() {
 			navigate('/admin/profiles')
 		},
 		onError: (err) => {
-			toast.error(
-				(isAxiosError(err) && err.response?.data?.message) ||
-					t('profiles.toast.saveError'),
-			)
+			toast.error(messageFromError(err, t('profiles.toast.saveError')))
 		},
 	})
 

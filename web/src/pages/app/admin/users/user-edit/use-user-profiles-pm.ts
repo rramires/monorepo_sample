@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -8,6 +7,7 @@ import { getProfiles } from '@/api/profiles'
 import { getUserProfiles, setUserProfiles } from '@/api/user-profiles'
 import { useAuth } from '@/components/auth/auth-hooks'
 import { usePermissions } from '@/hooks/use-permissions'
+import { messageFromError } from '@/lib/errors'
 
 export function useUserProfilesPM(userId: string) {
 	const queryClient = useQueryClient()
@@ -56,10 +56,7 @@ export function useUserProfilesPM(userId: string) {
 			}
 		},
 		onError: (err) => {
-			toast.error(
-				(isAxiosError(err) && err.response?.data?.message) ||
-					t('users.profiles.toast.error'),
-			)
+			toast.error(messageFromError(err, t('users.profiles.toast.error')))
 		},
 	})
 

@@ -11,7 +11,7 @@ export const validateCheckInMock = http.patch<{ checkInId: string }>(
 			request.headers.get('Authorization') !==
 			'Bearer mock-admin-jwt-token'
 		) {
-			return HttpResponse.json({ message: 'Forbidden.' }, { status: 403 })
+			return HttpResponse.json({ code: 'forbidden', message: 'Forbidden.' }, { status: 403 })
 		}
 
 		const checkIn = checkIns.find(
@@ -19,7 +19,7 @@ export const validateCheckInMock = http.patch<{ checkInId: string }>(
 		)
 		if (!checkIn) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}

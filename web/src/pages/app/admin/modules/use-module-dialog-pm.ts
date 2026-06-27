@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import type { TFunction } from 'i18next'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -10,6 +9,7 @@ import { z } from 'zod'
 
 import { createModule, type ModuleModel, updateModule } from '@/api/modules'
 import { useConfirmDeactivate } from '@/hooks/use-confirm-deactivate'
+import { messageFromError } from '@/lib/errors'
 
 const makeModuleForm = (t: TFunction<'admin'>) =>
 	z.object({
@@ -94,10 +94,7 @@ export function useModuleDialogPM(module?: ModuleModel) {
 			setOpen(false)
 		},
 		onError: (err) => {
-			toast.error(
-				(isAxiosError(err) && err.response?.data?.message) ||
-					t('modules.toast.saveError'),
-			)
+			toast.error(messageFromError(err, t('modules.toast.saveError')))
 		},
 	})
 

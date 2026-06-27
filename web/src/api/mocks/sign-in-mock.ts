@@ -12,7 +12,7 @@ export const signInMock = http.post<never, SignInBody>(
 		const parsed = loginBodySchema.safeParse(await request.json())
 		if (!parsed.success) {
 			return HttpResponse.json(
-				{ message: 'Validation error.' },
+				{ code: 'validation_error', message: 'Validation error.' },
 				{ status: 400 },
 			)
 		}
@@ -31,7 +31,7 @@ export const signInMock = http.post<never, SignInBody>(
 		}
 
 		return HttpResponse.json(
-			{ message: 'Invalid credentials.' },
+			{ code: 'invalid_credentials', message: 'Invalid credentials.' },
 			{ status: 401 },
 		)
 	},

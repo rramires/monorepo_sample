@@ -23,7 +23,7 @@ export const checkInMock = http.post<{ gymId: string }, CheckInBody>(
 		const userId = userIdFromAuth(request.headers.get('Authorization'))
 		if (!userId) {
 			return HttpResponse.json(
-				{ message: 'Unauthorized.' },
+				{ code: 'unauthorized', message: 'Unauthorized.' },
 				{ status: 401 },
 			)
 		}
@@ -32,7 +32,7 @@ export const checkInMock = http.post<{ gymId: string }, CheckInBody>(
 		const gym = gyms.find((candidate) => candidate.id === params.gymId)
 		if (!gym) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -48,7 +48,10 @@ export const checkInMock = http.post<{ gymId: string }, CheckInBody>(
 		)
 		if (already) {
 			return HttpResponse.json(
-				{ message: 'Max check-ins reached.' },
+				{
+					code: 'max_check_ins_reached',
+					message: 'Max check-ins reached.',
+				},
 				{ status: 409 },
 			)
 		}

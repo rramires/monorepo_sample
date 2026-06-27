@@ -99,7 +99,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>
   port deprecations when adapting older snippets.
 - **Mock fidelity:** every `src/api/*.ts` has a matching
   `src/api/mocks/*-mock.ts` that mirrors the backend **verbatim** (status codes,
-  `message` strings, pagination). Add/adjust both together; mind handler ordering
+  the `{ code, message, meta? }` error envelope, pagination). Add/adjust both
+  together; mind handler ordering
   in `mocks/index.ts` (static routes before dynamic `:param` ones).
 - **Env:** every new `VITE_*` var goes to `.env.example` (with a comment) **and**
   to the Zod schema in `src/env.ts`. `VITE_*` is **public** (inlined into the
@@ -121,8 +122,8 @@ Two languages: **en-US** (`en`) + **pt-BR**. Architecture lives in `PROJECT.md`
 user-facing text:
 
 - **Add the key to the right namespace** under `src/i18n/locales/{en,pt-BR}/`
-  (`common`, `nav`, `catalog`, `auth`, `account`, `check-ins`, `gyms`, `admin`),
-  in **both** languages. `en` value = the exact English copy (keeps the suites
+  (`common`, `errors`, `nav`, `catalog`, `auth`, `account`, `check-ins`, `gyms`,
+  `admin`), in **both** languages. `en` value = the exact English copy (keeps the suites
   green); author the pt-BR yourself (Brazilian, not European). Keys are
   **typed** — a missing/wrong key fails `pnpm build`.
 - **Read it with** `useTranslation('<ns>')` (or `['<ns>', 'common']` to reach
@@ -136,8 +137,13 @@ user-facing text:
 - **Enum/status** → `common:roles` / `common:status` maps. **DB catalog**
   (module/screen/action names in chrome) → `t('catalog:…', { defaultValue })`.
   **Never translate user data** (gym names, usernames, admin-typed names).
-- **Out of scope (Plan 2):** backend `data.message` toasts + the env password
-  message stay English by design. Don't localize them here.
+- **Backend errors:** the API returns a stable `code` per failure (`{ code,
+  message, meta? }`, codes in `@root/contracts`). Localize them with
+  `messageFromError(err, fallback)` (`src/lib/errors.ts`), which maps `code` →
+  the `errors` namespace (interpolating `meta`) and falls back to the English
+  `message`, then the caller's localized `fallback`. The password-complexity hint
+  is `common:errors.passwordPattern` (the `VITE_PASSWORD_MESSAGE` env var is
+  gone). Add new codes to the `errors` namespace in **both** languages.
 
 ## Tests
 
@@ -178,8 +184,9 @@ loads.
 Some request/response shapes are shared with `api/` via `@root/contracts` (a
 workspace package). Build form schemas **from** the shared shape and keep UI
 refinements local: the auth forms call `makePasswordSchema({ min, pattern,
-message, minMessage, maxMessage })` with `VITE_PASSWORD_*` + their UX messages,
-then add `confirmPassword`. MSW mocks validate requests against the request schema
+message, minMessage, maxMessage })` with the `VITE_PASSWORD_*` `min`/`pattern` +
+**localized** messages — the pattern message is `t('common:errors.passwordPattern')`
+(no longer an env var) — then add `confirmPassword`. MSW mocks validate requests against the request schema
 and `parse` responses through the response DTO (e.g. `userResponseSchema`) so they
 can't drift. Read `../packages/contracts/README.md` before changing a shared
 shape, and keep the same Zod major as `api/`.

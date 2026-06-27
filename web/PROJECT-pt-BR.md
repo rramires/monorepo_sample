@@ -707,8 +707,9 @@ augmentation do TS (`src/i18n/resources.d.ts`) — uma chave faltando/errada vir
 **Layout.** `src/i18n/` tem a init, a augmentation de chaves tipadas, os mapas
 de locale do Zod escritos à mão (`zod-locale.ts`) e `locales/{en,pt-BR}/*.json`.
 Namespaces: `common` (compartilhado: actions, states, roles, status, errors,
-pager, transfer, multiSelect, errorPage), `nav`, `catalog`, `auth`, `account`,
-`check-ins`, `gyms`, `admin`. `components/locale/` espelha `components/theme/`
+pager, transfer, multiSelect, errorPage), `errors` (codes de erro do backend →
+texto localizado), `nav`, `catalog`, `auth`, `account`, `check-ins`, `gyms`,
+`admin`. `components/locale/` espelha `components/theme/`
 (provider + hook `useLocale` + `LanguageSelector`). `lib/datetime.ts` tem os
 helpers de data. Trocar o idioma sincroniza `<html lang>`, persiste a escolha e
 troca o locale do Zod.
@@ -742,11 +743,15 @@ então as suítes unit + e2e afirmam as mesmas strings; `test/setup.ts` força
 `lng: en` para determinismo. Em dev, um `missingKeyHandler` avisa sobre qualquer
 chave não resolvida.
 
-**Costuras conhecidas (em inglês, de propósito — i18n do backend é o Plano 2).**
-Mensagens de toast vindas do servidor (`error.response.data.message`, ex.:
-"Invalid credentials.") e a mensagem de padrão de senha vinda do env
-(`VITE_PASSWORD_MESSAGE`) ficam em inglês: são de responsabilidade do
-deploy/backend. O Plano 2 move as respostas do backend para `code`s estáveis em
-`@root/contracts` que o frontend mapeia para texto. Uma regra de eslint contra
-strings literais (`eslint-plugin-i18next`) é um guardião de regressão futuro
-recomendado.
+**Erros do backend são localizados.** A API serializa toda falha como
+`{ code, message, meta? }` com um **`code` `snake_case` estável** (os codes ficam
+em `@root/contracts`). O `messageFromError(err, fallback)` (`src/lib/errors.ts`)
+mapeia `data.code` → `t('errors:' + code, { defaultValue: data.message ?? fallback,
+...data.meta })`, então um erro do servidor resolve pelo namespace `errors`
+(chaves === codes literais, en + pt-BR), interpolando `meta`
+(`retryAfter`/`count`/`action`); cai para a `message` em inglês e, por fim, para o
+`fallback` localizado do chamador. A dica de complexidade de senha também é
+localizada (`common:errors.passwordPattern`) — a regex `VITE_PASSWORD_PATTERN`
+segue vinda do env, mas a mensagem dela não é mais uma var de env. Uma regra de
+eslint contra strings literais (`eslint-plugin-i18next`) é um guardião de
+regressão futuro recomendado.

@@ -23,7 +23,8 @@
 		"email": "Enter a valid email.",
 		"passwordsMismatch": "Passwords do not match.",
 		"usernamePattern": "Letters, numbers and underscore only.",
-		"codeLength": "Enter the 6-digit code."
+		"codeLength": "Enter the 6-digit code.",
+		"passwordPattern": "Must include upper- and lowercase, a number and a special character."
 	},
 	"actions": {
 		"save": "Save",

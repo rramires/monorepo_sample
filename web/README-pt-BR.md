@@ -194,11 +194,13 @@ Arquivos (o Vite carrega por mode; arquivos posteriores vencem):
 | `VITE_ENABLE_API_DELAY`    | não         | `true` (dev) · `false` (test)        | Injeta delay artificial de 1–3 s por requisição para exercitar loadings.   |
 | `VITE_PASSWORD_MIN_LENGTH` | sim         | `8`                                  | Tamanho mínimo de senha no registro/reset (espelha `PASSWORD_MIN_LENGTH`). |
 | `VITE_PASSWORD_PATTERN`    | sim         | `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)…$`  | Regex de complexidade de senha (espelha `PASSWORD_PATTERN`).               |
-| `VITE_PASSWORD_MESSAGE`    | sim         | "Must include upper- and lowercase…" | Mensagem exibida quando a senha falha na regex de complexidade.            |
 
 > As vars de política de senha são **validação de UX no frontend apenas** — a API
 > revalida no servidor. Mantenha-as em sincronia com o `.env` do backend para que
-> cliente e servidor concordem sobre o que é uma senha válida.
+> cliente e servidor concordem sobre o que é uma senha válida. A mensagem exibida
+> quando a senha falha na regex de complexidade agora é **localizada** via i18n
+> (`common:errors.passwordPattern`, en + pt-BR) — não existe mais a var de env
+> `VITE_PASSWORD_MESSAGE`.
 
 ## Rotas da app (páginas)
 

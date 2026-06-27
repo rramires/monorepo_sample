@@ -28,7 +28,7 @@ export const createModuleMock = http.post('/modules', async ({ request }) => {
 	const parsed = createModuleBodySchema.safeParse(await request.json())
 	if (!parsed.success) {
 		return HttpResponse.json(
-			{ message: 'Validation error.' },
+			{ code: 'validation_error', message: 'Validation error.' },
 			{ status: 400 },
 		)
 	}
@@ -55,7 +55,7 @@ export const updateModuleMock = http.patch<{ id: string }>(
 		const module = modules.find((m) => m.id === params.id)
 		if (!module) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -63,7 +63,7 @@ export const updateModuleMock = http.patch<{ id: string }>(
 		const parsed = updateModuleBodySchema.safeParse(await request.json())
 		if (!parsed.success) {
 			return HttpResponse.json(
-				{ message: 'Validation error.' },
+				{ code: 'validation_error', message: 'Validation error.' },
 				{ status: 400 },
 			)
 		}
@@ -75,7 +75,10 @@ export const updateModuleMock = http.patch<{ id: string }>(
 			parsed.data.key !== module.key
 		) {
 			return HttpResponse.json(
-				{ message: 'A system module key cannot be changed.' },
+				{
+					code: 'system_module',
+					message: 'A system module key cannot be changed.',
+				},
 				{ status: 409 },
 			)
 		}
@@ -96,7 +99,7 @@ export const deleteModuleMock = http.delete<{ id: string }>(
 		const index = modules.findIndex((m) => m.id === params.id)
 		if (index === -1) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -104,7 +107,10 @@ export const deleteModuleMock = http.delete<{ id: string }>(
 		// System modules are protected from deletion.
 		if (modules[index].is_system) {
 			return HttpResponse.json(
-				{ message: 'A system module cannot be deleted.' },
+				{
+					code: 'system_module',
+					message: 'A system module cannot be deleted.',
+				},
 				{ status: 409 },
 			)
 		}
@@ -112,7 +118,10 @@ export const deleteModuleMock = http.delete<{ id: string }>(
 		// A module can't be deleted while it still owns screens (FK-like guard).
 		if (screens.some((s) => s.module_id === params.id)) {
 			return HttpResponse.json(
-				{ message: 'Module still has screens.' },
+				{
+					code: 'module_has_screens',
+					message: 'Module still has screens.',
+				},
 				{ status: 409 },
 			)
 		}

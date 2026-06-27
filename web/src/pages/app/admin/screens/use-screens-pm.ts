@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -7,6 +6,7 @@ import { toast } from 'sonner'
 import { getModules } from '@/api/modules'
 import { deleteScreen, getScreens } from '@/api/screens'
 import { usePermissions } from '@/hooks/use-permissions'
+import { messageFromError } from '@/lib/errors'
 
 export function useScreensPM() {
 	const queryClient = useQueryClient()
@@ -34,10 +34,7 @@ export function useScreensPM() {
 			queryClient.invalidateQueries({ queryKey: ['screens'] })
 		},
 		onError: (err) => {
-			toast.error(
-				(isAxiosError(err) && err.response?.data?.message) ||
-					t('screens.toast.deleteError'),
-			)
+			toast.error(messageFromError(err, t('screens.toast.deleteError')))
 		},
 	})
 

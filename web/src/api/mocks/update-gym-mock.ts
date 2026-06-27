@@ -11,7 +11,7 @@ export const updateGymMock = http.patch<{ gymId: string }, UpdateGymBody>(
 			request.headers.get('Authorization') !==
 			'Bearer mock-admin-jwt-token'
 		) {
-			return HttpResponse.json({ message: 'Forbidden.' }, { status: 403 })
+			return HttpResponse.json({ code: 'forbidden', message: 'Forbidden.' }, { status: 403 })
 		}
 
 		const body = await request.json()
@@ -22,7 +22,7 @@ export const updateGymMock = http.patch<{ gymId: string }, UpdateGymBody>(
 			body.is_active === undefined
 		) {
 			return HttpResponse.json(
-				{ message: 'Provide at least one field to update.' },
+				{ code: 'validation_error', message: 'Provide at least one field to update.' },
 				{ status: 400 },
 			)
 		}
@@ -30,7 +30,7 @@ export const updateGymMock = http.patch<{ gymId: string }, UpdateGymBody>(
 		const gym = gyms.find((candidate) => candidate.id === params.gymId)
 		if (!gym) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}

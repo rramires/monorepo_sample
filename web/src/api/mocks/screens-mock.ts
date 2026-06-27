@@ -37,7 +37,7 @@ export const createScreenMock = http.post('/screens', async ({ request }) => {
 	const parsed = createScreenBodySchema.safeParse(await request.json())
 	if (!parsed.success) {
 		return HttpResponse.json(
-			{ message: 'Validation error.' },
+			{ code: 'validation_error', message: 'Validation error.' },
 			{ status: 400 },
 		)
 	}
@@ -66,7 +66,7 @@ export const updateScreenMock = http.patch<{ id: string }>(
 		const screen = screens.find((s) => s.id === params.id)
 		if (!screen) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -74,7 +74,7 @@ export const updateScreenMock = http.patch<{ id: string }>(
 		const parsed = updateScreenBodySchema.safeParse(await request.json())
 		if (!parsed.success) {
 			return HttpResponse.json(
-				{ message: 'Validation error.' },
+				{ code: 'validation_error', message: 'Validation error.' },
 				{ status: 400 },
 			)
 		}
@@ -91,6 +91,7 @@ export const updateScreenMock = http.patch<{ id: string }>(
 			if (changesIdentity) {
 				return HttpResponse.json(
 					{
+						code: 'system_screen',
 						message:
 							'A system screen cannot change its key, module or path.',
 					},
@@ -115,7 +116,7 @@ export const deleteScreenMock = http.delete<{ id: string }>(
 		const index = screens.findIndex((s) => s.id === params.id)
 		if (index === -1) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -123,7 +124,7 @@ export const deleteScreenMock = http.delete<{ id: string }>(
 		// System screens are protected from deletion.
 		if (screens[index].is_system) {
 			return HttpResponse.json(
-				{ message: 'A system screen cannot be deleted.' },
+				{ code: 'system_screen', message: 'A system screen cannot be deleted.' },
 				{ status: 409 },
 			)
 		}
@@ -136,7 +137,9 @@ export const deleteScreenMock = http.delete<{ id: string }>(
 		if (assigned > 0) {
 			return HttpResponse.json(
 				{
+					code: 'screen_in_use',
 					message: `Assigned to ${assigned} profile(s). Remove it from those profiles first.`,
+					meta: { count: assigned },
 				},
 				{ status: 409 },
 			)

@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import type { TFunction } from 'i18next'
 import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
@@ -14,6 +13,7 @@ import { updateUser, type UpdateUserBody } from '@/api/update-user'
 import { useAuth } from '@/components/auth/auth-hooks'
 import { useSetBreadcrumb } from '@/components/breadcrumb/breadcrumb-hooks'
 import { useConfirmDeactivate } from '@/hooks/use-confirm-deactivate'
+import { messageFromError } from '@/lib/errors'
 
 const usernamePattern = /^[a-zA-Z0-9_]+$/
 
@@ -107,10 +107,7 @@ export function useUserEditPM() {
 			navigate('/admin/users')
 		},
 		onError: (err) => {
-			const message =
-				(isAxiosError(err) && err.response?.data?.message) ||
-				t('users.edit.toast.error')
-			toast.error(message)
+			toast.error(messageFromError(err, t('users.edit.toast.error')))
 		},
 	})
 

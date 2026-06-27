@@ -173,10 +173,12 @@ Example: **`POST /auth/login`** (login) and **`POST /gyms/:gymId/check-ins`** (p
         │
 8. Response returns: controller translates result/error → HTTP status
         │
-9. Global setErrorHandler (app.ts):
-     • ZodError              → 400 + issues (trimmed in production; full in dev)
-     • Framework error       → its own statusCode (429 rate-limit, 413 body-limit, 400 bad JSON, 503 under-pressure)
-     • Unhandled error       → 500 (request.log.error in dev; reportError() in prod)
+9. Global setErrorHandler (app.ts) — the SINGLE serializer to { code, message, meta? }:
+     • AppError (domain)     → its httpStatus + stable `code` + `message` + `meta?`
+     • ZodError              → 400 `validation_error` + issues (trimmed in production; full in dev)
+     • Framework error       → its own statusCode mapped to a code (429 `rate_limited`,
+                               413 `payload_too_large`, 503 `server_under_pressure`, other 4xx `bad_request`)
+     • Unhandled error       → 500 `internal_server_error` (request.log.error in dev; reportError() in prod)
         │
 10. Serialization (Fastify):
      • reply.status(code).send(payload) → body serialized to JSON
@@ -213,7 +215,12 @@ Example: **`POST /auth/login`** (login) and **`POST /gyms/:gymId/check-ins`** (p
     - each token receives a `jti` (`randomUUID()`) that enables revocation (denylist).
     - `refreshToken` is written to an **httpOnly + secure + sameSite cookie**.
     - `token` (access) is returned in the **response body**.
-5. **Errors**: `InvalidCredentialsError` → `401`; others → re-thrown → `500`.
+5. **Errors**: the controller no longer maps errors — domain errors **propagate**
+   to the central `setErrorHandler`, which serializes the `{ code, message, meta? }`
+   envelope. `InvalidCredentialsError` → `401 invalid_credentials`;
+   `TooManyAttemptsError` → `429 too_many_login_attempts` (`meta.retryAfter`);
+   `AccountInactiveError` → `403 account_inactive`; anything unexpected →
+   `500 internal_server_error`.
 
 ### 4.3 Detailed example — `POST /gyms/:gymId/check-ins` (protected)
 
@@ -228,13 +235,16 @@ Example: **`POST /auth/login`** (login) and **`POST /gyms/:gymId/check-ins`** (p
     - Is there already a check-in **on the same day**? Then `MaxCheckInsReachedError`.
     - If all ok → creates the check-in.
 5. Response `201` with the created check-in.
-6. **Errors** — mapped in the controllers via `instanceof` (the house pattern,
-   like `ResourceNotFoundError`/`UserAlreadyExistsError` elsewhere), so these
-   expected business outcomes return a `4xx` and **never** fall through to the
-   global `500`: `ResourceNotFoundError` → `404`, `MaxDistanceError` → `400`,
-   `MaxCheckInsReachedError` → `409`. Validating a check-in past its
-   **20-minute** window (`validate-controller.ts`) → `LateCheckInValidationError`
-   → `409`. Each response carries the error's `message`.
+6. **Errors** — domain errors now **propagate** to the central `setErrorHandler`
+   (controllers no longer map them per-error via `instanceof`). Each is an
+   `AppError` carrying its own status + stable `code`, so these expected business
+   outcomes return a `4xx` and **never** fall through to the global `500`:
+   `ResourceNotFoundError` → `404 resource_not_found`, `MaxDistanceError` →
+   `400 max_distance`, `MaxCheckInsReachedError` → `409 max_check_ins_reached`.
+   Validating a check-in past its **20-minute** window (`validate-controller.ts`)
+   → `LateCheckInValidationError` → `409 late_check_in_validation`. The handler
+   serializes each to `{ code, message, meta? }` (the English `message` is a dev
+   fallback; the frontend localizes off `code`).
 
 ### 4.4 Input validation (request)
 
@@ -328,8 +338,8 @@ username `transform`) stay local. See the monorepo
   use-case as `GET /me/permissions`) and allows the request only when the user
   `can()` perform `action` (a free action KEY — a bare CRUD family like `create`
   or a composed `family_name` like `create_checkin`) on `screenKey` **and**
-  that screen isn't killed (`Screen.is_enabled=false` → `403 "This screen is
-temporarily unavailable."` for non-admins). An `ADMIN` bypasses every check. The
+  that screen isn't killed (`Screen.is_enabled=false` → `403 code:
+"screen_unavailable"` for non-admins). An `ADMIN` bypasses every check. The
   signed `role`/grant claims are never trusted for access control, so a grant,
   profile, or role change takes effect on the next request. Runs after
   `verifyJwtMiddleware`. Full model in §5.7.
@@ -551,11 +561,12 @@ lifecycle **disable** (`is_active` on module/screen/profile).
   every request it calls `GetUserPermissionsUseCase` to compute the caller's
   **effective** permissions and allows the request only when the matching screen's
   `action` flag is `true` **and** the screen isn't killed (`is_enabled=false` →
-  `403 { "message": "This screen is temporarily unavailable." }` for non-admins).
-  Read fresh from the DB each request (never the JWT), so a grant/profile change
-  applies on the next request. `ADMIN` returns early (bypasses).
-  Authenticated-but-ungranted → `403 { "message": "Forbidden." }`; an unknown user
-  (`ResourceNotFoundError`) → `401`.
+  `403 { "code": "screen_unavailable", "message": "This screen is temporarily unavailable." }`
+  for non-admins, thrown as `ScreenUnavailableError`). Read fresh from the DB each
+  request (never the JWT), so a grant/profile change applies on the next request.
+  `ADMIN` returns early (bypasses). Authenticated-but-ungranted →
+  `403 { "code": "forbidden", "message": "Forbidden." }` (`ForbiddenError`); an
+  unknown user (`ResourceNotFoundError`) → `401 { "code": "unauthorized", … }`.
 - **Effective permissions** (`get-user-permissions-use-case.ts`): for a non-admin,
   each screen's `actions: string[]` is the **union of granted action keys across
   all the user's profile grants** — `view` is an explicit granted key (no longer
@@ -578,10 +589,11 @@ lifecycle **disable** (`is_active` on module/screen/profile).
   every request and rejects (`401`) a missing or deactivated (`is_active=false`)
   account — a fired user is cut off immediately, not when the token expires. Login
   is also refused: `AuthenticateUseCase` throws `AccountInactiveError` →
-  `403 { "message": "Account is inactive." }`.
+  `403 { "code": "account_inactive", "message": "Account is inactive." }`.
 - **Gym soft-delete (`Gym.is_active`):** `CheckIn.gym_id` is a required FK with no
   cascade, so a gym is never hard-deleted (history would break). A deactivated gym
-  refuses check-ins (`CheckInUseCase` → `InactiveGymError` → `403`) and disappears
+  refuses check-ins (`CheckInUseCase` → `InactiveGymError` →
+  `403 { "code": "gym_inactive", … }`) and disappears
   from the member browse — `findManyNearby` and `searchMany` are both active-only
   by default. Each accepts an `includeInactive` flag that the search/nearby
   controllers honor **only for gym managers** (`gym.gyms` `edit`, ADMIN bypasses)
@@ -591,7 +603,7 @@ lifecycle **disable** (`is_active` on module/screen/profile).
   `is_active` to deactivate / reactivate.
 - **Kill switch vs. disable.** `Screen.is_enabled` is the **runtime kill switch**
   (axis 2): flipping it off blocks every non-admin **immediately** (the guard
-  `403`s with "This screen is temporarily unavailable.") — an emergency lever, no
+  `403`s with `code: "screen_unavailable"`) — an emergency lever, no
   re-grant needed. `is_active` (on `Module`/`Screen`/`Profile`; `User` already had
   it) is the **lifecycle disable** (axis 3): an inactive record is hidden from the
   "add" pickers below it in the hierarchy, but existing assignments keep working —
@@ -619,8 +631,9 @@ lifecycle **disable** (`is_active` on module/screen/profile).
   screens." (`ModuleHasScreensError`). A **deletable** screen's own (ungranted)
   permissions `Cascade` with it. `Profile.default_screen_id` is `SetNull` if its
   landing screen is ever removed.
-- **CRUD error mapping** (controllers, via `instanceof`): `ResourceNotFoundError`
-  → `404`; the in-use `409`s above; editing/deleting a system
+- **CRUD error mapping** (each error is an `AppError` carrying its status + code;
+  they **propagate** to the central handler — no per-controller `instanceof`):
+  `ResourceNotFoundError` → `404`; the in-use `409`s above; editing/deleting a system
   profile/module/screen/permission → `409` (`SystemProfileError` /
   `SystemModuleError` / `SystemScreenError` / `SystemPermissionError`); a duplicate
   permission action (`UNIQUE(screen_id, action)`) → `409`
@@ -813,6 +826,18 @@ added to `.env.example`** (with a comment explaining format/example).
   port**: today it logs via pino; replace the body with Sentry/Datadog/etc. without
   touching call sites. The `setErrorHandler` calls `reportError(error)` on the
   production branch.
+- **Error envelope.** Every failure serializes to `{ code, message, meta? }`
+  (plus `issues` for validation errors). `code` is a **stable `snake_case`
+  string** (one per error class — generics stay generic: `resource_not_found`,
+  `unauthorized`, `forbidden`, `validation_error`); `message` is an **English dev
+  fallback only**; `meta` carries dynamic data (`retryAfter` for login lockout /
+  resend cooldown, `count` for in-use delete conflicts, `action` for a duplicate
+  permission). The codes + their Zod schemas live in `@root/contracts`
+  (`errors.ts`: `ERROR_CODES`, `errorResponseSchema`), so the frontend localizes
+  off `code` instead of the raw message. Domain errors extend a base `AppError`
+  (`src/use-cases/errors/app-error.ts`) holding `code` + `httpStatus` + `meta`,
+  and the central `setErrorHandler` is the **single** place that builds the
+  envelope (§4.1 step 9).
 
 ### 9.3 Graceful shutdown
 

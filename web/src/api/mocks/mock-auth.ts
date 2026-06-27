@@ -129,7 +129,10 @@ export function userIdFromToken(authHeader: string | null): string | null {
 // a 401 response to short-circuit with, or null when the caller is authenticated.
 export function requireAuth(authHeader: string | null) {
 	if (!userIdFromToken(authHeader)) {
-		return HttpResponse.json({ message: 'Unauthorized.' }, { status: 401 })
+		return HttpResponse.json(
+			{ code: 'unauthorized', message: 'Unauthorized.' },
+			{ status: 401 },
+		)
 	}
 	return null
 }

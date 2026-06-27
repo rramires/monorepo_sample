@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -9,6 +8,7 @@ import { validateCheckIn } from '@/api/validate-check-in'
 import { useLocale } from '@/components/locale/locale-hooks'
 import { usePermissions } from '@/hooks/use-permissions'
 import { formatDateTime } from '@/lib/datetime'
+import { messageFromError } from '@/lib/errors'
 
 const PAGE_SIZE = 20
 
@@ -41,10 +41,7 @@ export function useCheckInsPM() {
 			queryClient.invalidateQueries({ queryKey: ['check-ins'] })
 		},
 		onError: (err) => {
-			const message =
-				(isAxiosError(err) && err.response?.data?.message) ||
-				t('toast.validateError')
-			toast.error(message)
+			toast.error(messageFromError(err, t('toast.validateError')))
 		},
 	})
 

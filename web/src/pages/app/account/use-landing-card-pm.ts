@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { updateProfile } from '@/api/update-profile'
 import { useAppSidebarPM } from '@/components/app-sidebar/use-app-sidebar-pm'
 import { usePermissions } from '@/hooks/use-permissions'
+import { messageFromError } from '@/lib/errors'
 
 const AUTOMATIC = 'automatic'
 
@@ -30,10 +30,7 @@ export function useLandingCardPM() {
 			})
 		},
 		onError: (err) => {
-			toast.error(
-				(isAxiosError(err) && err.response?.data?.message) ||
-					t('landing.toast.error'),
-			)
+			toast.error(messageFromError(err, t('landing.toast.error')))
 		},
 	})
 

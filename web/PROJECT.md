@@ -693,8 +693,8 @@ choice for numbers/money.
 **Layout.** `src/i18n/` holds the init, the typed-keys augmentation, the
 handwritten Zod locale maps (`zod-locale.ts`), and `locales/{en,pt-BR}/*.json`.
 Namespaces: `common` (shared: actions, states, roles, status, errors, pager,
-transfer, multiSelect, errorPage), `nav`, `catalog`, `auth`, `account`,
-`check-ins`, `gyms`, `admin`. `components/locale/` mirrors `components/theme/`
+transfer, multiSelect, errorPage), `errors` (backend error codes → localized
+text), `nav`, `catalog`, `auth`, `account`, `check-ins`, `gyms`, `admin`. `components/locale/` mirrors `components/theme/`
 (provider + `useLocale` hook + `LanguageSelector`). `lib/datetime.ts` has the
 date helpers. Changing the language syncs `<html lang>`, persists the choice, and
 swaps the Zod locale.
@@ -726,9 +726,14 @@ swaps the Zod locale.
 unit + e2e suites assert the same strings; `test/setup.ts` forces `lng: en` for
 determinism. In dev, a `missingKeyHandler` warns on any unresolved key.
 
-**Known seams (English, by design — backend i18n is Plan 2).** Server-sent
-toast messages (`error.response.data.message`, e.g. "Invalid credentials.") and
-the env-driven password-pattern message (`VITE_PASSWORD_MESSAGE`) stay English:
-they are deployment-/backend-owned. Plan 2 moves backend responses to stable
-`code`s in `@root/contracts` that the frontend maps to text. A literal-string
-eslint rule (`eslint-plugin-i18next`) is a recommended future regression guard.
+**Backend errors are localized.** The API serializes every failure as
+`{ code, message, meta? }` with a **stable `snake_case` `code`** (the codes live
+in `@root/contracts`). `messageFromError(err, fallback)` (`src/lib/errors.ts`)
+maps `data.code` → `t('errors:' + code, { defaultValue: data.message ?? fallback,
+...data.meta })`, so a server error resolves through the `errors` namespace (keys
+=== codes verbatim, en + pt-BR), interpolating `meta` (`retryAfter`/`count`/
+`action`); it falls back to the English `message`, then the caller's localized
+`fallback`. The password-complexity hint is localized too
+(`common:errors.passwordPattern`) — the `VITE_PASSWORD_PATTERN` regex stays
+env-driven, but its message is no longer an env var. A literal-string eslint rule
+(`eslint-plugin-i18next`) is a recommended future regression guard.

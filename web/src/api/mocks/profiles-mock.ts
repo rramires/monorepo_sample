@@ -60,7 +60,7 @@ export const getProfileMock = http.get<{ id: string }>(
 		const profile = profiles.find((p) => p.id === params.id)
 		if (!profile) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -78,7 +78,7 @@ export const createProfileMock = http.post('/profiles', async ({ request }) => {
 	const parsed = createProfileBodySchema.safeParse(await request.json())
 	if (!parsed.success) {
 		return HttpResponse.json(
-			{ message: 'Validation error.' },
+			{ code: 'validation_error', message: 'Validation error.' },
 			{ status: 400 },
 		)
 	}
@@ -120,7 +120,7 @@ export const updateProfileEntityMock = http.patch<{ id: string }>(
 		const profile = profiles.find((p) => p.id === params.id)
 		if (!profile) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -128,7 +128,7 @@ export const updateProfileEntityMock = http.patch<{ id: string }>(
 		const parsed = updateProfileBodySchema.safeParse(await request.json())
 		if (!parsed.success) {
 			return HttpResponse.json(
-				{ message: 'Validation error.' },
+				{ code: 'validation_error', message: 'Validation error.' },
 				{ status: 400 },
 			)
 		}
@@ -140,7 +140,7 @@ export const updateProfileEntityMock = http.patch<{ id: string }>(
 			parsed.data.key !== profile.key
 		) {
 			return HttpResponse.json(
-				{ message: 'A system profile key cannot be changed.' },
+				{ code: 'system_profile', message: 'A system profile key cannot be changed.' },
 				{ status: 409 },
 			)
 		}
@@ -149,7 +149,7 @@ export const updateProfileEntityMock = http.patch<{ id: string }>(
 		// current default off is rejected (promote another to move it).
 		if (parsed.data.is_default === false && profile.is_default) {
 			return HttpResponse.json(
-				{ message: 'At least one profile must remain the default.' },
+				{ code: 'default_profile_required', message: 'At least one profile must remain the default.' },
 				{ status: 409 },
 			)
 		}
@@ -178,7 +178,7 @@ export const deleteProfileMock = http.delete<{ id: string }>(
 		const profile = profiles.find((p) => p.id === params.id)
 		if (!profile) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -186,7 +186,7 @@ export const deleteProfileMock = http.delete<{ id: string }>(
 		// System profiles are protected from deletion.
 		if (profile.is_system) {
 			return HttpResponse.json(
-				{ message: 'A system profile cannot be deleted.' },
+				{ code: 'system_profile', message: 'A system profile cannot be deleted.' },
 				{ status: 409 },
 			)
 		}
@@ -199,7 +199,9 @@ export const deleteProfileMock = http.delete<{ id: string }>(
 		if (assigned > 0) {
 			return HttpResponse.json(
 				{
+					code: 'profile_in_use',
 					message: `Assigned to ${assigned} user(s). Unassign it from those users first.`,
+					meta: { count: assigned },
 				},
 				{ status: 409 },
 			)
@@ -224,7 +226,7 @@ export const setProfileGrantsMock = http.put<{ id: string }>(
 		const profile = profiles.find((p) => p.id === params.id)
 		if (!profile) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -234,7 +236,7 @@ export const setProfileGrantsMock = http.put<{ id: string }>(
 		)
 		if (!parsed.success) {
 			return HttpResponse.json(
-				{ message: 'Validation error.' },
+				{ code: 'validation_error', message: 'Validation error.' },
 				{ status: 400 },
 			)
 		}
@@ -255,6 +257,7 @@ export const setProfileGrantsMock = http.put<{ id: string }>(
 			if (!ok) {
 				return HttpResponse.json(
 					{
+						code: 'invalid_landing_screen',
 						message:
 							'The landing screen must be an assigned, viewable screen.',
 					},

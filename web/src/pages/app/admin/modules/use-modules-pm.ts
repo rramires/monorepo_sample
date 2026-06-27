@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { deleteModule, getModules } from '@/api/modules'
 import { usePermissions } from '@/hooks/use-permissions'
+import { messageFromError } from '@/lib/errors'
 
 export function useModulesPM() {
 	const queryClient = useQueryClient()
@@ -23,10 +23,7 @@ export function useModulesPM() {
 			queryClient.invalidateQueries({ queryKey: ['modules'] })
 		},
 		onError: (err) => {
-			toast.error(
-				(isAxiosError(err) && err.response?.data?.message) ||
-					t('modules.toast.deleteError'),
-			)
+			toast.error(messageFromError(err, t('modules.toast.deleteError')))
 		},
 	})
 

@@ -13,17 +13,18 @@ import { z } from 'zod'
 import { forgotPassword } from '@/api/forgot-password'
 import { resetPassword } from '@/api/reset-password'
 import { env } from '@/env'
+import { messageFromError } from '@/lib/errors'
 
 const passwordMin = env.VITE_PASSWORD_MIN_LENGTH
 
 // Shared password shape (@root/contracts) + env policy + localized messages.
-// The pattern message stays env-driven (deployment policy text); length messages
-// are localized.
+// The pattern's failure message is localized (common:errors.passwordPattern);
+// length messages are localized too.
 const makePassword = (t: TFunction<['auth', 'common']>) =>
 	makePasswordSchema({
 		min: passwordMin,
 		pattern: new RegExp(env.VITE_PASSWORD_PATTERN),
-		message: env.VITE_PASSWORD_MESSAGE,
+		message: t('common:errors.passwordPattern'),
 		minMessage: t('common:errors.minChars', { count: passwordMin }),
 		maxMessage: t('common:errors.maxChars', { count: 72 }),
 	})
@@ -114,10 +115,9 @@ export function useForgotPasswordPM() {
 				toast.error(t('forgotPassword.toast.tooManyAttempts'))
 				return
 			}
-			const message =
-				(isAxiosError(err) && err.response?.data?.message) ||
-				t('forgotPassword.toast.resetError')
-			toast.error(message)
+			toast.error(
+				messageFromError(err, t('forgotPassword.toast.resetError')),
+			)
 		}
 	}
 

@@ -280,9 +280,13 @@ screen carries the granted action KEYS — bare CRUD families plus composed
 }
 ```
 
-A failed validation returns `400` with the issues; an unauthorized or revoked
-token (or a deactivated account) returns `401`; lacking the required role/screen
-grant returns `403`.
+Every failure serializes to a uniform envelope `{ code, message, meta? }` (plus
+`issues` for validation errors): `code` is a **stable `snake_case` string** the
+client localizes off (the codes live in `@root/contracts`), `message` is an
+English dev fallback, and `meta` carries dynamic data (e.g. `retryAfter`). A
+failed validation returns `400 validation_error` with the issues; an unauthorized
+or revoked token (or a deactivated account) returns `401 unauthorized`; lacking
+the required role/screen grant returns `403 forbidden`.
 
 > **Input validation rules** (field lengths, formats, `username`/`identifier`
 > shapes, `MIN_TEXT_LENGTH`) are defined by each route's Zod schema. The Zod
@@ -297,7 +301,7 @@ the API, and `is_verified` only matters where a route opts in. Set the flag to
 `true` to enforce it.
 
 Exactly **one** route is gated: `POST /gyms/:gymId/check-ins`. An authenticated
-but unverified user gets `403 { "message": "Email not verified." }` there; every
+but unverified user gets `403 { "code": "email_not_verified", "message": "Email not verified." }` there; every
 other route behaves exactly as with `false`. The gate checks `is_verified` only
 (role is irrelevant — the seeded ADMIN is verified, so it is never locked out)
 and reads it **fresh from the DB**, so verifying mid-session unblocks the user

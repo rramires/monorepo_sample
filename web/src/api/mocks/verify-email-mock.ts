@@ -16,6 +16,7 @@ export const verifyEmailByLinkMock = http.get(
 
 		return HttpResponse.json(
 			{
+				code: 'invalid_verification_token',
 				message:
 					'Verification token is invalid or has already been used.',
 			},
@@ -37,6 +38,7 @@ export const verifyEmailByOtpMock = http.post<never, { code: string }>(
 
 		return HttpResponse.json(
 			{
+				code: 'invalid_verification_token',
 				message:
 					'Verification token is invalid or has already been used.',
 			},

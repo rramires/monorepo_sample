@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
 import type { TFunction } from 'i18next'
 import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
@@ -10,6 +9,7 @@ import { z } from 'zod'
 
 import { updateProfile } from '@/api/update-profile'
 import { useAuth } from '@/components/auth/auth-hooks'
+import { messageFromError } from '@/lib/errors'
 
 // Mirrors the backend: 3-30 chars, letters/numbers/underscore only.
 const usernamePattern = /^[a-zA-Z0-9_]+$/
@@ -53,10 +53,7 @@ export function useProfileCardPM() {
 			await auth.reloadUser()
 			toast.success(t('profile.toast.success'))
 		} catch (err) {
-			const message =
-				(isAxiosError(err) && err.response?.data?.message) ||
-				t('profile.toast.error')
-			toast.error(message)
+			toast.error(messageFromError(err, t('profile.toast.error')))
 		}
 	}
 

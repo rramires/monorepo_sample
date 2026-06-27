@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { confirmEmailChangeByOtp } from '@/api/confirm-email-change'
 import { requestEmailChange } from '@/api/request-email-change'
 import { useAuth } from '@/components/auth/auth-hooks'
+import { messageFromError } from '@/lib/errors'
 
 const makeRequestForm = (t: TFunction<['account', 'common']>) =>
 	z.object({ email: z.email(t('common:errors.email')) })
@@ -88,10 +89,7 @@ export function useEmailCardPM() {
 				toast.error(t('email.toast.rateLimited'))
 				return
 			}
-			const message =
-				(isAxiosError(err) && err.response?.data?.message) ||
-				t('email.toast.requestError')
-			toast.error(message)
+			toast.error(messageFromError(err, t('email.toast.requestError')))
 		}
 	}
 
@@ -103,10 +101,7 @@ export function useEmailCardPM() {
 			await auth.reloadUser()
 			cancel()
 		} catch (err) {
-			const message =
-				(isAxiosError(err) && err.response?.data?.message) ||
-				t('email.toast.invalidCode')
-			toast.error(message)
+			toast.error(messageFromError(err, t('email.toast.invalidCode')))
 		}
 	}
 
