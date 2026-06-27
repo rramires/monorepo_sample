@@ -20,6 +20,7 @@ import { screensRoutes } from './http/controllers/screens/routes'
 import { usersRoutes } from './http/controllers/users/routes'
 import { prisma } from './lib/prisma'
 import { reportError } from './lib/report-error'
+import { AppError } from './use-cases/errors/app-error'
 
 const trustProxy =
 	env.TRUST_PROXY === 'true'
@@ -93,8 +94,19 @@ app.register(permissionsRoutes)
 app.register(profilesRoutes)
 // Errors
 app.setErrorHandler((error, request, reply) => {
+	// Domain errors: the single serialization point for the `{ code, message,
+	// meta? }` envelope. Controllers and middlewares just throw AppError
+	// subclasses; the frontend localizes off `code` (message is a dev fallback).
+	if (error instanceof AppError) {
+		return reply.status(error.httpStatus).send({
+			code: error.code,
+			message: error.message,
+			...(error.meta ? { meta: error.meta } : {}),
+		})
+	}
 	if (error instanceof ZodError) {
 		return reply.status(400).send({
+			code: 'validation_error',
 			message: 'Validation error.',
 			// In production expose only path + message; full format() leaks input shape
 			issues:
@@ -107,12 +119,21 @@ app.setErrorHandler((error, request, reply) => {
 		})
 	}
 	// Framework errors carry a meaningful statusCode (429 rate-limit, 413
-	// body-limit, 400 bad JSON, 503 under-pressure). Honor it; only true
-	// unknowns fall through to 500 + reportError.
+	// body-limit, 400 bad JSON, 503 under-pressure). Honor it and map it to a
+	// stable code; only true unknowns fall through to 500 + reportError.
 	const statusCode = (error as { statusCode?: unknown }).statusCode
 	if (typeof statusCode === 'number' && statusCode !== 500) {
 		const message = (error as { message?: unknown }).message
+		const code =
+			statusCode === 429
+				? 'rate_limited'
+				: statusCode === 413
+					? 'payload_too_large'
+					: statusCode === 503
+						? 'server_under_pressure'
+						: 'bad_request'
 		return reply.status(statusCode).send({
+			code,
 			message: typeof message === 'string' ? message : 'Error.',
 		})
 	}
@@ -123,7 +144,10 @@ app.setErrorHandler((error, request, reply) => {
 		request.log.error(error)
 	}
 	// Other errors
-	return reply.status(500).send({ message: 'Internal server error.' })
+	return reply.status(500).send({
+		code: 'internal_server_error',
+		message: 'Internal server error.',
+	})
 })
 // Release the database connection pool when the server closes.
 app.addHook('onClose', async () => {

@@ -2,7 +2,6 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 
 import { env } from '@/env'
-import { UserAlreadyExistsError } from '@/use-cases/errors/user-already-exists-error'
 import { makeUpdateProfileUseCase } from '@/use-cases/factories/make-update-profile-use-case'
 
 export async function updateProfileController(
@@ -29,25 +28,18 @@ export async function updateProfileController(
 	const { username, default_screen_key } = bodySchema.parse(request.body)
 
 	const updateProfileUseCase = makeUpdateProfileUseCase()
-	try {
-		const { user } = await updateProfileUseCase.execute({
-			userId: request.user.sub,
-			username,
-			default_screen_key,
-		})
+	const { user } = await updateProfileUseCase.execute({
+		userId: request.user.sub,
+		username,
+		default_screen_key,
+	})
 
-		return reply.status(200).send({
-			user: {
-				id: user.id,
-				username: user.username,
-				is_verified: user.is_verified,
-				role: user.role,
-			},
-		})
-	} catch (err) {
-		if (err instanceof UserAlreadyExistsError) {
-			return reply.status(409).send({ message: err.message })
-		}
-		throw err
-	}
+	return reply.status(200).send({
+		user: {
+			id: user.id,
+			username: user.username,
+			is_verified: user.is_verified,
+			role: user.role,
+		},
+	})
 }

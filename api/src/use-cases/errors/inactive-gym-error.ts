@@ -1,5 +1,11 @@
-export class InactiveGymError extends Error {
+import { AppError } from './app-error'
+
+export class InactiveGymError extends AppError {
 	constructor() {
-		super('Gym is inactive.')
+		super({
+			code: 'gym_inactive',
+			httpStatus: 403,
+			message: 'Gym is inactive.',
+		})
 	}
 }

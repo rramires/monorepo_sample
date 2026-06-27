@@ -1,6 +1,11 @@
-export class VerificationTokenExpiredError extends Error {
+import { AppError } from './app-error'
+
+export class VerificationTokenExpiredError extends AppError {
 	constructor() {
-		super('Verification token has expired.')
-		this.name = 'VerificationTokenExpiredError'
+		super({
+			code: 'verification_token_expired',
+			httpStatus: 410,
+			message: 'Verification token has expired.',
+		})
 	}
 }

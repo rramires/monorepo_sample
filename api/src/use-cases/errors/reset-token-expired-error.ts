@@ -1,6 +1,11 @@
-export class ResetTokenExpiredError extends Error {
+import { AppError } from './app-error'
+
+export class ResetTokenExpiredError extends AppError {
 	constructor() {
-		super('Reset token expired.')
-		this.name = 'ResetTokenExpiredError'
+		super({
+			code: 'reset_token_expired',
+			httpStatus: 410,
+			message: 'Reset token expired.',
+		})
 	}
 }

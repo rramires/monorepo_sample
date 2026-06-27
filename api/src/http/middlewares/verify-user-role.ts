@@ -1,7 +1,9 @@
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyRequest } from 'fastify'
 
 import { Role } from '@/prisma-client/enums'
+import { ForbiddenError } from '@/use-cases/errors/forbidden-error'
 import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
+import { UnauthorizedError } from '@/use-cases/errors/unauthorized-error'
 import { makeGetUserProfileUseCase } from '@/use-cases/factories/make-get-user-profile-use-case'
 
 function verifyUserRole(roleToVerify: Role) {
@@ -12,7 +14,7 @@ function verifyUserRole(roleToVerify: Role) {
 	// expires. Mirrors how the profile controller reads `is_verified`/`role`
 	// fresh from the DB; the signed `role` claim is never trusted for access
 	// control. Runs after verifyJwtMiddleware, so `request.user.sub` is set.
-	return async (request: FastifyRequest, reply: FastifyReply) => {
+	return async (request: FastifyRequest) => {
 		const getUserProfile = makeGetUserProfileUseCase()
 
 		try {
@@ -22,12 +24,12 @@ function verifyUserRole(roleToVerify: Role) {
 
 			if (user.role !== roleToVerify) {
 				// Authenticated but lacking the required role: 403, not 401.
-				return reply.status(403).send({ message: 'Forbidden.' })
+				throw new ForbiddenError()
 			}
 		} catch (err) {
+			// Valid token but the user no longer exists: force re-auth.
 			if (err instanceof ResourceNotFoundError) {
-				// Valid token but the user no longer exists: force re-auth.
-				return reply.status(401).send({ message: 'Unauthorized.' })
+				throw new UnauthorizedError()
 			}
 			throw err
 		}

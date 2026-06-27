@@ -1,5 +1,11 @@
-export class InvalidCredentialsError extends Error {
+import { AppError } from './app-error'
+
+export class InvalidCredentialsError extends AppError {
 	constructor() {
-		super('Invalid credentials.')
+		super({
+			code: 'invalid_credentials',
+			httpStatus: 401,
+			message: 'Invalid credentials.',
+		})
 	}
 }

@@ -1,7 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 
-import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
 import { makeGetUserUseCase } from '@/use-cases/factories/make-get-user-use-case'
 
 export async function getUserController(
@@ -17,14 +16,7 @@ export async function getUserController(
 	const { userId } = paramsSchema.parse(request.params)
 
 	const getUserUseCase = makeGetUserUseCase()
-	try {
-		const { user } = await getUserUseCase.execute({ userId })
+	const { user } = await getUserUseCase.execute({ userId })
 
-		return reply.status(200).send({ user })
-	} catch (err) {
-		if (err instanceof ResourceNotFoundError) {
-			return reply.status(404).send({ message: err.message })
-		}
-		throw err
-	}
+	return reply.status(200).send({ user })
 }

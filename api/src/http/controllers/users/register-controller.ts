@@ -3,7 +3,6 @@ import { z } from 'zod'
 
 import { env } from '@/env'
 import { passwordSchema } from '@/http/schemas/password-schema'
-import { UserAlreadyExistsError } from '@/use-cases/errors/user-already-exists-error'
 import { makeRegisterUseCase } from '@/use-cases/factories/make-register-use-case'
 
 export async function registerController(
@@ -24,24 +23,15 @@ export async function registerController(
 	})
 	const { username, email, password } = bodySchema.parse(request.body)
 
-	try {
-		const registerUseCase = makeRegisterUseCase()
+	const registerUseCase = makeRegisterUseCase()
 
-		const { user } = await registerUseCase.execute({
-			username,
-			email,
-			password,
-		})
+	const { user } = await registerUseCase.execute({
+		username,
+		email,
+		password,
+	})
 
-		return reply.status(201).send({
-			user,
-		})
-	} catch (err) {
-		if (err instanceof UserAlreadyExistsError) {
-			// 409 Conflict
-			return reply.status(409).send({ message: err.message })
-		}
-		// Other unspecified errors (Fastify capture this)
-		throw err
-	}
+	return reply.status(201).send({
+		user,
+	})
 }
