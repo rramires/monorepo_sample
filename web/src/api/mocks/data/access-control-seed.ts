@@ -32,6 +32,15 @@ export const modules: Module[] = [
 		is_system: true,
 		is_active: true,
 	},
+	{
+		id: 'mod-notices',
+		key: 'notices',
+		name: 'Notices',
+		description: 'Notice board for members.',
+		order: 3,
+		is_system: false,
+		is_active: true,
+	},
 ]
 
 // ── Screens ──────────────────────────────────────────────────────────────────
@@ -123,6 +132,18 @@ export const screens: Screen[] = [
 		is_active: true,
 		is_enabled: true,
 	},
+	{
+		id: 'scr-notices',
+		module_id: 'mod-notices',
+		key: 'notices.notices',
+		name: 'Notices',
+		path: '/notices',
+		description: 'Notice board for members.',
+		order: 0,
+		is_system: false,
+		is_active: true,
+		is_enabled: true,
+	},
 ]
 
 // ── Permissions catalog ──────────────────────────────────────────────────────
@@ -161,6 +182,10 @@ const PERMISSION_SPECS: PermSpec[] = [
 	{ screen_key: 'access-control.users', action: 'view', label: 'View' },
 	{ screen_key: 'access-control.users', action: 'create', label: 'Add' },
 	{ screen_key: 'access-control.users', action: 'edit', label: 'Edit' },
+	{ screen_key: 'notices.notices', action: 'view', label: 'View' },
+	{ screen_key: 'notices.notices', action: 'create', label: 'Add' },
+	{ screen_key: 'notices.notices', action: 'edit', label: 'Edit' },
+	{ screen_key: 'notices.notices', action: 'delete', label: 'Remove' },
 ]
 
 function screenByKey(key: string): Screen {

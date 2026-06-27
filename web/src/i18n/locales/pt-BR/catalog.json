@@ -7,7 +7,8 @@
 		"access-control": {
 			"name": "Controle de Acesso",
 			"description": "Módulos, telas, perfis, usuários."
-		}
+		},
+		"notices": { "name": "Avisos", "description": "Mural de avisos da academia." }
 	},
 	"screens": {
 		"gym.dashboard": {
@@ -37,7 +38,8 @@
 		"access-control.users": {
 			"name": "Gerenciar Usuários",
 			"description": "Usuários e seus perfis."
-		}
+		},
+		"notices.notices": { "name": "Avisos", "description": "Mural de avisos da academia." }
 	},
 	"actions": {
 		"view": "Ver",

@@ -1,0 +1,18 @@
+{
+	"pageTitle": "Avisos",
+	"title": "Avisos",
+	"description": "Publique avisos no mural da academia.",
+	"new": "Novo aviso",
+	"empty": "Nenhum aviso encontrado.",
+	"columns": { "title": "Título", "category": "Categoria", "created": "Criado em", "actions": "Ações" },
+	"categories": { "info": "Informação", "warning": "Atenção", "urgent": "Urgente" },
+	"fields": { "titleRequired": "O título é obrigatório.", "categoryRequired": "A categoria é obrigatória." },
+	"delete": { "title": "Excluir aviso", "description": "Excluir \"{{title}}\"? Esta ação não pode ser desfeita.", "confirmLabel": "Excluir" },
+	"dialog": {
+		"editTitle": "Editar aviso", "newTitle": "Novo aviso",
+		"description": "Um aviso aparece no mural da academia.",
+		"titleLabel": "Título", "categoryLabel": "Categoria", "selectCategory": "Selecione uma categoria",
+		"save": "Salvar alterações", "create": "Criar aviso"
+	},
+	"toast": { "created": "Aviso criado.", "updated": "Aviso atualizado.", "deleted": "Aviso excluído.", "saveError": "Não foi possível salvar o aviso.", "deleteError": "Não foi possível excluir o aviso." }
+}

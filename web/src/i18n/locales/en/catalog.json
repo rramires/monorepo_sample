@@ -7,7 +7,8 @@
 		"access-control": {
 			"name": "Access Control",
 			"description": "Modules, screens, profiles, users."
-		}
+		},
+		"notices": { "name": "Notices", "description": "Notice board for members." }
 	},
 	"screens": {
 		"gym.dashboard": {
@@ -37,7 +38,8 @@
 		"access-control.users": {
 			"name": "Manage Users",
 			"description": "Users and their profiles."
-		}
+		},
+		"notices.notices": { "name": "Notices", "description": "Notice board for members." }
 	},
 	"actions": {
 		"view": "View",

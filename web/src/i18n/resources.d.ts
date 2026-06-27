@@ -9,6 +9,7 @@ import type enCommon from './locales/en/common.json'
 import type enErrors from './locales/en/errors.json'
 import type enGyms from './locales/en/gyms.json'
 import type enNav from './locales/en/nav.json'
+import type enNotices from './locales/en/notices.json'
 
 /**
  * Type-safe translation keys. `t('common:actions.save')` autocompletes and a
@@ -29,6 +30,7 @@ declare module 'i18next' {
 			gyms: typeof enGyms
 			admin: typeof enAdmin
 			errors: typeof enErrors
+			notices: typeof enNotices
 		}
 	}
 }

@@ -10,5 +10,6 @@
 	"profiles": "Profiles",
 	"user": "User",
 	"profile": "Profile",
-	"signOut": "Sign out"
+	"signOut": "Sign out",
+	"notices": "Notices"
 }

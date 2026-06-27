@@ -22,6 +22,12 @@ import {
 } from './modules-mock'
 import { nearbyGymsMock } from './nearby-gyms-mock'
 import {
+	createNoticeMock,
+	deleteNoticeMock,
+	listNoticesMock,
+	updateNoticeMock,
+} from './notices-mock'
+import {
 	createPermissionMock,
 	deletePermissionMock,
 	listPermissionsMock,
@@ -111,6 +117,10 @@ export const worker = setupWorker(
 	getUserMock,
 	updateUserMock,
 	updateGymMock,
+	listNoticesMock,
+	createNoticeMock,
+	updateNoticeMock,
+	deleteNoticeMock,
 )
 
 export async function enableMSW() {

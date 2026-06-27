@@ -16,6 +16,7 @@ import { AdminUsers } from './pages/app/admin/users/users'
 import { CheckIns } from './pages/app/check-ins/check-ins'
 import { Gyms } from './pages/app/gyms/gyms'
 import { NewGym } from './pages/app/new-gym/new-gym'
+import { Notices } from './pages/app/notices/notices'
 import { ConfirmEmailChange } from './pages/auth/confirm-email-change/confirm-email-change'
 import { ForgotPassword } from './pages/auth/forgot-password/forgot-password'
 import { ResetPassword } from './pages/auth/reset-password/reset-password'
@@ -55,6 +56,14 @@ export const router = createBrowserRouter([
 										path: 'check-ins',
 										element: <CheckIns />,
 									},
+								],
+							},
+							{
+								element: (
+									<RequireScreen screen='notices.notices' />
+								),
+								children: [
+									{ path: 'notices', element: <Notices /> },
 								],
 							},
 							// Account is self-service — every authed user.
