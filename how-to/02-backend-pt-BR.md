@@ -4,8 +4,12 @@ Implementa a API real de **Notices** e troca o mock pela API de verdade, revalid
 a mesma tela. Faça **depois** do [`01-frontend`](./01-frontend-pt-BR.md) — o contrato
 compartilhado (`@root/contracts/notices.ts`) já existe e é reaproveitado aqui.
 
-**Branch desta parte:** `git checkout -b feat/notices-backend` (a partir do `master`
-já com o front mergeado, ou continue na sua linha de trabalho).
+**Branch desta parte** (a partir do `master` já com o front mergeado, ou continue
+na sua linha de trabalho):
+
+```sh
+git checkout -b feat/notices-backend
+```
 
 Camadas da casa: **route → controller → use-case → repository (interface + impl)**,
 montadas por uma **factory**. Controller não fala com Prisma; use-case não fala com
@@ -21,7 +25,7 @@ pnpm -C api compose:up      # sobe o MySQL (Docker)
 docker inspect --format '{{.State.Health.Status}}' monorepo_sample-solid_api_mysql-1
 ```
 
-> ⚠️ **Gotcha — `.env` e health.** Comandos de banco (`migrate`, `seeddb`) falham até
+> ⚠️ **Pegadinha — `.env` e health.** Comandos de banco (`migrate`, `seeddb`) falham até
 > o container estar `healthy`, e exigem `api/.env` (com `DATABASE_URL`). Se faltar,
 > `cp api/.env.example api/.env`. `.env` é gitignored — nunca commite segredo.
 
@@ -56,12 +60,12 @@ pnpm -C api exec prisma generate
 export * from './client.js'
 ```
 
-> ⚠️ **Gotcha nº 1 (a maior armadilha) — `prisma generate` APAGA o barrel.** O
+> ⚠️ **Pegadinha nº 1 (a maior armadilha) — `prisma generate` APAGA o barrel.** O
 > `migrate dev` às vezes deixa o barrel intacto, mas o `generate` explícito o
 > remove. Trate `migrate dev` + `generate` como um par e **recrie o barrel logo
 > depois**, ou todo `import { Notice } from '@/prisma-client'` quebra a compilação.
 
-> ⚠️ **Gotcha nº 2 — `src/prisma-client/` é versionado (não gitignored).** O commit
+> ⚠️ **Pegadinha nº 2 — `src/prisma-client/` é versionado (não gitignored).** O commit
 > do schema precisa dar `git add` na pasta gerada inteira **junto** com o schema e a
 > migração — senão um checkout limpo não compila:
 >
@@ -69,7 +73,11 @@ export * from './client.js'
 > git add api/prisma/schema.prisma api/prisma/migrations/ api/src/prisma-client/
 > ```
 
-**Gate:** `pnpm -C api lint && pnpm -C api compile && pnpm -C api test`
+**Validação:**
+
+```sh
+pnpm -C api lint && pnpm -C api compile && pnpm -C api test
+```
 **Commit:** `feat(notices): add Notice model + add_notices migration`
 
 ---
@@ -79,7 +87,7 @@ export * from './client.js'
 A dependência entra por **interface**, com duas implementações: in-memory (testes
 unit) e Prisma (produção).
 
-**Crie** `api/src/repositories/i-notices-repository.ts`:
+Na pasta api/src/repositories/ **Crie** `i-notices-repository.ts`:
 
 ```ts
 import { Notice } from '@/prisma-client'
@@ -99,11 +107,11 @@ export interface INoticesRepository {
 }
 ```
 
-**Crie** `api/src/repositories/prisma/prisma-notices-repository.ts` (CRUD via
-`prisma.notice.*`, `list` ordena `created_at desc`). E
-`api/src/repositories/in-memory/in-memory-notices-repository.ts`.
+Na pasta api/src/repositories/prisma/ **Crie** `prisma-notices-repository.ts`
+(CRUD via `prisma.notice.*`, `list` ordena `created_at desc`); e na pasta
+api/src/repositories/in-memory/ **crie** `in-memory-notices-repository.ts`.
 
-> ⚠️ **Gotcha — o in-memory tem que gerar `created_at` e `id`.** Diferente de
+> ⚠️ **Pegadinha — o in-memory tem que gerar `created_at` e `id`.** Diferente de
 > Modules (sem timestamp), `Notice` exige `created_at`; no real, o Prisma resolve via
 > `@default(now())`/`@default(uuid())`. No in-memory, gere você:
 >
@@ -111,14 +119,18 @@ export interface INoticesRepository {
 > const notice = { id: randomUUID(), title: data.title, category: data.category, created_at: new Date() }
 > ```
 
-**Gate:** `pnpm -C api lint && pnpm -C api compile && pnpm -C api test`
+**Validação:**
+
+```sh
+pnpm -C api lint && pnpm -C api compile && pnpm -C api test
+```
 **Commit:** `feat(notices): notices repository (interface + in-memory + prisma)`
 
 ---
 
 ## Fase 3 — Use-case + factory + teste unit
 
-**Crie** `api/src/use-cases/notices-use-case.ts` — lógica de negócio pura; `update` e
+Na pasta api/src/use-cases/ **Crie** `notices-use-case.ts` — lógica de negócio pura; `update` e
 `remove` levantam `ResourceNotFoundError` quando o `findById` falha (reusa a classe
 existente; **não invente código de erro novo**):
 
@@ -155,14 +167,17 @@ export class NoticesUseCase {
 }
 ```
 
-**Crie** a factory `api/src/use-cases/factories/make-notices-use-case.ts` (injeta o
-`PrismaNoticesRepository`) e o teste unit
-`api/src/use-cases/notices-use-case.spec.ts` (usa o **in-memory**; cobre create/list/
-update/remove + os dois 404). Modelo:
+Na pasta api/src/use-cases/factories/ **Crie** a factory `make-notices-use-case.ts`
+(injeta o `PrismaNoticesRepository`); e na pasta api/src/use-cases/ o teste unit
+`notices-use-case.spec.ts` (usa o **in-memory**; cobre create/list/update/remove +
+os dois 404). Modelo:
 [`modules-use-case.spec.ts`](../api/src/use-cases/modules-use-case.spec.ts).
 
-**Gate:** `pnpm -C api lint && pnpm -C api compile && pnpm -C api test` (deve subir a
-contagem de unit, ex.: 119 → 125).
+**Validação** (deve subir a contagem de unit, ex.: 119 → 125):
+
+```sh
+pnpm -C api lint && pnpm -C api compile && pnpm -C api test
+```
 **Commit:** `feat(notices): NoticesUseCase + factory + unit spec`
 
 ---
@@ -172,8 +187,14 @@ contagem de unit, ex.: 119 → 125).
 Um controller por verbo. O controller faz `parse` do body com o **schema
 compartilhado** e responde `reply.send({ notice })` / `{ notices }`.
 
-**Crie** `api/src/http/controllers/notices/{list,create,update,delete}-controller.ts`.
-Exemplo do create:
+Os controllers ficam numa **pasta nova** — crie-a primeiro:
+
+```sh
+mkdir -p api/src/http/controllers/notices
+```
+
+Nessa pasta **crie** os quatro: `list-controller.ts`, `create-controller.ts`,
+`update-controller.ts`, `delete-controller.ts`. Exemplo do create:
 
 ```ts
 import { createNoticeBodySchema } from '@root/contracts'
@@ -191,7 +212,7 @@ export async function createController(request: FastifyRequest, reply: FastifyRe
 
 O `update`/`delete` validam o param com `z.object({ noticeId: z.uuid() })`.
 
-**Crie** `api/src/http/controllers/notices/routes.ts` — hook de auth no grupo +
+Na mesma pasta **Crie** `routes.ts` — hook de auth no grupo +
 `requireScreen('notices.notices', action)` por rota:
 
 ```ts
@@ -215,17 +236,21 @@ export async function noticesRoutes(app: FastifyInstance) {
 **Registre** em `api/src/app.ts`: `import { noticesRoutes } from './http/controllers/notices/routes'`
 e `app.register(noticesRoutes)` junto dos outros `app.register(...)`.
 
-> ⚠️ **Gotcha — param `:noticeId`.** Bate com o mock do front. Copiar `:id`/`params.id`
+> ⚠️ **Pegadinha — param `:noticeId`.** Bate com o mock do front. Copiar `:id`/`params.id`
 > de Modules gera um `undefined` silencioso.
 
-**Gate:** `pnpm -C api lint && pnpm -C api compile && pnpm -C api test`
+**Validação:**
+
+```sh
+pnpm -C api lint && pnpm -C api compile && pnpm -C api test
+```
 **Commit:** `feat(notices): notices controllers + routes + app register`
 
 ---
 
 ## Fase 5 — Teste e2e das rotas
 
-**Crie** `api/src/http/controllers/notices/routes.spec.ts`. Autentica como **ADMIN**
+Na pasta api/src/http/controllers/notices/ **Crie** `routes.spec.ts`. Autentica como **ADMIN**
 via `createAndAuthUser(app, true)` e cobre create/list/update/delete + 404
 (`resource_not_found`) + 400 (`validation_error` em categoria inválida).
 
@@ -236,12 +261,12 @@ const res = await request(app.server).post('/notices').set('Authorization', `Bea
 expect(res.statusCode).toEqual(201)
 ```
 
-> ⚠️ **Gotcha — ADMIN bypassa o `requireScreen`.** O e2e usa um admin, e o
+> ⚠️ **Pegadinha — ADMIN bypassa o `requireScreen`.** O e2e usa um admin, e o
 > `GetUserPermissionsUseCase` dá curto-circuito para role `ADMIN` ("tudo liberado").
 > Então as rotas respondem **sem nenhum grant de seed** — o e2e verde **não** prova a
 > fiação da seed (isso é a Fase 6).
 
-**Gate (toca rota → e2e, MySQL up):**
+**Validação (toca rota → e2e, MySQL up):**
 
 ```sh
 pnpm -C api lint && pnpm -C api compile && pnpm -C api test && pnpm -C api test:e2e
@@ -268,12 +293,16 @@ Aplique e verifique:
 pnpm -C api seeddb
 ```
 
-> ⚠️ **Gotcha — admin é ROLE, não perfil.** Não existe "perfil admin" na seed; o
+> ⚠️ **Pegadinha — admin é ROLE, não perfil.** Não existe "perfil admin" na seed; o
 > admin (role) bypassa tudo. Para um **não-admin** ver a tela, ele precisa de
 > **membership** (`ProfileScreen`) + grant `view`. Por isso a Fase 5 (e2e admin) não
 > exercita isto — confira a seed rodando `seeddb` e olhando as linhas.
 
-**Gate:** `pnpm -C api lint && pnpm -C api compile && pnpm -C api test` (+ `test:e2e`).
+**Validação** (+ `test:e2e`):
+
+```sh
+pnpm -C api lint && pnpm -C api compile && pnpm -C api test
+```
 **Commit:** `feat(notices): seed notices module + screen + permissions + grants`
 
 ---
@@ -292,7 +321,7 @@ Logue com um usuário **semeado** que tenha o grant de Notices (pela Fase 6) e r
 o smoke da [Fase 7 do front](./01-frontend-pt-BR.md#fase-7--smoke-no-browser-obrigatório):
 loading/empty/error, **cold-load** do Select na edição, criar/editar/excluir.
 
-> ⚠️ **Gotcha — senha no modo real ≠ mock.** Os usuários demo semeados usam
+> ⚠️ **Pegadinha — senha no modo real ≠ mock.** Os usuários demo semeados usam
 > `ADMIN_PASSWORD` do `api/.env` (ex.: `Admin@12345`), **não** o `Password1!` do
 > mock. Para ver um não-admin (com grant `view`), use o perfil que você concedeu na
 > Fase 6 (ex.: `support`).
@@ -310,12 +339,15 @@ loading/empty/error, **cold-load** do Select na edição, criar/editar/excluir.
    `web/README*.md` + `web/PROJECT*.md` (tabela de rotas/telas, features). Os
    `web/docs/TUTORIAL_*` são **congelados** — não edite.
 2. **Pare e deixe o usuário** testar no browser e **autorizar o merge**. Só então:
-   `git checkout master && git merge --no-ff feat/notices-backend`.
+
+   ```sh
+   git checkout master && git merge --no-ff feat/notices-backend
+   ```
 3. **Nunca dê push** — é o usuário quem faz.
 
 ## Resumo das fases (back)
 
-| Fase | Entrega | Gate |
+| Fase | Entrega | Validação |
 |------|---------|------|
 | 1 | schema + migração + barrel | `lint+compile+test` |
 | 2 | repositório (interface + 2 impls) | `lint+compile+test` |

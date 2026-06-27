@@ -17,9 +17,9 @@ responsabilidade da casa, para não construir nada fora do padrão.
 ## Para quem é
 
 - **Humano novo no projeto** — siga os comandos copiáveis na ordem; cada passo diz
-  o *porquê* e tem um *gate* que prova que funcionou.
-- **IA / agente** — trate cada fase como uma tarefa atômica: implemente, rode o
-  gate, **commite**, siga. Não pule fases; não invente padrões.
+  o *porquê* e tem uma *validação* que prova que funcionou.
+- **IA / agente** — trate cada fase como uma tarefa atômica: implemente, rode a
+  validação, **commite**, siga. Não pule fases; não invente padrões.
 
 ## A filosofia da casa (entenda antes de digitar)
 
@@ -86,10 +86,10 @@ dev/IA:
 
 1. **Branch por parte maior**, a partir do `master`. Ex.: `feat/notices-frontend`,
    depois `feat/notices-backend`. **Nunca** commite código direto no `master`.
-2. **Commit por fase.** Cada fase coerente vira um commit, criado **logo após seu
-   gate passar**. Stage estreito (`git add <caminhos>`). Conventional Commits.
+2. **Commit por fase.** Cada fase coerente vira um commit, criado **logo após sua
+   validação passar**. Stage estreito (`git add <caminhos>`). Conventional Commits.
    Nunca deixe uma fase pronta sem commit; nunca misture trabalhos diferentes.
-3. **Gate verde antes de todo commit** (tabela abaixo).
+3. **Validação verde antes de todo commit** (tabela abaixo).
 4. **Ao terminar a parte, PARE para o usuário.** Ele testa no browser (mudanças de
    rota/form) e **autoriza o merge**; só então faça o merge local
    (`git checkout master && git merge --no-ff <branch>`).
@@ -102,9 +102,9 @@ Mensagem de commit termina com:
 Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
-## Gates (rode da raiz do monorepo)
+## Validações (rode da raiz do monorepo)
 
-| App | Gate (antes de cada commit) |
+| App | Validação (antes de cada commit) |
 |-----|------------------------------|
 | `contracts` | `pnpm -C packages/contracts typecheck` |
 | `web` | `pnpm -C web lint && pnpm -C web build && pnpm -C web test:run` — e `pnpm -C web test:e2e` quando tocar rota/fluxo |
@@ -144,7 +144,7 @@ Cite/confira em cada ponto relevante. Os guias repetem isto inline onde importa.
   features). Os `web/docs/TUTORIAL_*` são narrativa de build **congelada** — não
   edite.
 - **Texto de UI em inglês; prosa em pt-BR.**
-- **Commits:** Conventional Commits, um por fase, gate verde antes; **nunca push**
+- **Commits:** Conventional Commits, um por fase, validação verde antes; **nunca push**
   (só o usuário). Respeite o `CLAUDE.md`/`AGENTS.md` de cada app.
 
 ---

@@ -4,10 +4,14 @@ Constrói a feature **Notices** inteira no front, contra um **mock MSW**, até a
 funcionar de ponta a ponta em `pnpm -C web dev:test`. Sem backend ainda. Leia o
 [README](./README-pt-BR.md) primeiro (filosofia + workflow + checklist).
 
-**Branch desta parte:** `git checkout -b feat/notices-frontend`
+**Branch desta parte:**
 
-Cada fase: o que criar → o **porquê** → o **gate** que prova. Commite ao final de
-cada fase (gate verde antes). Stage estreito.
+```sh
+git checkout -b feat/notices-frontend
+```
+
+Cada fase: o que criar → o **porquê** → a **validação** que prova. Commite ao final de
+cada fase (validação verde antes). Stage estreito.
 
 ---
 
@@ -28,7 +32,7 @@ nesse modo que você desenvolve e dá o smoke — nenhuma API real precisa estar
 O formato do fio e o enum de categoria moram em `@root/contracts`, para que o
 **form, o mock e o backend** validem contra a mesma fonte.
 
-**Crie** `packages/contracts/src/notices.ts`:
+Na pasta packages/contracts/src/ **Crie** `notices.ts`:
 
 ```ts
 import { z } from 'zod'
@@ -68,7 +72,7 @@ export * from './notices'
 > backend/Prisma fala. O front converte para `camelCase` na camada `src/api`
 > (Fase 2). Modelo de referência: [`packages/contracts/src/modules.ts`](../packages/contracts/src/modules.ts).
 
-**Gate:**
+**Validação:**
 
 ```sh
 pnpm -C packages/contracts typecheck
@@ -82,7 +86,7 @@ pnpm -C packages/contracts typecheck
 
 ### 2a. Cliente de API
 
-**Crie** `web/src/api/notices.ts`. Aqui o `snake_case` vira `camelCase` e **não
+Na pasta web/src/api/ **Crie** `notices.ts`. Aqui o `snake_case` vira `camelCase` e **não
 vaza** dali pra frente. As respostas passam por `noticeSchema.parse(...)` para o
 cliente não poder divergir do contrato.
 
@@ -137,7 +141,7 @@ Referência: [`web/src/api/search-gyms.ts`](../web/src/api/search-gyms.ts) (norm
 
 ### 2b. Mock MSW (espelha o backend verbatim)
 
-**Crie** `web/src/api/mocks/notices-mock.ts`. Espelhe **status + envelope de erro**
+Na pasta web/src/api/mocks/ **Crie** `notices-mock.ts`. Espelhe **status + envelope de erro**
 `{ code, message, meta? }`. `requireAuth` devolve 401 padronizado quando não há token.
 
 ```ts
@@ -207,14 +211,18 @@ import { createNoticeMock, deleteNoticeMock, listNoticesMock, updateNoticeMock }
 	deleteNoticeMock,
 ```
 
-> ⚠️ **Gotcha — param name.** Use `:noticeId` (não `:id`) no mock **e** no backend
+> ⚠️ **Pegadinha — param name.** Use `:noticeId` (não `:id`) no mock **e** no backend
 > depois; o cliente chama `/notices/${id}` com o id real, mas mock e back precisam
 > bater no nome do param ou você lê `undefined`.
 
-> ⚠️ **Gotcha — fidelidade.** Cada `api/*.ts` tem que ter seu `mocks/*-mock.ts`.
+> ⚠️ **Pegadinha — fidelidade.** Cada `api/*.ts` tem que ter seu `mocks/*-mock.ts`.
 > Mexeu num, mexe no outro. O envelope de erro é o mesmo do back: `{ code, message }`.
 
-**Gate:** `pnpm -C web lint && pnpm -C web build && pnpm -C web test:run`
+**Validação:**
+
+```sh
+pnpm -C web lint && pnpm -C web build && pnpm -C web test:run
+```
 **Commit:** `feat(web): notices API client + MSW mock`
 
 ---
@@ -224,8 +232,8 @@ import { createNoticeMock, deleteNoticeMock, listNoticesMock, updateNoticeMock }
 Texto de UI nunca é literal — tudo via `t()` em **en + pt-BR**. As chaves são
 tipadas; chave faltando = erro de build.
 
-**Crie** `web/src/i18n/locales/en/notices.json` e
-`web/src/i18n/locales/pt-BR/notices.json` (mesmas chaves, valores por idioma). O
+Nas pastas web/src/i18n/locales/en/ e web/src/i18n/locales/pt-BR/ **Crie**
+`notices.json` (mesmas chaves, valores por idioma). O
 `en` é a fonte de verdade do shape:
 
 ```json
@@ -252,7 +260,7 @@ tipadas; chave faltando = erro de build.
 (A versão `pt-BR` traduz os valores: `"Notices"` → `"Avisos"`, etc. Escreva você o
 pt-BR, brasileiro.)
 
-> ⚠️ **Gotcha — o namespace é registrado em QUATRO lugares.** Esqueça um e o build
+> ⚠️ **Pegadinha — o namespace é registrado em QUATRO lugares.** Esqueça um e o build
 > quebra (chaves tipadas) ou a chave falha silenciosa em runtime.
 
 **Edite** `web/src/i18n/index.ts`: (a) import `en`, (b) import `pt-BR`,
@@ -274,7 +282,11 @@ import type enNotices from './locales/en/notices.json'
 		notices: typeof enNotices
 ```
 
-**Gate:** `pnpm -C web lint && pnpm -C web build && pnpm -C web test:run`
+**Validação:**
+
+```sh
+pnpm -C web lint && pnpm -C web build && pnpm -C web test:run
+```
 (o `build` é o que pega chave/typed faltando).
 **Commit:** `feat(web): notices i18n namespace`
 
@@ -297,14 +309,14 @@ Adicione **três coisas** (mirror das entradas existentes):
 - quatro **permissions** (`view/create/edit/delete`) para `notices.notices` no
   `PERMISSION_SPECS`.
 
-> ⚠️ **Gotcha — admin é ROLE, não perfil.** No mock, `computePermissions()` faz
+> ⚠️ **Pegadinha — admin é ROLE, não perfil.** No mock, `computePermissions()` faz
 > curto-circuito para `role === 'ADMIN'`: ele vê **toda tela que tem `path`** e
 > carrega **toda permission**. Então, para o admin, basta adicionar a tela (com
 > `path`) + as permissions — `can('notices.notices', ...)` já fica `true`. Você só
 > precisa de um **grant de perfil** se um **não-admin** tiver que ver a tela. (O
 > "membro não vê" sai de graça: nenhum perfil de membro lista a tela.)
 
-> ⚠️ **Gotcha — substring frágil em e2e.** Evite a palavra `gym` nas descrições da
+> ⚠️ **Pegadinha — substring frágil em e2e.** Evite a palavra `gym` nas descrições da
 > seed: há e2e existente (`web/test/access-control.spec.ts`) que filtra linhas por
 > `hasText: 'gym'` e quebra se sua linha nova casar. Use algo como
 > "Notice board for members."
@@ -326,12 +338,16 @@ Adicione **três coisas** (mirror das entradas existentes):
   e da **tela** `notices.notices` (o cabeçalho da seção do menu vem de
   `catalog:modules.notices.name`).
 
-> ⚠️ **Gotcha — ordem rota × página.** A rota guardada (que importa a página
+> ⚠️ **Pegadinha — ordem rota × página.** A rota guardada (que importa a página
 > `Notices`) entra **na Fase 5**, depois que a página existe. Se você adicionar a
 > rota agora, o `build` desta fase quebra com
 > `TS2307: Cannot find module './pages/app/notices/notices'`.
 
-**Gate:** `pnpm -C web lint && pnpm -C web build && pnpm -C web test:run`
+**Validação:**
+
+```sh
+pnpm -C web lint && pnpm -C web build && pnpm -C web test:run
+```
 **Commit:** `feat(web): notices menu + permission wiring (mock seed, nav, labels)`
 
 ---
@@ -342,7 +358,15 @@ Tela única espelhando o CRUD de **Modules**: tabela `ResponsiveList` + botão "
 notice" (diálogo de criar) + ações por linha (editar via diálogo prefillado,
 excluir via `ConfirmDialog`).
 
-### 5a. PM da página — `web/src/pages/app/notices/use-notices-pm.ts`
+A página mora numa **pasta nova** — crie-a primeiro:
+
+```sh
+mkdir -p web/src/pages/app/notices
+```
+
+Todos os arquivos abaixo (5a–5d) ficam em `web/src/pages/app/notices/`.
+
+### 5a. PM da página — `use-notices-pm.ts`
 
 Server state via TanStack Query; formatação (data, label de categoria) e flags de
 permissão moram aqui, para a view ficar pura:
@@ -390,7 +414,7 @@ export function useNoticesPM() {
 }
 ```
 
-### 5b. PM do diálogo — `web/src/pages/app/notices/use-notice-dialog-pm.ts`
+### 5b. PM do diálogo — `use-notice-dialog-pm.ts`
 
 O mesmo diálogo serve criar e editar. O schema vem de um `factory(t)` memoizado em
 `i18n.language`. **A lição-âncora está no `onOpenChange`:** re-semear o form em toda
@@ -464,12 +488,12 @@ export function useNoticeDialogPM(notice?: NoticeInput) {
 }
 ```
 
-> ⚠️ **Gotcha — cold-load (a lição central).** Um `<Select>` Radix é controlado: sem
+> ⚠️ **Pegadinha — cold-load (a lição central).** Um `<Select>` Radix é controlado: sem
 > re-semear o valor na abertura, ele abre **vazio** na edição e a validação falha
 > "do nada". O `reset(defaults(notice))` no `onOpenChange` resolve. Os testes
 > **asseguram o valor semeado** (Fase 6), não só a presença.
 
-### 5c. View do diálogo — `web/src/pages/app/notices/notice-dialog.tsx`
+### 5c. View do diálogo — `notice-dialog.tsx`
 
 View pura. O `category` é um `<Select>` ligado via `Controller` (campo controlado).
 Modelo: [`screen-dialog.tsx`](../web/src/pages/app/admin/screens/screen-dialog.tsx).
@@ -537,15 +561,15 @@ export function NoticeDialog({ notice, trigger }: { notice?: NoticeInput; trigge
 }
 ```
 
-> ⚠️ **Gotcha — a11y/testes.** Associe `<Label htmlFor>` ao `id` do input/trigger.
+> ⚠️ **Pegadinha — a11y/testes.** Associe `<Label htmlFor>` ao `id` do input/trigger.
 > O helper `Field` de modules/screens **não** faz isso, então `getByLabelText` não
 > acha. Aqui o `<SelectTrigger id='category'>` + `<Label htmlFor='category'>`
 > deixam o teste de cold-load funcionar.
 
-### 5d. View da página — `web/src/pages/app/notices/notices.tsx`
+### 5d. View da página — `notices.tsx`
 
 View pura. Tabela via `ResponsiveList` (vira cards abaixo de `lg`), com colunas +
-ações por linha (editar via `NoticeDialog`, excluir via `ConfirmDialog`), gateadas
+ações por linha (editar via `NoticeDialog`, excluir via `ConfirmDialog`), liberadas
 por `pm.canEdit`/`pm.canDelete`. Modelo:
 [`modules.tsx`](../web/src/pages/app/admin/modules/modules.tsx).
 
@@ -639,14 +663,18 @@ Agora que a página existe, registre a rota. Dentro do grupo autenticado
 },
 ```
 
-**Gate:** `pnpm -C web lint && pnpm -C web build && pnpm -C web test:run`
+**Validação:**
+
+```sh
+pnpm -C web lint && pnpm -C web build && pnpm -C web test:run
+```
 **Commit:** `feat(web): notices page + dialog (PM pair) + guarded route`
 
 ---
 
 ## Fase 6 — Testes (unit/component + e2e)
 
-### 6a. Component spec (cold-load!) — `web/src/pages/app/notices/notice-dialog.spec.tsx`
+### 6a. Component spec (cold-load!) — `notice-dialog.spec.tsx` (mesma pasta da página)
 
 Stub do `@/api/notices`, abre o diálogo, **assere o valor semeado** do título e do
 Select na edição (a regressão de cold-load), e que a validação barra título vazio.
@@ -660,7 +688,7 @@ expect(screen.getByRole('combobox')).toHaveTextContent('Warning')
 (Use `renderWithProviders` de [`web/test/utils.tsx`](../web/test/utils.tsx).
 Referência: [`new-gym.spec.tsx`](../web/src/pages/app/new-gym/new-gym.spec.tsx).)
 
-### 6b. E2E (Playwright) — `web/test/notices.spec.ts`
+### 6b. E2E (Playwright) — na pasta `web/test/` **crie** `notices.spec.ts`
 
 Fluxo real no browser mock: admin entra, abre **Notices** pelo menu, **cria**
 (título + categoria via combobox), **edita** (assere cold-load do título), **exclui**;
@@ -678,11 +706,11 @@ await row.getByRole('button').first().click() // Editar
 await expect(page.getByLabel('Title')).toHaveValue('Lockers being replaced')
 ```
 
-> ⚠️ **Gotcha — botões de ícone em e2e.** `getByRole('button', { name: /edit/i })`
+> ⚠️ **Pegadinha — botões de ícone em e2e.** `getByRole('button', { name: /edit/i })`
 > não acha um botão só-ícone (ele não tem texto). Use seletor posicional na linha
 > (como acima) ou dê um `aria-label` ao botão.
 
-**Gate (toca fluxo → roda e2e):**
+**Validação (toca fluxo → roda e2e):**
 
 ```sh
 pnpm -C web lint && pnpm -C web build && pnpm -C web test:run && pnpm -C web test:e2e
@@ -694,7 +722,7 @@ pnpm -C web lint && pnpm -C web build && pnpm -C web test:run && pnpm -C web tes
 
 ## Fase 7 — Smoke no browser (obrigatório)
 
-Gates verdes não bastam: happy-dom e o auto-wait do Playwright escondem bugs de
+Validações verdes não bastam: happy-dom e o auto-wait do Playwright escondem bugs de
 cold-load de campo controlado. Exercite na mão:
 
 ```sh
@@ -718,7 +746,7 @@ Logue como **membro** (`johndoe`) e confirme que **não há** link "Notices".
 
 ## Resumo das fases (front)
 
-| Fase | Entrega | Gate |
+| Fase | Entrega | Validação |
 |------|---------|------|
 | 1 | contrato `notices.ts` + barrel | `typecheck` |
 | 2 | cliente API + mock MSW + registro | `lint+build+test:run` |
