@@ -16,6 +16,11 @@ deliverable. _(pt-BR: [README-pt-BR.md](./README-pt-BR.md).)_
 Architecture: [PROJECT.md](./PROJECT.md). Working agreement for humans + AI:
 [CLAUDE.md](./CLAUDE.md) / [AGENTS.md](./AGENTS.md) (and the per-app ones).
 
+**Adding a feature?** A step-by-step, front-first guide for adding a new
+full-stack feature without missing a step (tests, mocks, i18n, menu/permissions,
+contract, docs): [`how-to/`](./how-to/README-pt-BR.md) _(pt-BR; EN translation
+pending)_.
+
 ## Quickstart
 
 Prereqs: Node, **pnpm**, Docker (for the backend's MySQL). Each app's `.env` is

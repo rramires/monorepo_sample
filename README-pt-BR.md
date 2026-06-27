@@ -17,6 +17,10 @@ Arquitetura: [PROJECT-pt-BR.md](./PROJECT-pt-BR.md). Acordo de trabalho pra
 humanos + IA: [CLAUDE.md](./CLAUDE.md) / [AGENTS.md](./AGENTS.md) (e os de cada
 app).
 
+**Vai adicionar uma feature?** Guia passo-a-passo, front-first, pra adicionar uma
+feature full-stack nova sem esquecer etapa (testes, mocks, i18n,
+menu/permissões, contrato, docs): [`how-to/`](./how-to/README-pt-BR.md).
+
 ## Início rápido
 
 Pré-requisitos: Node, **pnpm**, Docker (pro MySQL do backend). O `.env` de cada
