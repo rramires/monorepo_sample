@@ -1,5 +1,11 @@
-export class CannotDeactivateSelfError extends Error {
+import { AppError } from './app-error'
+
+export class CannotDeactivateSelfError extends AppError {
 	constructor() {
-		super('You cannot deactivate your own account.')
+		super({
+			code: 'cannot_deactivate_self',
+			httpStatus: 400,
+			message: 'You cannot deactivate your own account.',
+		})
 	}
 }

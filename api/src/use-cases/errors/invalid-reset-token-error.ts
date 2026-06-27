@@ -1,6 +1,11 @@
-export class InvalidResetTokenError extends Error {
+import { AppError } from './app-error'
+
+export class InvalidResetTokenError extends AppError {
 	constructor() {
-		super('Invalid or expired reset token.')
-		this.name = 'InvalidResetTokenError'
+		super({
+			code: 'invalid_reset_token',
+			httpStatus: 400,
+			message: 'Invalid or expired reset token.',
+		})
 	}
 }

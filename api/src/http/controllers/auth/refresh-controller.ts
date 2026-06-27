@@ -5,6 +5,7 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { tokenDenylist } from '@/lib/token-denylist'
 import { Role } from '@/prisma-client/enums'
 import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
+import { UnauthorizedError } from '@/use-cases/errors/unauthorized-error'
 import { makeGetUserProfileUseCase } from '@/use-cases/factories/make-get-user-profile-use-case'
 
 export async function refreshController(
@@ -17,7 +18,7 @@ export async function refreshController(
 	// Reject refresh tokens already rotated (single-use) or revoked via logout —
 	// a stolen refresh cookie must not survive its first reuse.
 	if (await tokenDenylist.isRevoked(request.user.jti)) {
-		return reply.status(401).send({ message: 'Unauthorized.' })
+		throw new UnauthorizedError()
 	}
 	// Single-use: rotating consumes the presented refresh token.
 	await tokenDenylist.revoke(
@@ -38,7 +39,7 @@ export async function refreshController(
 	} catch (err) {
 		if (err instanceof ResourceNotFoundError) {
 			// Valid refresh cookie but the user no longer exists: force re-auth.
-			return reply.status(401).send({ message: 'Unauthorized.' })
+			throw new UnauthorizedError()
 		}
 		throw err
 	}

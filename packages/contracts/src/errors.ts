@@ -48,6 +48,7 @@ export const ERROR_CODES = [
 	'resource_not_found',
 	'unauthorized',
 	'forbidden',
+	'screen_unavailable',
 	// framework / handler
 	'validation_error',
 	'rate_limited',

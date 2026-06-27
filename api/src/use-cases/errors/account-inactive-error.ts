@@ -1,5 +1,11 @@
-export class AccountInactiveError extends Error {
+import { AppError } from './app-error'
+
+export class AccountInactiveError extends AppError {
 	constructor() {
-		super('Account is inactive.')
+		super({
+			code: 'account_inactive',
+			httpStatus: 403,
+			message: 'Account is inactive.',
+		})
 	}
 }

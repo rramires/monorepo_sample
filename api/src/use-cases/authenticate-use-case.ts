@@ -1,5 +1,6 @@
 import { compare } from 'bcryptjs'
 
+import { env } from '@/env'
 import { User } from '@/prisma-client'
 import { ILoginAttemptTracker } from '@/repositories/i-login-attempt-tracker'
 import { IUsersRepository } from '@/repositories/i-users-repository'
@@ -52,7 +53,7 @@ export class AuthenticateUseCase {
 		// Per-account lockout check runs before bcrypt to short-circuit CPU work on
 		// locked accounts and to prevent bcrypt-based DoS amplification attacks.
 		if (await this.loginAttemptTracker.isLocked(lockKey)) {
-			throw new TooManyAttemptsError()
+			throw new TooManyAttemptsError(env.LOGIN_LOCKOUT_MINUTES * 60)
 		}
 
 		// Always run compare(), even for unknown users, to keep timing constant

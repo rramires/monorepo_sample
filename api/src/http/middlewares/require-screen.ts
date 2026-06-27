@@ -1,6 +1,9 @@
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyRequest } from 'fastify'
 
+import { ForbiddenError } from '@/use-cases/errors/forbidden-error'
 import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
+import { ScreenUnavailableError } from '@/use-cases/errors/screen-unavailable-error'
+import { UnauthorizedError } from '@/use-cases/errors/unauthorized-error'
 import { makeGetUserPermissionsUseCase } from '@/use-cases/factories/make-get-user-permissions-use-case'
 
 // An action KEY — a bare CRUD family (`create`) or a composed `family_name`
@@ -13,7 +16,7 @@ export type ScreenAction = string
 // effect on the very next request — mirrors verifyUserRole. ADMIN bypasses
 // everything. Runs after verifyJwtMiddleware, so `request.user.sub` is set.
 function requireScreen(screenKey: string, action: ScreenAction = 'view') {
-	return async (request: FastifyRequest, reply: FastifyReply) => {
+	return async (request: FastifyRequest) => {
 		const getUserPermissions = makeGetUserPermissionsUseCase()
 
 		try {
@@ -28,19 +31,17 @@ function requireScreen(screenKey: string, action: ScreenAction = 'view') {
 			const screen = screens.find((s) => s.screen_key === screenKey)
 			if (!screen?.actions.includes(action)) {
 				// Authenticated but lacking the grant: 403, not 401.
-				return reply.status(403).send({ message: 'Forbidden.' })
+				throw new ForbiddenError()
 			}
 
 			// Granted, but the screen is killed (emergency switch) for non-admins.
 			const menuEntry = menu.find((m) => m.screen_key === screenKey)
 			if (menuEntry && !menuEntry.is_enabled) {
-				return reply.status(403).send({
-					message: 'This screen is temporarily unavailable.',
-				})
+				throw new ScreenUnavailableError()
 			}
 		} catch (err) {
 			if (err instanceof ResourceNotFoundError) {
-				return reply.status(401).send({ message: 'Unauthorized.' })
+				throw new UnauthorizedError()
 			}
 			throw err
 		}

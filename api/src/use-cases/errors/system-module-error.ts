@@ -1,5 +1,7 @@
-export class SystemModuleError extends Error {
+import { AppError } from './app-error'
+
+export class SystemModuleError extends AppError {
 	constructor(message = 'A system module cannot be modified that way.') {
-		super(message)
+		super({ code: 'system_module', httpStatus: 409, message })
 	}
 }

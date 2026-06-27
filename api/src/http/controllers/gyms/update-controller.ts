@@ -2,7 +2,6 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
 
 import { env } from '@/env'
-import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
 import { makeUpdateGymUseCase } from '@/use-cases/factories/make-update-gym-use-case'
 
 export async function updateController(
@@ -43,22 +42,15 @@ export async function updateController(
 	)
 
 	const updateGymUseCase = makeUpdateGymUseCase()
-	try {
-		const { gym } = await updateGymUseCase.execute({
-			gymId,
-			title,
-			description,
-			phone,
-			is_active,
-		})
+	const { gym } = await updateGymUseCase.execute({
+		gymId,
+		title,
+		description,
+		phone,
+		is_active,
+	})
 
-		return reply.status(200).send({
-			gym,
-		})
-	} catch (err) {
-		if (err instanceof ResourceNotFoundError) {
-			return reply.status(404).send({ message: err.message })
-		}
-		throw err
-	}
+	return reply.status(200).send({
+		gym,
+	})
 }
