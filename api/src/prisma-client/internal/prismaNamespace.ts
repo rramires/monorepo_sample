@@ -397,7 +397,8 @@ export const ModelName = {
   EmailVerification: 'EmailVerification',
   EmailChange: 'EmailChange',
   PasswordReset: 'PasswordReset',
-  RevokedToken: 'RevokedToken'
+  RevokedToken: 'RevokedToken',
+  Notice: 'Notice'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -413,7 +414,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "module" | "screen" | "profile" | "profileScreen" | "permission" | "profilePermission" | "userProfile" | "checkIn" | "gym" | "emailVerification" | "emailChange" | "passwordReset" | "revokedToken"
+    modelProps: "user" | "module" | "screen" | "profile" | "profileScreen" | "permission" | "profilePermission" | "userProfile" | "checkIn" | "gym" | "emailVerification" | "emailChange" | "passwordReset" | "revokedToken" | "notice"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1341,6 +1342,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Notice: {
+      payload: Prisma.$NoticePayload<ExtArgs>
+      fields: Prisma.NoticeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.NoticeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NoticePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.NoticeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NoticePayload>
+        }
+        findFirst: {
+          args: Prisma.NoticeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NoticePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.NoticeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NoticePayload>
+        }
+        findMany: {
+          args: Prisma.NoticeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NoticePayload>[]
+        }
+        create: {
+          args: Prisma.NoticeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NoticePayload>
+        }
+        createMany: {
+          args: Prisma.NoticeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.NoticeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NoticePayload>
+        }
+        update: {
+          args: Prisma.NoticeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NoticePayload>
+        }
+        deleteMany: {
+          args: Prisma.NoticeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.NoticeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.NoticeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NoticePayload>
+        }
+        aggregate: {
+          args: Prisma.NoticeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNotice>
+        }
+        groupBy: {
+          args: Prisma.NoticeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NoticeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.NoticeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NoticeCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1551,6 +1618,16 @@ export const RevokedTokenScalarFieldEnum = {
 export type RevokedTokenScalarFieldEnum = (typeof RevokedTokenScalarFieldEnum)[keyof typeof RevokedTokenScalarFieldEnum]
 
 
+export const NoticeScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  category: 'category',
+  created_at: 'created_at'
+} as const
+
+export type NoticeScalarFieldEnum = (typeof NoticeScalarFieldEnum)[keyof typeof NoticeScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1700,6 +1777,15 @@ export const RevokedTokenOrderByRelevanceFieldEnum = {
 } as const
 
 export type RevokedTokenOrderByRelevanceFieldEnum = (typeof RevokedTokenOrderByRelevanceFieldEnum)[keyof typeof RevokedTokenOrderByRelevanceFieldEnum]
+
+
+export const NoticeOrderByRelevanceFieldEnum = {
+  id: 'id',
+  title: 'title',
+  category: 'category'
+} as const
+
+export type NoticeOrderByRelevanceFieldEnum = (typeof NoticeOrderByRelevanceFieldEnum)[keyof typeof NoticeOrderByRelevanceFieldEnum]
 
 
 
@@ -1880,6 +1966,7 @@ export type GlobalOmitConfig = {
   emailChange?: Prisma.EmailChangeOmit
   passwordReset?: Prisma.PasswordResetOmit
   revokedToken?: Prisma.RevokedTokenOmit
+  notice?: Prisma.NoticeOmit
 }
 
 /* Types for Logging */

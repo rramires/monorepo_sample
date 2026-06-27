@@ -64,7 +64,8 @@ export const ModelName = {
   EmailVerification: 'EmailVerification',
   EmailChange: 'EmailChange',
   PasswordReset: 'PasswordReset',
-  RevokedToken: 'RevokedToken'
+  RevokedToken: 'RevokedToken',
+  Notice: 'Notice'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -254,6 +255,16 @@ export const RevokedTokenScalarFieldEnum = {
 export type RevokedTokenScalarFieldEnum = (typeof RevokedTokenScalarFieldEnum)[keyof typeof RevokedTokenScalarFieldEnum]
 
 
+export const NoticeScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  category: 'category',
+  created_at: 'created_at'
+} as const
+
+export type NoticeScalarFieldEnum = (typeof NoticeScalarFieldEnum)[keyof typeof NoticeScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -403,4 +414,13 @@ export const RevokedTokenOrderByRelevanceFieldEnum = {
 } as const
 
 export type RevokedTokenOrderByRelevanceFieldEnum = (typeof RevokedTokenOrderByRelevanceFieldEnum)[keyof typeof RevokedTokenOrderByRelevanceFieldEnum]
+
+
+export const NoticeOrderByRelevanceFieldEnum = {
+  id: 'id',
+  title: 'title',
+  category: 'category'
+} as const
+
+export type NoticeOrderByRelevanceFieldEnum = (typeof NoticeOrderByRelevanceFieldEnum)[keyof typeof NoticeOrderByRelevanceFieldEnum]
 
