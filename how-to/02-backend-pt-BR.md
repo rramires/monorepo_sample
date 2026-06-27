@@ -73,7 +73,7 @@ export * from './client.js'
 **Validação:**
 
 ```sh
-pnpm -C api lint && pnpm -C api compile && pnpm -C api test
+pnpm -C api lint:fix && pnpm -C api format && pnpm -C api compile && pnpm -C api test
 ```
 **Commit:**
 
@@ -214,7 +214,7 @@ export class PrismaNoticesRepository implements INoticesRepository {
 **Validação:**
 
 ```sh
-pnpm -C api lint && pnpm -C api compile && pnpm -C api test
+pnpm -C api lint:fix && pnpm -C api format && pnpm -C api compile && pnpm -C api test
 ```
 **Commit:**
 
@@ -358,7 +358,7 @@ describe('Notices Use Case', () => {
 **Validação** (deve subir a contagem de unit, ex.: 119 → 125):
 
 ```sh
-pnpm -C api lint && pnpm -C api compile && pnpm -C api test
+pnpm -C api lint:fix && pnpm -C api format && pnpm -C api compile && pnpm -C api test
 ```
 **Commit:**
 
@@ -517,7 +517,7 @@ app.register(noticesRoutes)
 **Validação:**
 
 ```sh
-pnpm -C api lint && pnpm -C api compile && pnpm -C api test
+pnpm -C api lint:fix && pnpm -C api format && pnpm -C api compile && pnpm -C api test
 ```
 **Commit:**
 
@@ -649,7 +649,7 @@ describe('Notices routes (e2e)', () => {
 **Validação (toca rota → e2e, MySQL up):**
 
 ```sh
-pnpm -C api lint && pnpm -C api compile && pnpm -C api test && pnpm -C api test:e2e
+pnpm -C api lint:fix && pnpm -C api format && pnpm -C api compile && pnpm -C api test && pnpm -C api test:e2e
 ```
 
 **Commit:**
@@ -712,7 +712,7 @@ pnpm -C api seeddb
 **Validação** (seed é dado, não toca rota → só o gate unit):
 
 ```sh
-pnpm -C api lint && pnpm -C api compile && pnpm -C api test
+pnpm -C api lint:fix && pnpm -C api format && pnpm -C api compile && pnpm -C api test
 ```
 
 **Commit:**

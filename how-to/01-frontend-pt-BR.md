@@ -237,7 +237,7 @@ import {
 **Validação:**
 
 ```sh
-pnpm -C web lint && pnpm -C web build && pnpm -C web test:run
+pnpm -C web lint:fix && pnpm -C web format && pnpm -C web build && pnpm -C web test:run
 ```
 
 **Commit:**
@@ -338,7 +338,7 @@ notices: typeof enNotices
 **Validação:**
 
 ```sh
-pnpm -C web lint && pnpm -C web build && pnpm -C web test:run
+pnpm -C web lint:fix && pnpm -C web format && pnpm -C web build && pnpm -C web test:run
 ```
 (o `build` é o que pega chave/typed faltando).
 **Commit:**
@@ -491,7 +491,7 @@ no objeto `screens`**:
 **Validação:**
 
 ```sh
-pnpm -C web lint && pnpm -C web build && pnpm -C web test:run
+pnpm -C web lint:fix && pnpm -C web format && pnpm -C web build && pnpm -C web test:run
 ```
 **Commit:**
 
@@ -831,7 +831,7 @@ import { Notices } from './pages/app/notices/notices'
 **Validação:**
 
 ```sh
-pnpm -C web lint && pnpm -C web build && pnpm -C web test:run
+pnpm -C web lint:fix && pnpm -C web format && pnpm -C web build && pnpm -C web test:run
 ```
 **Commit:**
 
@@ -1035,7 +1035,7 @@ link. Senha de mock: `Password1!`; usuários `admin` e `johndoe` (membro).
 **Validação (toca fluxo → roda e2e):**
 
 ```sh
-pnpm -C web lint && pnpm -C web build && pnpm -C web test:run && pnpm -C web test:e2e
+pnpm -C web lint:fix && pnpm -C web format && pnpm -C web build && pnpm -C web test:run && pnpm -C web test:e2e
 ```
 
 **Commit:**

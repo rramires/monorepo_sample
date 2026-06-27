@@ -134,22 +134,18 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 | App | Validação (antes de cada commit) |
 |-----|------------------------------|
 | `contracts` | `pnpm -C packages/contracts typecheck` |
-| `web` | `pnpm -C web lint && pnpm -C web build && pnpm -C web test:run` — e `pnpm -C web test:e2e` quando tocar rota/fluxo |
-| `api` | `pnpm -C api lint && pnpm -C api compile && pnpm -C api test` — e `pnpm -C api test:e2e` (MySQL up: `pnpm -C api compose:up`) quando tocar rota/seed |
+| `web` | `pnpm -C web lint:fix && pnpm -C web format && pnpm -C web build && pnpm -C web test:run` — e `pnpm -C web test:e2e` quando tocar rota/fluxo |
+| `api` | `pnpm -C api lint:fix && pnpm -C api format && pnpm -C api compile && pnpm -C api test` — e `pnpm -C api test:e2e` (MySQL up: `pnpm -C api compose:up`) quando tocar rota/seed |
 
-> ⚠️ **Antes de validar, rode o autofix de lint** — o `simple-import-sort` ordena
-> imports **só no `--fix`**; o `lint` puro **falha** ("Run autofix to sort these
-> imports!") se um import novo ficar fora de ordem:
+> **Por que `lint:fix && format` (e não só `lint`)?** O `lint:fix` aplica os
+> auto-fixes (ex.: o `simple-import-sort` ordena imports — o `lint` puro **falha**
+> com "Run autofix to sort these imports!"); o `format` (Prettier) padroniza o
+> estilo. Assim a validação **já resolve** ordem-de-import + formatação antes do
+> commit, e o gate da CI (`lint`/`build`/`test`) passa limpo. (Se o editor roda
+> ESLint + Prettier no save, já acontece sozinho.)
 >
-> ```sh
-> pnpm -C web lint:fix     # ou pnpm -C api lint:fix
-> ```
->
-> (Se o seu editor já roda ESLint autofix ao salvar, isso acontece sozinho.)
-
-> Dica de formatação: rode o Prettier **só nos arquivos que você tocou**
-> (`pnpm -C web exec prettier --write <caminhos>`), nunca na árvore inteira — senão
-> você varre arquivos pré-existentes não-formatados para dentro do seu commit.
+> O repo está **todo formatado**, então `pnpm -C web format` (Prettier na `src`) é
+> seguro — só toca no que você mudou, sem arrastar arquivos alheios pro seu commit.
 
 ---
 
