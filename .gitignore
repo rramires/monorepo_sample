@@ -4,3 +4,6 @@ node_modules/
 # Logs / OS cruft
 *.log
 .DS_Store
+
+# Local working doc — never committed (see api/CLAUDE.md)
+/PLAN.md
