@@ -14,6 +14,7 @@ import { gymsRoutes } from './http/controllers/gyms/routes'
 import { healthRoutes } from './http/controllers/health/routes'
 import { meRoutes } from './http/controllers/me/routes'
 import { modulesRoutes } from './http/controllers/modules/routes'
+import { noticesRoutes } from './http/controllers/notices/routes'
 import { permissionsRoutes } from './http/controllers/permissions/routes'
 import { profilesRoutes } from './http/controllers/profiles/routes'
 import { screensRoutes } from './http/controllers/screens/routes'
@@ -92,6 +93,7 @@ app.register(modulesRoutes)
 app.register(screensRoutes)
 app.register(permissionsRoutes)
 app.register(profilesRoutes)
+app.register(noticesRoutes)
 // Errors
 app.setErrorHandler((error, request, reply) => {
 	// Domain errors: the single serialization point for the `{ code, message,
