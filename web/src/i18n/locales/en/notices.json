@@ -1,0 +1,18 @@
+{
+	"pageTitle": "Notices",
+	"title": "Notices",
+	"description": "Post notices to the gym notice board.",
+	"new": "New notice",
+	"empty": "No notices found.",
+	"columns": { "title": "Title", "category": "Category", "created": "Created", "actions": "Actions" },
+	"categories": { "info": "Info", "warning": "Warning", "urgent": "Urgent" },
+	"fields": { "titleRequired": "Title is required.", "categoryRequired": "Category is required." },
+	"delete": { "title": "Delete notice", "description": "Delete \"{{title}}\"? This can't be undone.", "confirmLabel": "Delete" },
+	"dialog": {
+		"editTitle": "Edit notice", "newTitle": "New notice",
+		"description": "A notice appears on the gym notice board.",
+		"titleLabel": "Title", "categoryLabel": "Category", "selectCategory": "Select a category",
+		"save": "Save changes", "create": "Create notice"
+	},
+	"toast": { "created": "Notice created.", "updated": "Notice updated.", "deleted": "Notice deleted.", "saveError": "Could not save the notice.", "deleteError": "Could not delete the notice." }
+}

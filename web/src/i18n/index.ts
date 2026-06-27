@@ -11,6 +11,7 @@ import enCommon from './locales/en/common.json'
 import enErrors from './locales/en/errors.json'
 import enGyms from './locales/en/gyms.json'
 import enNav from './locales/en/nav.json'
+import enNotices from './locales/en/notices.json'
 import ptBRAccount from './locales/pt-BR/account.json'
 import ptBRAdmin from './locales/pt-BR/admin.json'
 import ptBRAuth from './locales/pt-BR/auth.json'
@@ -20,6 +21,7 @@ import ptBRCommon from './locales/pt-BR/common.json'
 import ptBRErrors from './locales/pt-BR/errors.json'
 import ptBRGyms from './locales/pt-BR/gyms.json'
 import ptBRNav from './locales/pt-BR/nav.json'
+import ptBRNotices from './locales/pt-BR/notices.json'
 import { setZodLocale } from './zod-locale'
 
 export const SUPPORTED_LOCALES = ['en', 'pt-BR'] as const
@@ -45,6 +47,7 @@ export const resources = {
 		gyms: enGyms,
 		admin: enAdmin,
 		errors: enErrors,
+		notices: enNotices,
 	},
 	'pt-BR': {
 		common: ptBRCommon,
@@ -56,6 +59,7 @@ export const resources = {
 		gyms: ptBRGyms,
 		admin: ptBRAdmin,
 		errors: ptBRErrors,
+		notices: ptBRNotices,
 	},
 } as const
 
@@ -76,6 +80,7 @@ i18n.use(LanguageDetector)
 			'gyms',
 			'admin',
 			'errors',
+			'notices',
 		],
 		interpolation: {
 			// React already escapes; double-escaping mangles names with markup.
