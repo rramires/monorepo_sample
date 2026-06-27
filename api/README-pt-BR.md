@@ -283,9 +283,13 @@ compostas `family_name`; um `ADMIN` recebe todas as telas com as famílias base)
 }
 ```
 
-Uma validação com falha retorna `400` com os problemas; um token inválido ou
-revogado (ou uma conta desativada) retorna `401`; a falta do papel/grant de tela
-exigido retorna `403`.
+Toda falha serializa para um envelope uniforme `{ code, message, meta? }` (mais
+`issues` nos erros de validação): `code` é uma **string `snake_case` estável** que
+o cliente localiza (os codes ficam em `@root/contracts`), `message` é um fallback
+de dev em inglês e `meta` carrega dados dinâmicos (ex.: `retryAfter`). Uma
+validação com falha retorna `400 validation_error` com os problemas; um token
+inválido ou revogado (ou uma conta desativada) retorna `401 unauthorized`; a falta
+do papel/grant de tela exigido retorna `403 forbidden`.
 
 > As **regras de validação de entrada** (tamanhos, formatos, `username`/
 > `identifier`, `MIN_TEXT_LENGTH`) são definidas pelo schema Zod de cada rota.
@@ -300,8 +304,9 @@ API, e `is_verified` só importa onde uma rota exige. Defina a flag como `true`
 para forçar.
 
 Exatamente **uma** rota é bloqueada: `POST /gyms/:gymId/check-ins`. Um usuário
-autenticado mas não verificado recebe `403 { "message": "Email not verified." }`
-ali; toda outra rota se comporta igual a `false`. O gate checa só `is_verified`
+autenticado mas não verificado recebe
+`403 { "code": "email_not_verified", "message": "Email not verified." }` ali;
+toda outra rota se comporta igual a `false`. O gate checa só `is_verified`
 (papel é irrelevante — o ADMIN do seed é verificado, então nunca trava) e o lê
 **fresh do banco**, então verificar no meio da sessão libera o usuário na hora —
 sem relogar.

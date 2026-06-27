@@ -193,11 +193,13 @@ Files (Vite loads them by mode; later files win):
 | `VITE_ENABLE_API_DELAY`    | no       | `true` (dev) · `false` (test)        | Inject a 1–3 s artificial delay per request to exercise loading states. |
 | `VITE_PASSWORD_MIN_LENGTH` | yes      | `8`                                  | Min password length on register/reset (mirror `PASSWORD_MIN_LENGTH`).   |
 | `VITE_PASSWORD_PATTERN`    | yes      | `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)…$`  | Password complexity regex (mirror `PASSWORD_PATTERN`).                  |
-| `VITE_PASSWORD_MESSAGE`    | yes      | "Must include upper- and lowercase…" | Message shown when the password fails the complexity regex.             |
 
 > The password-policy vars are **frontend UX validation only** — the API
 > re-validates server-side. Keep them in sync with the backend's `.env` so the
-> client and server agree on what a valid password is.
+> client and server agree on what a valid password is. The message shown when a
+> password fails the complexity regex is now **localized** via i18n
+> (`common:errors.passwordPattern`, en + pt-BR) — there is no longer a
+> `VITE_PASSWORD_MESSAGE` env var.
 
 ## App routes (pages)
 

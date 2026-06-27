@@ -173,10 +173,12 @@ Exemplo: **`POST /auth/login`** (login) e **`POST /gyms/:gymId/check-ins`** (rot
         │
 8. Resposta volta: controller traduz resultado/erro → status HTTP
         │
-9. setErrorHandler global (app.ts):
-     • ZodError              → 400 + issues (enxutas em produção; format() só em dev)
-     • Erro de framework     → seu próprio statusCode (429 rate-limit, 413 body-limit, 400 JSON inválido, 503 under-pressure)
-     • Erro não tratado      → 500 (request.log.error em dev; reportError() em prod)
+9. setErrorHandler global (app.ts) — o ÚNICO serializador para { code, message, meta? }:
+     • AppError (domínio)    → seu httpStatus + `code` estável + `message` + `meta?`
+     • ZodError              → 400 `validation_error` + issues (enxutas em produção; format() só em dev)
+     • Erro de framework     → seu próprio statusCode mapeado para um code (429 `rate_limited`,
+                               413 `payload_too_large`, 503 `server_under_pressure`, outros 4xx `bad_request`)
+     • Erro não tratado      → 500 `internal_server_error` (request.log.error em dev; reportError() em prod)
         │
 10. Serialização (Fastify):
      • reply.status(code).send(payload) → corpo serializado em JSON
@@ -213,7 +215,12 @@ Exemplo: **`POST /auth/login`** (login) e **`POST /gyms/:gymId/check-ins`** (rot
     - cada token recebe um `jti` (`randomUUID()`) que habilita a revogação (denylist).
     - `refreshToken` é gravado em **cookie** `httpOnly + secure + sameSite`.
     - `token` (access) volta no **corpo** da resposta.
-5. **Erros**: `InvalidCredentialsError` → `401`; demais → re-lançados → `500`.
+5. **Erros**: o controller não mapeia mais erros — os erros de domínio
+   **propagam** para o `setErrorHandler` central, que serializa o envelope
+   `{ code, message, meta? }`. `InvalidCredentialsError` → `401 invalid_credentials`;
+   `TooManyAttemptsError` → `429 too_many_login_attempts` (`meta.retryAfter`);
+   `AccountInactiveError` → `403 account_inactive`; qualquer coisa inesperada →
+   `500 internal_server_error`.
 
 ### 4.3 Exemplo detalhado — `POST /gyms/:gymId/check-ins` (protegido)
 
@@ -228,13 +235,16 @@ Exemplo: **`POST /auth/login`** (login) e **`POST /gyms/:gymId/check-ins`** (rot
     - Já existe check-in **no mesmo dia**? então `MaxCheckInsReachedError`.
     - Caso ok → cria o check-in.
 5. Resposta `201` com o check-in criado.
-6. **Erros** — mapeados nos controllers via `instanceof` (o padrão da casa, como
-   `ResourceNotFoundError`/`UserAlreadyExistsError` nos demais), então esses
+6. **Erros** — os erros de domínio agora **propagam** para o `setErrorHandler`
+   central (os controllers não os mapeiam mais por erro via `instanceof`). Cada um
+   é um `AppError` que carrega seu próprio status + `code` estável, então esses
    resultados de negócio esperados retornam `4xx` e **nunca** caem no `500`
-   global: `ResourceNotFoundError` → `404`, `MaxDistanceError` → `400`,
-   `MaxCheckInsReachedError` → `409`. Validar um check-in após a janela de
-   **20 minutos** (`validate-controller.ts`) → `LateCheckInValidationError` →
-   `409`. Cada resposta carrega a `message` do erro.
+   global: `ResourceNotFoundError` → `404 resource_not_found`, `MaxDistanceError`
+   → `400 max_distance`, `MaxCheckInsReachedError` → `409 max_check_ins_reached`.
+   Validar um check-in após a janela de **20 minutos** (`validate-controller.ts`)
+   → `LateCheckInValidationError` → `409 late_check_in_validation`. O handler
+   serializa cada um em `{ code, message, meta? }` (a `message` em inglês é
+   fallback de dev; o frontend localiza pelo `code`).
 
 ### 4.4 Regras de validação (entrada)
 
@@ -329,7 +339,7 @@ locais. Veja o [`PROJECT-pt-BR.md`](../PROJECT-pt-BR.md) do monorepo e
   libera a requisição só quando o usuário `can()` executar `action`
   (uma CHAVE de ação livre — família CRUD pura como `create` ou composta
   `family_name` como `create_checkin`) na `screenKey` **e** a tela não está morta
-  (`Screen.is_enabled=false` → `403 "This screen is temporarily unavailable."`
+  (`Screen.is_enabled=false` → `403 code: "screen_unavailable"`
   para não-admins). Um `ADMIN` ignora toda checagem. Os claims `role`/grants
   assinados nunca são confiados para autorização, então uma mudança de grant,
   perfil ou papel passa a valer na próxima requisição. Roda depois do
@@ -547,11 +557,12 @@ módulo/tela/perfil).
   requisição ele chama o `GetUserPermissionsUseCase` para computar as permissões
   **efetivas** do chamador e libera só quando a flag `action` da tela
   correspondente é `true` **e** a tela não está morta (`is_enabled=false` →
-  `403 { "message": "This screen is temporarily unavailable." }` para não-admins).
-  Lido fresh do banco a cada requisição (nunca do JWT), então uma mudança de
-  grant/perfil vale na próxima requisição. O `ADMIN` retorna cedo (ignora).
-  Autenticado-mas-sem-grant → `403 { "message": "Forbidden." }`; um usuário
-  desconhecido (`ResourceNotFoundError`) → `401`.
+  `403 { "code": "screen_unavailable", "message": "This screen is temporarily unavailable." }`
+  para não-admins, lançado como `ScreenUnavailableError`). Lido fresh do banco a
+  cada requisição (nunca do JWT), então uma mudança de grant/perfil vale na próxima
+  requisição. O `ADMIN` retorna cedo (ignora). Autenticado-mas-sem-grant →
+  `403 { "code": "forbidden", "message": "Forbidden." }` (`ForbiddenError`); um
+  usuário desconhecido (`ResourceNotFoundError`) → `401 { "code": "unauthorized", … }`.
 - **Permissões efetivas** (`get-user-permissions-use-case.ts`): para um não-admin,
   o `actions: string[]` de cada tela é a **união das chaves de ação concedidas em
   todos os grants dos perfis do usuário** — `view` é uma chave concedida explícita
@@ -574,11 +585,12 @@ módulo/tela/perfil).
   cada requisição e rejeita (`401`) uma conta inexistente ou desativada
   (`is_active=false`) — um usuário demitido é cortado na hora, não quando o token
   expira. O login também é recusado: o `AuthenticateUseCase` lança
-  `AccountInactiveError` → `403 { "message": "Account is inactive." }`.
+  `AccountInactiveError` → `403 { "code": "account_inactive", "message": "Account is inactive." }`.
 - **Soft-delete de academia (`Gym.is_active`):** `CheckIn.gym_id` é uma FK
   obrigatória sem cascade, então uma academia nunca é apagada de verdade (quebraria
   o histórico). Uma academia desativada recusa check-ins (`CheckInUseCase` →
-  `InactiveGymError` → `403`) e some do browse do membro — `findManyNearby` e
+  `InactiveGymError` → `403 { "code": "gym_inactive", … }`) e some do browse do
+  membro — `findManyNearby` e
   `searchMany` são só-ativas por padrão. Cada um aceita um flag `includeInactive`
   que os controllers de busca/nearby honram **só para gestores de academia**
   (`gym.gyms` `edit`, ADMIN ignora) via o gate compartilhado
@@ -587,8 +599,8 @@ módulo/tela/perfil).
   "ver todas" do gestor (sem geo, paginada). O `PATCH /gyms/:gymId` alterna
   `is_active` (desativar / reativar).
 - **Kill switch vs. disable.** O `Screen.is_enabled` é o **kill switch de runtime**
-  (eixo 2): desligá-lo bloqueia todo não-admin **na hora** (o guard `403` com "This
-  screen is temporarily unavailable.") — uma alavanca de emergência, sem precisar
+  (eixo 2): desligá-lo bloqueia todo não-admin **na hora** (o guard `403` com
+  `code: "screen_unavailable"`) — uma alavanca de emergência, sem precisar
   reconceder. O `is_active` (em `Module`/`Screen`/`Profile`; o `User` já tinha) é o
   **disable de ciclo de vida** (eixo 3): um registro inativo é escondido dos
   pickers de "adicionar" abaixo dele na hierarquia, mas atribuições existentes
@@ -616,8 +628,9 @@ módulo/tela/perfil).
   screens." (`ModuleHasScreensError`). As permissões (não concedidas) de uma tela
   **deletável** caem em `Cascade` com ela. O `Profile.default_screen_id` é
   `SetNull` se a sua tela inicial for removida.
-- **Mapeamento de erros do CRUD** (controllers, via `instanceof`):
-  `ResourceNotFoundError` → `404`; os `409` de em-uso acima; editar/excluir um
+- **Mapeamento de erros do CRUD** (cada erro é um `AppError` que carrega seu
+  status + code; eles **propagam** para o handler central — sem `instanceof` por
+  controller): `ResourceNotFoundError` → `404`; os `409` de em-uso acima; editar/excluir um
   perfil/módulo/tela/permissão de sistema → `409` (`SystemProfileError` /
   `SystemModuleError` / `SystemScreenError` / `SystemPermissionError`); uma ação de
   permissão duplicada (`UNIQUE(screen_id, action)`) → `409`
@@ -808,6 +821,19 @@ app **não sobe** com config inválida. Variáveis: `NODE_ENV`, `PORT`, `JWT_SEC
 - **`reportError()`** (`src/lib/report-error.ts`) é a **porta única** de report de
   erro: hoje loga via pino; troque o corpo por Sentry/Datadog/etc. sem mexer nos
   call sites. O `setErrorHandler` chama `reportError(error)` no ramo de produção.
+- **Envelope de erro.** Toda falha serializa para `{ code, message, meta? }`
+  (mais `issues` nos erros de validação). `code` é uma **string `snake_case`
+  estável** (uma por classe de erro — genéricos seguem genéricos:
+  `resource_not_found`, `unauthorized`, `forbidden`, `validation_error`);
+  `message` é **só um fallback de dev em inglês**; `meta` carrega dados dinâmicos
+  (`retryAfter` para lockout de login / cooldown de reenvio, `count` para
+  conflitos de delete em-uso, `action` para permissão duplicada). Os codes + seus
+  schemas Zod ficam em `@root/contracts` (`errors.ts`: `ERROR_CODES`,
+  `errorResponseSchema`), então o frontend localiza pelo `code` em vez da message
+  crua. Os erros de domínio estendem um `AppError` base
+  (`src/use-cases/errors/app-error.ts`) que guarda `code` + `httpStatus` + `meta`,
+  e o `setErrorHandler` central é o **único** lugar que monta o envelope
+  (§4.1 passo 9).
 
 ### 9.3 Graceful shutdown
 
