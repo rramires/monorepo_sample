@@ -41,7 +41,7 @@ export const createPermissionMock = http.post<{ screenId: string }>(
 		const screen = screens.find((s) => s.id === params.screenId)
 		if (!screen) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -51,7 +51,7 @@ export const createPermissionMock = http.post<{ screenId: string }>(
 		)
 		if (!parsed.success) {
 			return HttpResponse.json(
-				{ message: 'Validation error.' },
+				{ code: 'validation_error', message: 'Validation error.' },
 				{ status: 400 },
 			)
 		}
@@ -63,7 +63,9 @@ export const createPermissionMock = http.post<{ screenId: string }>(
 		if (dup) {
 			return HttpResponse.json(
 				{
+					code: 'duplicate_permission_action',
 					message: `This screen already has a "${parsed.data.action}" permission.`,
+					meta: { action: parsed.data.action },
 				},
 				{ status: 409 },
 			)
@@ -95,7 +97,7 @@ export const updatePermissionMock = http.patch<{ id: string }>(
 		const permission = permissions.find((p) => p.id === params.id)
 		if (!permission) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -105,7 +107,7 @@ export const updatePermissionMock = http.patch<{ id: string }>(
 		)
 		if (!parsed.success) {
 			return HttpResponse.json(
-				{ message: 'Validation error.' },
+				{ code: 'validation_error', message: 'Validation error.' },
 				{ status: 400 },
 			)
 		}
@@ -116,6 +118,7 @@ export const updatePermissionMock = http.patch<{ id: string }>(
 			if (permission.is_system) {
 				return HttpResponse.json(
 					{
+						code: 'system_permission',
 						message:
 							"A system permission's action cannot be changed.",
 					},
@@ -131,7 +134,9 @@ export const updatePermissionMock = http.patch<{ id: string }>(
 			if (dup) {
 				return HttpResponse.json(
 					{
+						code: 'duplicate_permission_action',
 						message: `This screen already has a "${nextAction}" permission.`,
+						meta: { action: nextAction },
 					},
 					{ status: 409 },
 				)
@@ -155,7 +160,7 @@ export const deletePermissionMock = http.delete<{ id: string }>(
 		const index = permissions.findIndex((p) => p.id === params.id)
 		if (index === -1) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -163,7 +168,10 @@ export const deletePermissionMock = http.delete<{ id: string }>(
 		// System permissions are protected from deletion.
 		if (permissions[index].is_system) {
 			return HttpResponse.json(
-				{ message: 'A system permission cannot be deleted.' },
+				{
+					code: 'system_permission',
+					message: 'A system permission cannot be deleted.',
+				},
 				{ status: 409 },
 			)
 		}
@@ -176,7 +184,9 @@ export const deletePermissionMock = http.delete<{ id: string }>(
 		if (granted > 0) {
 			return HttpResponse.json(
 				{
+					code: 'permission_in_use',
 					message: `Granted to ${granted} profile(s). Remove it from those profiles first.`,
+					meta: { count: granted },
 				},
 				{ status: 409 },
 			)

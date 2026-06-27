@@ -12,7 +12,7 @@ export const requestEmailChangeMock = http.post<never, RequestEmailChangeBody>(
 		const auth = request.headers.get('Authorization')
 		if (!auth) {
 			return HttpResponse.json(
-				{ message: 'Unauthorized.' },
+				{ code: 'unauthorized', message: 'Unauthorized.' },
 				{ status: 401 },
 			)
 		}
@@ -23,9 +23,10 @@ export const requestEmailChangeMock = http.post<never, RequestEmailChangeBody>(
 		if (email === 'cooldown@example.com') {
 			return HttpResponse.json(
 				{
+					code: 'resend_cooldown',
 					message:
 						'Please wait before requesting another verification email.',
-					retryAfter: 60,
+					meta: { retryAfter: 60 },
 				},
 				{ status: 429 },
 			)
@@ -34,7 +35,7 @@ export const requestEmailChangeMock = http.post<never, RequestEmailChangeBody>(
 		// An address already taken returns the conflict the backend would.
 		if (users.some((user) => user.email === email)) {
 			return HttpResponse.json(
-				{ message: 'E-mail already exists.' },
+				{ code: 'email_already_exists', message: 'E-mail already exists.' },
 				{ status: 409 },
 			)
 		}

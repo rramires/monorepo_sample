@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw'
 
 const INVALID_TOKEN = {
+	code: 'invalid_verification_token',
 	message: 'Verification token is invalid or has already been used.',
 }
 
@@ -11,7 +12,7 @@ export const confirmEmailChangeByOtpMock = http.post<never, { code: string }>(
 		const auth = request.headers.get('Authorization')
 		if (!auth) {
 			return HttpResponse.json(
-				{ message: 'Unauthorized.' },
+				{ code: 'unauthorized', message: 'Unauthorized.' },
 				{ status: 401 },
 			)
 		}

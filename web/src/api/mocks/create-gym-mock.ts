@@ -13,7 +13,10 @@ export const createGymMock = http.post<never, CreateGymBody>(
 			request.headers.get('Authorization') !==
 			'Bearer mock-admin-jwt-token'
 		) {
-			return HttpResponse.json({ message: 'Forbidden.' }, { status: 403 })
+			return HttpResponse.json(
+				{ code: 'forbidden', message: 'Forbidden.' },
+				{ status: 403 },
+			)
 		}
 
 		const body = await request.json()

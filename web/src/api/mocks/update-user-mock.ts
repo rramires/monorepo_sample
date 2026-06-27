@@ -23,7 +23,7 @@ export const updateUserMock = http.patch<{ userId: string }, UpdateUserBody>(
 			body.is_active === undefined
 		) {
 			return HttpResponse.json(
-				{ message: 'Provide at least one field to update.' },
+				{ code: 'validation_error', message: 'Provide at least one field to update.' },
 				{ status: 400 },
 			)
 		}
@@ -32,6 +32,7 @@ export const updateUserMock = http.patch<{ userId: string }, UpdateUserBody>(
 		if (body.email !== undefined && body.is_verified === true) {
 			return HttpResponse.json(
 				{
+					code: 'validation_error',
 					message:
 						'Cannot verify a newly-changed email in the same request.',
 				},
@@ -42,7 +43,7 @@ export const updateUserMock = http.patch<{ userId: string }, UpdateUserBody>(
 		const user = findUser(params.userId)
 		if (!user) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -54,7 +55,7 @@ export const updateUserMock = http.patch<{ userId: string }, UpdateUserBody>(
 			body.role !== user.role
 		) {
 			return HttpResponse.json(
-				{ message: 'You cannot change your own role.' },
+				{ code: 'cannot_change_own_role', message: 'You cannot change your own role.' },
 				{ status: 400 },
 			)
 		}
@@ -71,7 +72,7 @@ export const updateUserMock = http.patch<{ userId: string }, UpdateUserBody>(
 		)
 		if (conflict) {
 			return HttpResponse.json(
-				{ message: 'E-mail already exists.' },
+				{ code: 'email_already_exists', message: 'E-mail already exists.' },
 				{ status: 409 },
 			)
 		}

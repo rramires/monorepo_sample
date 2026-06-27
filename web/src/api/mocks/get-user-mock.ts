@@ -14,7 +14,7 @@ export const getUserMock = http.get<{ userId: string }>(
 		const user = findUser(params.userId)
 		if (!user) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}

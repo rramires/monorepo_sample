@@ -15,7 +15,7 @@ export const getUserProfilesMock = http.get<{ id: string }>(
 
 		if (!findUser(params.id)) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -37,7 +37,7 @@ export const setUserProfilesMock = http.put<{ id: string }>(
 
 		if (!findUser(params.id)) {
 			return HttpResponse.json(
-				{ message: 'Resource not found.' },
+				{ code: 'resource_not_found', message: 'Resource not found.' },
 				{ status: 404 },
 			)
 		}
@@ -47,7 +47,7 @@ export const setUserProfilesMock = http.put<{ id: string }>(
 		)
 		if (!parsed.success) {
 			return HttpResponse.json(
-				{ message: 'Validation error.' },
+				{ code: 'validation_error', message: 'Validation error.' },
 				{ status: 400 },
 			)
 		}

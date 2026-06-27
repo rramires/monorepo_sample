@@ -10,7 +10,7 @@ export const checkInsHistoryMock = http.get(
 		const userId = userIdFromAuth(request.headers.get('Authorization'))
 		if (!userId) {
 			return HttpResponse.json(
-				{ message: 'Unauthorized.' },
+				{ code: 'unauthorized', message: 'Unauthorized.' },
 				{ status: 401 },
 			)
 		}
