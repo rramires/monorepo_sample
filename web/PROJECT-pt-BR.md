@@ -104,7 +104,7 @@ guarda só estado de sessão/UI.
 ### 2.4 Hierarquia de componentes (a cascata)
 
 Quando uma peça de UI é necessária, desça esta escada — nunca pule direto para
-CSS customizado (do `TUTORIAL_02_shadcn.md`):
+CSS customizado:
 
 1. Primeiro tente um componente do **shadcn/ui**.
 2. Se não existir, use um primitivo do
@@ -508,7 +508,7 @@ Um formulário cujos defaults chegam de uma busca assíncrona (a página de edi�
 usuário do admin) acertou bugs reais que **só um smoke manual no navegador
 pegou** — happy-dom renderiza valores Radix de forma ávida e o auto-wait do
 Playwright espera os bugs transitórios passarem. Preserve estas correções ao
-replicar (o `TUTORIAL_10` tem o relato completo):
+replicar:
 
 1. **Semeie pela prop `values`**, não com `reset()` num `useEffect` — `reset`
    deixa campos ligados a `Controller` desatualizados.
@@ -606,7 +606,7 @@ portal lazy), e o auto-wait do Playwright pode esperar um bug transitório de
 navegação passar. Bugs no **valor semeado em cold-load** de campos controlados
 podem passar nas duas suítes e só aparecer num **navegador real**. Lição: afira o
 **valor semeado** dos campos controlados e faça smoke da navegação entre entidades
-na mão. Veja §6 e o `TUTORIAL_10`.
+na mão. Veja §6.
 
 ---
 

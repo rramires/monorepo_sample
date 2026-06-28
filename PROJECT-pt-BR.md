@@ -25,7 +25,7 @@ monorepo_sample/
   `api/README*`, `api/PROJECT*`, `api/CLAUDE.md`.
 - `web/` — cliente do `api/`, construído **mock-first** (MSW) pra UI ser
   desenvolvida e testada sem o backend de pé. Docs: `web/README*`,
-  `web/PROJECT*`, `web/CLAUDE.md` e o histórico `web/docs/TUTORIAL_*`.
+  `web/PROJECT*`, `web/CLAUDE.md`.
 - `packages/contracts/` — veja o [README](./packages/contracts/README-pt-BR.md).
 
 ## 2. Workspace pnpm único

@@ -24,12 +24,6 @@ docs) veja [CLAUDE.md](CLAUDE.md).
 (Radix) · React Router 7 · TanStack Query 5 · React Hook Form + Zod 4 · MSW ·
 Vitest · Playwright
 
-> **Construído como tutorial.** Esta app foi montada passo a passo em dez guias
-> em [`docs/`](./docs) — `TUTORIAL_01_setup.md` … `TUTORIAL_10_edit_permissions.md`.
-> Eles são o "porquê"
-> narrativo por trás de cada padrão documentado aqui; leia-os para o raciocínio,
-> leia o `PROJECT.md` para a fotografia do estado atual.
-
 ## Funcionalidades
 
 - **Mock-first / frontend-first** — cada endpoint tem um handler MSW em
@@ -268,8 +262,7 @@ O handler de mock de cada página em `src/api/mocks/` o espelha.
 > **Ponto cego do mock.** happy-dom e o auto-wait do Playwright podem ambos
 > esconder um bug real de cold-load em campos Radix controlados (um
 > `Select`/`Switch` que semeia o valor de forma assíncrona). Alguns bugs só
-> aparecem num **smoke manual no navegador** — veja o §Formulários do `PROJECT.md`
-> e o callout do `TUTORIAL_10`.
+> aparecem num **smoke manual no navegador** — veja o §Formulários do `PROJECT.md`.
 
 ## Verificação final
 

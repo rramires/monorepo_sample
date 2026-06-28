@@ -756,8 +756,7 @@ loading/empty/error, **cold-load** of the Select on edit, create/edit/delete.
 
 1. **Review the docs in both languages** for each app you touched:
    `api/README*.md` + `api/PROJECT*.md` (route table, models, env) and
-   `web/README*.md` + `web/PROJECT*.md` (route/screen table, features). The
-   `web/docs/TUTORIAL_*` are **frozen** — don't edit them.
+   `web/README*.md` + `web/PROJECT*.md` (route/screen table, features).
 2. **Stop and let the user** test in the browser and **authorize the merge**. Only then:
 
    ```sh

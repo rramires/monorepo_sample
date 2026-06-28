@@ -142,3 +142,16 @@ always flow through an **interface** injected by a **factory**. Cross-cutting
 state (token denylist, login lockout, verified cache, password-changed
 registry) lives behind an async seam so it can be swapped for Redis without
 touching call sites. Full details in `PROJECT.md`.
+
+## Build order — in-memory first (project rule)
+
+The backend half of the monorepo's **mock-first** flow (root `CLAUDE.md`
+§Methodology). For any new feature, build in this order — it is the **rule**, not a
+preference:
+
+1. **In-memory repository first** — implement the `I…Repository` interface with an
+   in-memory impl under `src/repositories/in-memory/`, then write the **use-case unit
+   spec** against it and get it **green** (no database).
+2. **Prisma repository next** — only after the use-case is unit-green, add the
+   `src/repositories/prisma/` impl, wire it through the **factory**, then the route +
+   e2e. The `how-to/` guide (Fases 2–5) is the worked example.

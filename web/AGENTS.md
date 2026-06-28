@@ -7,8 +7,7 @@ level up), not this folder.
 - **Doctrine:** read this app's [CLAUDE.md](CLAUDE.md) and the root
   [../CLAUDE.md](../CLAUDE.md) — they govern the workspace, the shared contract,
   branching, commits, merges, and push.
-- **Architecture:** [PROJECT.md](PROJECT.md). Build history (how this app was
-  assembled, step by step): [docs/](docs). Shared contract:
+- **Architecture:** [PROJECT.md](PROJECT.md). Shared contract:
   [../packages/contracts/README.md](../packages/contracts/README.md).
 - **Resume state:** the monorepo keeps a single checkpoint at the root —
   [../HANDOFF.md](../HANDOFF.md).

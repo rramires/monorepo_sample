@@ -102,7 +102,7 @@ only session/UI state.
 ### 2.4 Component hierarchy (the cascade)
 
 When a UI piece is needed, descend this ladder — never skip straight to custom
-CSS (from `TUTORIAL_02_shadcn.md`):
+CSS:
 
 1. First try a **shadcn/ui** component.
 2. If it doesn't exist, use a **[Radix UI](https://www.radix-ui.com/primitives)**
@@ -502,7 +502,7 @@ the token↔user mapping; the `*-mock.ts` handlers serve `/modules`, `/screens`,
 A form whose defaults arrive from an async fetch (the admin user-edit page) hit
 real bugs that **only a manual browser smoke caught** — happy-dom renders Radix
 values eagerly and Playwright's auto-wait waits transient bugs out. Preserve
-these fixes when replicating (`TUTORIAL_10` has the full write-up):
+these fixes when replicating:
 
 1. **Seed via the `values` prop**, not `reset()` in a `useEffect` — `reset` leaves
    `Controller`-bound fields stale.
@@ -595,7 +595,7 @@ happy-dom renders Radix `Select`/`Switch` values eagerly (no lazy portal), and
 Playwright's auto-wait can wait out a transient navigation bug. Bugs in the
 **cold-load seeded value** of controlled fields can pass both suites and only
 appear in a **real browser**. Lesson: assert the **seeded value** of controlled
-fields, and smoke-test cross-entity navigation by hand. See §6 and `TUTORIAL_10`.
+fields, and smoke-test cross-entity navigation by hand. See §6.
 
 ---
 

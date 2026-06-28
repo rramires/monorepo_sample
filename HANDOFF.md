@@ -58,8 +58,7 @@ Doctrine: [`CLAUDE.md`](./CLAUDE.md) (root) + [`web/CLAUDE.md`](./web/CLAUDE.md)
 [`api/CLAUDE.md`](./api/CLAUDE.md). Safety belt: **never `git push`** (only the
 maintainer) · never commit without the gate green (`lint:fix && format && build &&
 test`) · branch off `master`, `--no-ff` merge · docs-only may go straight to `master`
-· confirm before anything irreversible. Reply pt-BR; UI text via i18n;
-`web/docs/TUTORIAL_*` frozen.
+· confirm before anything irreversible. Reply pt-BR; UI text via i18n.
 
 ## Deeper memory
 

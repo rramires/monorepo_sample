@@ -22,7 +22,7 @@ commit per phase, and let the user own the merge and the push.
 1. **Local branch per task**, off `master`. **Never commit code directly to
    `master`** — always branch first. Branches stay local until the user pushes.
     - **Exception — docs-only changes** (`README*`, `PROJECT*`, `CLAUDE.md`,
-      `TUTORIAL_*`, with **no code**) may be committed straight to `master`.
+      with **no code**) may be committed straight to `master`.
 2. **Commit per phase / per section** — one coherent step per commit, created
    **right after its gate passes**. Stage narrowly: `git add src` (plus
    `package.json`/lockfile when a dependency was installed, plus the spec file
@@ -112,7 +112,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
   internationalized (en-US + pt-BR) — every label, button, toast, page title,
   placeholder and aria-label resolves through `t()` / `<Trans>`. No English (or
   Portuguese) literal in JSX. See **Internationalization** below + `PROJECT.md`.
-- **Tutorial/explanatory prose is pt-BR** (the `TUTORIAL_*` guides, and your
+- **Explanatory prose is pt-BR** (the `how-to/` guides' pt-BR pair, and your
   conversation with the user).
 
 ## Internationalization (i18n)
@@ -154,7 +154,7 @@ user-facing text:
 - **Assert the seeded value of controlled fields** (Radix `Select`/`Switch`,
   `input-otp`), not just their presence. happy-dom + Playwright auto-wait can
   hide cold-load seeding bugs — finish risky form work with a **manual browser
-  smoke** (see PROJECT.md §6 / §9.3 and `TUTORIAL_10`).
+  smoke** (see PROJECT.md §6 / §9.3).
 
 ## Docs — always both languages
 
@@ -178,6 +178,12 @@ pnpm dev         # real-API mode, needs solid_api_sample on :3333 (+ seeded admi
 A route-/form-touching change is only "done" after a manual smoke in both modes
 (at least mock), watching loading/empty/error states and controlled-field cold
 loads.
+
+**Mock-first hand-off (project rule).** This is the front half of the monorepo's
+mock-first flow (root `CLAUDE.md` §Methodology): build the screen against MSW, then
+**stop and let the user smoke it at `dev:test` (`:5001`) and approve** before any
+backend work starts. The backend is then built **in-memory repo first → test →
+Prisma** (see `api/CLAUDE.md`).
 
 ## Shared contract (`@root/contracts`)
 

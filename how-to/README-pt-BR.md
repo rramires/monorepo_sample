@@ -174,8 +174,7 @@ Cite/confira em cada ponto relevante. Os guias repetem isto inline onde importa.
   `code` estável e são traduzidos por `messageFromError` no front.
 - **Docs nos 2 idiomas.** Toda mudança de doc cai em `README.md` + `README-pt-BR.md`
   e `PROJECT.md` + `PROJECT-pt-BR.md` coerentes (tabela de rotas, env, árvore,
-  features). Os `web/docs/TUTORIAL_*` são narrativa de build **congelada** — não
-  edite.
+  features).
 - **Texto de UI em inglês; prosa em pt-BR.**
 - **Commits:** Conventional Commits, um por fase, validação verde antes; **nunca push**
   (só o usuário). Respeite o `CLAUDE.md`/`AGENTS.md` de cada app.

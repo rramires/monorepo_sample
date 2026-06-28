@@ -24,12 +24,6 @@ For **how to work on this repo** (branching, commits, gates, doc rules) see
 (Radix) · React Router 7 · TanStack Query 5 · React Hook Form + Zod 4 · MSW ·
 Vitest · Playwright
 
-> **Built as a tutorial.** This app was assembled step by step across ten
-> guides in [`docs/`](./docs) — `TUTORIAL_01_setup.md` …
-> `TUTORIAL_10_edit_permissions.md`. They are
-> the narrative "why" behind every pattern documented here; read them for the
-> reasoning, read `PROJECT.md` for the snapshot.
-
 ## Features
 
 - **Mock-first / frontend-first** — every endpoint has an MSW handler under
@@ -266,7 +260,7 @@ mock handler in `src/api/mocks/` mirrors it.
 > **Mock blind spot.** happy-dom and Playwright's auto-wait can both hide a real
 > cold-load bug in controlled Radix fields (a `Select`/`Switch` that seeds its
 > value asynchronously). Some bugs only surface in a **manual browser smoke** —
-> see `PROJECT.md` §Forms and the `TUTORIAL_10` callout.
+> see `PROJECT.md` §Forms.
 
 ## Final verification
 

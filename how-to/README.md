@@ -174,7 +174,7 @@ Cite/check it at every relevant point. The guides repeat this inline where it ma
   `code` and are translated by `messageFromError` on the front.
 - **Docs in both languages.** Every doc change lands in `README.md` + `README-pt-BR.md`
   and `PROJECT.md` + `PROJECT-pt-BR.md`, kept consistent (route table, env, tree,
-  features). The `web/docs/TUTORIAL_*` are a **frozen** build narrative — don't edit them.
+  features).
 - **UI text in English; prose in pt-BR.**
 - **Commits:** Conventional Commits, one per phase, validation green first; **never push**
   (only the user). Respect each app's `CLAUDE.md`/`AGENTS.md`.

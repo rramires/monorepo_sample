@@ -754,8 +754,7 @@ loading/empty/error, **cold-load** do Select na edição, criar/editar/excluir.
 
 1. **Revise as docs nos 2 idiomas** de cada app que você tocou:
    `api/README*.md` + `api/PROJECT*.md` (tabela de rotas, models, env) e
-   `web/README*.md` + `web/PROJECT*.md` (tabela de rotas/telas, features). Os
-   `web/docs/TUTORIAL_*` são **congelados** — não edite.
+   `web/README*.md` + `web/PROJECT*.md` (tabela de rotas/telas, features).
 2. **Pare e deixe o usuário** testar no browser e **autorizar o merge**. Só então:
 
    ```sh

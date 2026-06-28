@@ -37,11 +37,23 @@ When changing request/response shapes, think contract-first:
 - **Env-driven rules are factories** — inject env per side, never at import.
 - Adopt in order **backend → frontend → MSW**, with **green gates per step**.
 
+## Methodology — mock-first, end to end (the build flow)
+
+New screens, changes and features are built **mock-first**, in this order — it is the
+**rule**, not a preference (the [`how-to/`](./how-to/) guide is the worked example):
+
+1. **Front first.** Build the UI against the **MSW mock** until it works end-to-end at
+   `pnpm -C web dev:test` (`:5001`). **Stop and let the user smoke it in the browser and
+   approve** before any backend work.
+2. **Backend second, in-memory first.** Implement the **in-memory repository first**, get
+   the use-case **unit-green** against it, **then** write the Prisma repository and wire the
+   real route. Swap the mock for the real API **last** and re-validate the same screen.
+
 ## Golden workflow (every change) — local, no PR
 
 1. **Local branch off `master`.** Never commit **code** to `master` directly.
    - **Exception — docs-only** (`README*`, `PROJECT*`, `CLAUDE.md`, `AGENTS.md`,
-     `TUTORIAL_*`, the contracts `README*`, with **no code**) may go straight to
+     the contracts `README*`, with **no code**) may go straight to
      `master` as their own `docs:` commit.
 2. **Commit per phase** — one coherent step, right after its gate passes.
    Conventional Commits. Stage narrowly. Never leave a finished phase
@@ -73,7 +85,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## Docs strategy (hybrid)
 
 Each app keeps its **own** full doc set (`README*`, `PROJECT*`, `CLAUDE.md`,
-`AGENTS.md`, plus `web/docs/TUTORIAL_*`). State lives in the root `HANDOFF.md`
+`AGENTS.md`). State lives in the root `HANDOFF.md`
 (single checkpoint). The root only **orients and
 points** — it does not duplicate app internals. Project docs are **EN + PT**
 (`README.md` + `README-pt-BR.md`, `PROJECT.md` + `PROJECT-pt-BR.md`). Finish a
