@@ -58,13 +58,22 @@ New screens, changes and features are built **mock-first**, in this order — it
 2. **Commit per phase** — one coherent step, right after its gate passes.
    Conventional Commits. Stage narrowly. Never leave a finished phase
    uncommitted; never batch unrelated work.
-3. **Gate before every commit** (touched app must be green):
+3. **Gate before every commit** (touched app must be green). **Always run
+   `lint:fix` then `format` first**, then the build/compile + tests — never plain
+   `lint`:
 
    | App | Gate |
    |-----|------|
-   | `api` | `pnpm -C api lint && pnpm -C api compile && pnpm -C api test` (+ `test:e2e` for HTTP/routes) |
-   | `web` | `pnpm -C web lint && pnpm -C web build && pnpm -C web test:run` (+ `test:e2e` for flows) |
+   | `api` | `pnpm -C api lint:fix && pnpm -C api format && pnpm -C api compile && pnpm -C api test` (+ `test:e2e` for HTTP/routes) |
+   | `web` | `pnpm -C web lint:fix && pnpm -C web format && pnpm -C web build && pnpm -C web test:run` (+ `test:e2e` for flows) |
    | `contracts` | `pnpm -C packages/contracts typecheck` |
+
+   > **Why `lint:fix && format`, always.** `lint:fix` applies auto-fixes (e.g.
+   > `simple-import-sort` — plain `lint` only *reports* unsorted imports and fails);
+   > `format` (Prettier) normalizes style. If you skip `format`, opening a file in
+   > VSCode later lets **autosave reformat it** and that reformat lands in a later
+   > diff, polluting commits. Running both before every commit keeps the tree
+   > already-formatted so the gate and CI stay clean.
 
 4. **When done, STOP for the user.** The user tests in the browser (for
    route-/form-touching changes) and **authorizes the merge**; only then merge

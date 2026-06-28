@@ -28,9 +28,11 @@ commit per phase, and let the user own the merge and the push.
    `package.json`/lockfile when a dependency was installed, plus the spec file
    when you added an e2e test). Conventional Commits. Never batch unrelated work;
    never leave a finished phase uncommitted.
-3. **Gate before every commit** (must be green):
+3. **Gate before every commit** (must be green). **Always `lint:fix` + `format`
+   first** (never plain `lint`) — otherwise a later VSCode autosave reformat leaks
+   into a future diff and pollutes commits:
     ```sh
-    pnpm lint && pnpm build && pnpm test:run
+    pnpm lint:fix && pnpm format && pnpm build && pnpm test:run
     ```
     Changes that touch a user flow / route also run the e2e suite:
     ```sh

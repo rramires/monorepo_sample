@@ -39,9 +39,11 @@ requests, no GitHub merge step.**
 2. **Commit per phase** — one commit per finished, coherent step (a phase commit),
    created **right after its gate passes**. Conventional Commits. Never batch
    unrelated work into one commit; never leave a finished phase uncommitted.
-3. **Gate before every commit** (must be green):
+3. **Gate before every commit** (must be green). **Always `lint:fix` + `format`
+   first** (never plain `lint`) — otherwise a later VSCode autosave reformat leaks
+   into a future diff and pollutes commits:
     ```sh
-    pnpm lint && pnpm compile && pnpm test
+    pnpm lint:fix && pnpm format && pnpm compile && pnpm test
     ```
     Changes that touch HTTP/routes also run the e2e suite (MySQL up:
     `pnpm compose:up`):
